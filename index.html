@@ -1,612 +1,678 @@
-
-<h2 class="sr-only">ASX Share Registry Hub — portfolio tracker, stock screener, market overview, dividends, and AI-powered analysis for Australian Securities Exchange stocks.</h2>
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ASX Share Registry Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
 <style>
+:root {
+  --bg: #0d0f12;
+  --bg2: #13161b;
+  --bg3: #1a1e25;
+  --bg4: #222730;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --text: #e8eaed;
+  --text2: #8b919e;
+  --text3: #555d6b;
+  --green: #00d17a;
+  --green-bg: rgba(0,209,122,0.1);
+  --red: #ff4757;
+  --red-bg: rgba(255,71,87,0.1);
+  --amber: #ffa502;
+  --amber-bg: rgba(255,165,2,0.1);
+  --blue: #3d8ef8;
+  --blue-bg: rgba(61,142,248,0.1);
+  --accent: #00d17a;
+  --radius: 10px;
+  --radius-sm: 6px;
+}
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: var(--font-sans); }
-.nav { display: flex; gap: 4px; padding: 1rem 0 1.25rem; border-bottom: 0.5px solid var(--color-border-tertiary); flex-wrap: wrap; }
-.nav-btn { background: transparent; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 6px 14px; font-size: 13px; cursor: pointer; color: var(--color-text-secondary); transition: all .15s; display: flex; align-items: center; gap: 6px; }
-.nav-btn.active { background: var(--color-background-secondary); color: var(--color-text-primary); border-color: var(--color-border-secondary); font-weight: 500; }
-.nav-btn:hover:not(.active) { background: var(--color-background-secondary); }
-.section { display: none; padding-top: 1.25rem; }
+html { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; }
+body { min-height: 100vh; }
+
+/* Layout */
+.app { display: grid; grid-template-rows: auto 1fr; min-height: 100vh; }
+.topbar { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; gap: 16px; height: 56px; position: sticky; top: 0; z-index: 100; }
+.logo { font-size: 15px; font-weight: 600; letter-spacing: -0.3px; color: var(--text); display: flex; align-items: center; gap: 8px; }
+.logo-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.connect-wrap { display: flex; align-items: center; gap: 8px; }
+.connect-input { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 6px 12px; color: var(--text); font-family: 'DM Mono', monospace; font-size: 12px; width: 280px; outline: none; transition: border-color .2s; }
+.connect-input:focus { border-color: var(--border2); }
+.connect-input::placeholder { color: var(--text3); }
+.btn { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 6px 14px; color: var(--text2); font-size: 13px; font-family: 'DM Sans', sans-serif; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all .15s; white-space: nowrap; }
+.btn:hover { background: var(--bg4); border-color: var(--border2); color: var(--text); }
+.btn-accent { background: var(--accent); border-color: var(--accent); color: #000; font-weight: 500; }
+.btn-accent:hover { background: #00e888; border-color: #00e888; color: #000; }
+.status-pill { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text3); font-family: 'DM Mono', monospace; }
+.s-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text3); transition: all .3s; }
+.s-dot.live { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.s-dot.err { background: var(--red); }
+.s-dot.busy { background: var(--amber); animation: pulse-dot 1s ease-in-out infinite; }
+@keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+/* Main area */
+.main { display: grid; grid-template-columns: 200px 1fr; }
+.sidebar { background: var(--bg2); border-right: 1px solid var(--border); padding: 16px 8px; position: sticky; top: 56px; height: calc(100vh - 56px); overflow-y: auto; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: var(--radius-sm); cursor: pointer; color: var(--text2); font-size: 13px; font-weight: 400; transition: all .15s; margin-bottom: 2px; border: none; background: none; width: 100%; text-align: left; }
+.nav-item:hover { background: var(--bg3); color: var(--text); }
+.nav-item.active { background: var(--green-bg); color: var(--green); border: 1px solid rgba(0,209,122,0.15); }
+.nav-item i { font-size: 16px; width: 16px; }
+.nav-section { font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--text3); padding: 12px 12px 6px; }
+
+/* Content */
+.content { padding: 24px; overflow-y: auto; }
+.section { display: none; }
 .section.active { display: block; }
-.metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 1.25rem; }
-.metric { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 12px; }
-.metric-label { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 4px; }
-.metric-val { font-size: 20px; font-weight: 500; color: var(--color-text-primary); }
-.metric-sub { font-size: 12px; margin-top: 2px; }
-.up { color: #1D9E75; } .down { color: #E24B4A; }
-.card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 1rem; }
-.card-title { font-size: 14px; font-weight: 500; color: var(--color-text-secondary); margin-bottom: .75rem; display: flex; align-items: center; gap: 8px; }
+
+/* Cards */
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
+.card-title { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--text3); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.card-title i { font-size: 14px; }
+
+/* Metric grid */
+.mg { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.metric { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+.metric-label { font-size: 11px; color: var(--text3); margin-bottom: 8px; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; }
+.metric-val { font-size: 22px; font-weight: 300; color: var(--text); letter-spacing: -0.5px; font-family: 'DM Mono', monospace; }
+.metric-sub { font-size: 12px; margin-top: 4px; font-family: 'DM Mono', monospace; }
+
+/* Table */
+.tbl-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
-th { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .04em; color: var(--color-text-tertiary); text-align: left; padding: 0 8px 8px; border-bottom: 0.5px solid var(--color-border-tertiary); }
-td { padding: 9px 8px; border-bottom: 0.5px solid var(--color-border-tertiary); color: var(--color-text-primary); vertical-align: middle; }
+th { font-size: 10px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--text3); text-align: left; padding: 0 12px 10px; border-bottom: 1px solid var(--border); }
+td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
 tr:last-child td { border-bottom: none; }
-.badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: var(--border-radius-md); font-size: 11px; font-weight: 500; }
-.badge-up { background: #EAF3DE; color: #3B6D11; }
-.badge-down { background: #FCEBEB; color: #A32D2D; }
-.badge-neutral { background: var(--color-background-secondary); color: var(--color-text-secondary); }
-.badge-sector { background: #E6F1FB; color: #185FA5; }
-.ticker { font-weight: 500; font-size: 13px; color: var(--color-text-primary); }
-.ticker-name { font-size: 11px; color: var(--color-text-secondary); }
-.search-row { display: flex; gap: 8px; margin-bottom: 1rem; align-items: center; flex-wrap: wrap; }
-input[type=text], select { font-size: 13px; }
-.ai-box { background: var(--color-background-secondary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-top: .75rem; }
-.ai-response { font-size: 13px; color: var(--color-text-primary); line-height: 1.7; white-space: pre-wrap; }
-.ai-loading { color: var(--color-text-tertiary); font-size: 13px; }
-.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-@media(max-width:520px){ .two-col { grid-template-columns: 1fr; } }
-.pill-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: .75rem; }
-.pill { padding: 4px 10px; border-radius: 99px; font-size: 12px; border: 0.5px solid var(--color-border-tertiary); cursor: pointer; color: var(--color-text-secondary); background: transparent; }
-.pill.active { background: var(--color-background-secondary); color: var(--color-text-primary); border-color: var(--color-border-secondary); }
-.holding-bar { height: 4px; background: var(--color-border-tertiary); border-radius: 2px; margin-top: 4px; }
-.holding-fill { height: 4px; background: #378ADD; border-radius: 2px; }
-.divider { border: none; border-top: 0.5px solid var(--color-border-tertiary); margin: .75rem 0; }
-.action-btn { background: transparent; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); padding: 7px 14px; font-size: 13px; cursor: pointer; color: var(--color-text-primary); display: inline-flex; align-items: center; gap: 6px; }
-.action-btn:hover { background: var(--color-background-secondary); }
-.full-ai-btn { width: 100%; justify-content: center; margin-top: .5rem; }
-.star { color: #EF9F27; }
-.mini-chart { display: flex; align-items: flex-end; gap: 2px; height: 28px; }
-.mini-bar { width: 6px; border-radius: 1px; }
+tr:hover td { background: rgba(255,255,255,0.02); }
+.tk { font-weight: 600; font-size: 13px; font-family: 'DM Mono', monospace; color: var(--text); }
+.tks { font-size: 11px; color: var(--text3); margin-top: 1px; }
+
+/* Badges */
+.badge { display: inline-flex; align-items: center; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; font-family: 'DM Mono', monospace; }
+.b-up { background: var(--green-bg); color: var(--green); }
+.b-dn { background: var(--red-bg); color: var(--red); }
+.b-neu { background: var(--bg4); color: var(--text2); }
+.b-blue { background: var(--blue-bg); color: var(--blue); }
+.up { color: var(--green); } .dn { color: var(--red); }
+
+/* Two col */
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media(max-width: 768px) { .two { grid-template-columns: 1fr; } .main { grid-template-columns: 1fr; } .sidebar { display: none; } }
+
+/* Row header */
+.rrow { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
+.rrow-title { font-size: 20px; font-weight: 300; letter-spacing: -0.5px; }
+.upd { font-size: 11px; color: var(--text3); font-family: 'DM Mono', monospace; }
+
+/* Pill row */
+.pill-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+.pill { padding: 5px 12px; border-radius: 99px; font-size: 12px; border: 1px solid var(--border); cursor: pointer; color: var(--text2); background: transparent; font-family: 'DM Sans', sans-serif; transition: all .15s; }
+.pill:hover { border-color: var(--border2); color: var(--text); background: var(--bg3); }
+
+/* Form elements */
+input[type=text], select { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 12px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none; transition: border-color .2s; }
+input[type=text]:focus, select:focus { border-color: var(--border2); }
+input[type=text]::placeholder { color: var(--text3); }
+select option { background: var(--bg3); }
+.field-label { font-size: 11px; color: var(--text3); margin-bottom: 5px; font-weight: 500; letter-spacing: .04em; }
+
+/* AI box */
+.ai-box { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-top: 12px; display: none; }
+.ai-response { font-size: 13px; color: var(--text2); line-height: 1.75; white-space: pre-wrap; }
+.ai-loading { color: var(--text3); font-size: 13px; display: flex; align-items: center; gap: 8px; }
+.ai-label { font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--green); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+
+/* Holdings bar */
+.hbar { height: 3px; background: var(--bg4); border-radius: 2px; margin-top: 4px; }
+.hfill { height: 3px; background: var(--blue); border-radius: 2px; }
+.divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+
+/* Sector bar */
+.sec-bar-wrap { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.sec-bar-label { width: 100px; font-size: 11px; color: var(--text3); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sec-bar-track { flex: 1; height: 6px; background: var(--bg4); border-radius: 3px; overflow: hidden; }
+.sec-bar-fill { height: 6px; border-radius: 3px; }
+.sec-bar-val { width: 54px; font-size: 11px; font-weight: 500; font-family: 'DM Mono', monospace; }
+
+/* Spinner */
+.spin { display: inline-block; animation: sp 1s linear infinite; }
+@keyframes sp { to { transform: rotate(360deg); } }
+
+/* Skeleton */
+.sk { background: var(--bg4); border-radius: 4px; animation: pu 1.4s ease-in-out infinite; }
+@keyframes pu { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 2px; }
+
+/* Star */
+.star { color: var(--amber); }
+
+/* Bottom input row */
+.add-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; align-items: center; }
 </style>
+</head>
+<body>
+<div class="app">
 
-<div class="nav" id="nav">
-  <button class="nav-btn active" onclick="showTab('overview')" id="tab-overview"><i class="ti ti-chart-bar" aria-hidden="true"></i>Market</button>
-  <button class="nav-btn" onclick="showTab('portfolio')" id="tab-portfolio"><i class="ti ti-briefcase" aria-hidden="true"></i>Portfolio</button>
-  <button class="nav-btn" onclick="showTab('screener')" id="tab-screener"><i class="ti ti-filter" aria-hidden="true"></i>Screener</button>
-  <button class="nav-btn" onclick="showTab('registry')" id="tab-registry"><i class="ti ti-id" aria-hidden="true"></i>Registry</button>
-  <button class="nav-btn" onclick="showTab('dividends')" id="tab-dividends"><i class="ti ti-coin" aria-hidden="true"></i>Dividends</button>
-  <button class="nav-btn" onclick="showTab('ai')" id="tab-ai"><i class="ti ti-brain" aria-hidden="true"></i>AI Analysis</button>
-</div>
-
-<!-- MARKET OVERVIEW -->
-<div class="section active" id="section-overview">
-  <div class="metric-grid">
-    <div class="metric"><div class="metric-label">ASX 200</div><div class="metric-val">8,412</div><div class="metric-sub up"><i class="ti ti-trending-up" aria-hidden="true"></i> +0.84%</div></div>
-    <div class="metric"><div class="metric-label">ASX 300</div><div class="metric-val">8,651</div><div class="metric-sub up"><i class="ti ti-trending-up" aria-hidden="true"></i> +0.71%</div></div>
-    <div class="metric"><div class="metric-label">All Ords</div><div class="metric-val">8,690</div><div class="metric-sub down"><i class="ti ti-trending-down" aria-hidden="true"></i> −0.12%</div></div>
-    <div class="metric"><div class="metric-label">AUD/USD</div><div class="metric-val">0.6532</div><div class="metric-sub down"><i class="ti ti-trending-down" aria-hidden="true"></i> −0.24%</div></div>
-    <div class="metric"><div class="metric-label">10Y Bond</div><div class="metric-val">4.41%</div><div class="metric-sub up">+3 bps</div></div>
+<!-- Topbar -->
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-dot"></div>
+    ASX Hub
   </div>
-
-  <div class="card">
-    <div class="card-title"><i class="ti ti-flame" aria-hidden="true"></i>Top movers today</div>
-    <table>
-      <thead><tr><th>Code</th><th>Company</th><th>Price</th><th>Change</th><th>Volume</th><th>Sector</th></tr></thead>
-      <tbody id="movers-body"></tbody>
-    </table>
-  </div>
-
-  <div class="two-col">
-    <div class="card">
-      <div class="card-title"><i class="ti ti-layout-grid" aria-hidden="true"></i>Sector performance</div>
-      <div id="sector-bars"></div>
+  <div class="topbar-right">
+    <div class="connect-wrap">
+      <input class="connect-input" type="text" id="wurl" placeholder="https://asx-data-proxy.yourname.workers.dev" />
+      <button class="btn btn-accent" onclick="connect()"><i class="ti ti-plug"></i> Connect</button>
     </div>
-    <div class="card">
-      <div class="card-title"><i class="ti ti-news" aria-hidden="true"></i>Market news</div>
-      <div id="news-feed"></div>
+    <div class="status-pill">
+      <div class="s-dot" id="sdot"></div>
+      <span id="stxt">Not connected</span>
     </div>
-  </div>
-  <button class="action-btn full-ai-btn" onclick="sendPrompt('Give me an AI summary of the current ASX market conditions and what sectors to watch today. ↗')">
-    <i class="ti ti-brain" aria-hidden="true"></i> Get AI market brief ↗
-  </button>
-</div>
-
-<!-- PORTFOLIO -->
-<div class="section" id="section-portfolio">
-  <div class="metric-grid">
-    <div class="metric"><div class="metric-label">Portfolio value</div><div class="metric-val" id="p-total">$0</div><div class="metric-sub" id="p-change">—</div></div>
-    <div class="metric"><div class="metric-label">Today's P&L</div><div class="metric-val" id="p-pnl">$0</div><div class="metric-sub" id="p-pnl-pct">—</div></div>
-    <div class="metric"><div class="metric-label">Total cost</div><div class="metric-val" id="p-cost">$0</div><div class="metric-sub">All holdings</div></div>
-    <div class="metric"><div class="metric-label">Unrealised gain</div><div class="metric-val" id="p-gain">$0</div><div class="metric-sub" id="p-gain-pct">—</div></div>
-  </div>
-
-  <div class="card">
-    <div class="card-title"><i class="ti ti-briefcase" aria-hidden="true"></i>Holdings</div>
-    <table>
-      <thead><tr><th>Code</th><th>Shares</th><th>Avg cost</th><th>Price</th><th>Value</th><th>Gain/Loss</th><th>Weight</th></tr></thead>
-      <tbody id="holdings-body"></tbody>
-    </table>
-    <hr class="divider">
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:.5rem;">
-      <input type="text" id="add-code" placeholder="ASX code (e.g. CBA)" style="width:120px">
-      <input type="text" id="add-shares" placeholder="Shares" style="width:80px">
-      <input type="text" id="add-cost" placeholder="Avg cost $" style="width:90px">
-      <button class="action-btn" onclick="addHolding()"><i class="ti ti-plus" aria-hidden="true"></i> Add</button>
-    </div>
-  </div>
-  <button class="action-btn full-ai-btn" onclick="analysePortfolio()">
-    <i class="ti ti-brain" aria-hidden="true"></i> AI portfolio analysis ↗
-  </button>
-  <div class="ai-box" id="portfolio-ai" style="display:none"></div>
-</div>
-
-<!-- SCREENER -->
-<div class="section" id="section-screener">
-  <div class="card">
-    <div class="card-title"><i class="ti ti-filter" aria-hidden="true"></i>Filters</div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:1rem;">
-      <div>
-        <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">Sector</div>
-        <select id="f-sector" style="width:100%;font-size:13px;">
-          <option value="">All sectors</option>
-          <option>Financials</option><option>Materials</option><option>Energy</option>
-          <option>Health Care</option><option>Consumer Staples</option><option>Industrials</option>
-          <option>Information Technology</option><option>Real Estate</option><option>Utilities</option>
-        </select>
-      </div>
-      <div>
-        <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">Min div yield %</div>
-        <input type="text" id="f-yield" placeholder="e.g. 3" style="width:100%">
-      </div>
-      <div>
-        <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">Max P/E</div>
-        <input type="text" id="f-pe" placeholder="e.g. 25" style="width:100%">
-      </div>
-      <div>
-        <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;">Min mkt cap</div>
-        <select id="f-cap" style="width:100%;font-size:13px;">
-          <option value="">Any</option>
-          <option value="10">Large cap ($10B+)</option>
-          <option value="2">Mid cap ($2B+)</option>
-          <option value="0.3">Small cap ($300M+)</option>
-        </select>
-      </div>
-    </div>
-    <div style="margin-bottom:.75rem;">
-      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:6px;">Franking</div>
-      <div class="pill-row" id="franking-pills">
-        <button class="pill active" onclick="togglePill(this,'franking')" data-val="">Any</button>
-        <button class="pill" onclick="togglePill(this,'franking')" data-val="100">Fully franked</button>
-        <button class="pill" onclick="togglePill(this,'franking')" data-val="partial">Partially franked</button>
-        <button class="pill" onclick="togglePill(this,'franking')" data-val="0">Unfranked</button>
-      </div>
-    </div>
-    <button class="action-btn" onclick="runScreener()"><i class="ti ti-search" aria-hidden="true"></i> Screen stocks</button>
-  </div>
-  <div class="card" id="screener-results" style="display:none">
-    <div class="card-title"><i class="ti ti-list" aria-hidden="true"></i>Results <span id="result-count" style="color:var(--color-text-tertiary);font-weight:400;"></span></div>
-    <table>
-      <thead><tr><th>Code</th><th>Company</th><th>Price</th><th>P/E</th><th>Div yield</th><th>Franking</th><th>Mkt cap</th><th>Sector</th></tr></thead>
-      <tbody id="screener-body"></tbody>
-    </table>
-    <button class="action-btn full-ai-btn" onclick="screenAI()" style="margin-top:.75rem;">
-      <i class="ti ti-brain" aria-hidden="true"></i> AI analysis of results ↗
-    </button>
-    <div class="ai-box" id="screener-ai" style="display:none;margin-top:.75rem;"></div>
   </div>
 </div>
 
-<!-- REGISTRY -->
-<div class="section" id="section-registry">
-  <div class="card">
-    <div class="card-title"><i class="ti ti-search" aria-hidden="true"></i>Share registry lookup</div>
-    <div class="search-row">
-      <input type="text" id="reg-code" placeholder="ASX code (e.g. BHP, CBA, WBC)" style="width:200px">
-      <button class="action-btn" onclick="lookupRegistry()"><i class="ti ti-search" aria-hidden="true"></i> Lookup</button>
-    </div>
-    <div id="registry-result" style="display:none">
-      <div class="metric-grid" id="reg-metrics"></div>
-      <div class="two-col" style="margin-top:.75rem;">
-        <div>
-          <div style="font-size:12px;font-weight:500;color:var(--color-text-secondary);margin-bottom:.5rem;">Registry details</div>
-          <div id="reg-details" style="font-size:13px;line-height:2;"></div>
-        </div>
-        <div>
-          <div style="font-size:12px;font-weight:500;color:var(--color-text-secondary);margin-bottom:.5rem;">DRP & options</div>
-          <div id="reg-drp" style="font-size:13px;line-height:2;"></div>
+<!-- Main -->
+<div class="main">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="nav-section">Markets</div>
+    <button class="nav-item active" onclick="showTab('mkt')" id="tab-mkt"><i class="ti ti-chart-bar"></i> Overview</button>
+    <button class="nav-item" onclick="showTab('scr')" id="tab-scr"><i class="ti ti-filter"></i> Screener</button>
+    <div class="nav-section">Portfolio</div>
+    <button class="nav-item" onclick="showTab('port')" id="tab-port"><i class="ti ti-briefcase"></i> Holdings</button>
+    <button class="nav-item" onclick="showTab('div')" id="tab-div"><i class="ti ti-coin"></i> Dividends</button>
+    <div class="nav-section">Research</div>
+    <button class="nav-item" onclick="showTab('reg')" id="tab-reg"><i class="ti ti-id"></i> Registry</button>
+    <button class="nav-item" onclick="showTab('watch')" id="tab-watch"><i class="ti ti-star"></i> Watchlist</button>
+    <button class="nav-item" onclick="showTab('ai')" id="tab-ai"><i class="ti ti-brain"></i> AI Analysis</button>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- MARKET -->
+    <div class="section active" id="sec-mkt">
+      <div class="rrow">
+        <div class="rrow-title">Market Overview</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="upd" id="mkt-upd">Not connected</span>
+          <button class="btn" onclick="loadMarket()"><i class="ti ti-refresh"></i> Refresh</button>
         </div>
       </div>
-      <button class="action-btn full-ai-btn" onclick="registryAI()" style="margin-top:.75rem;">
-        <i class="ti ti-brain" aria-hidden="true"></i> AI company overview ↗
+      <div class="mg" id="idx-grid">
+        <div class="metric"><div class="metric-label">ASX 200</div><div class="sk" style="height:26px;width:90px;margin:4px 0"></div></div>
+        <div class="metric"><div class="metric-label">All Ords</div><div class="sk" style="height:26px;width:90px;margin:4px 0"></div></div>
+        <div class="metric"><div class="metric-label">AUD/USD</div><div class="sk" style="height:26px;width:90px;margin:4px 0"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-flame"></i> Top movers today</div>
+        <div id="movers-area" style="color:var(--text3);font-size:13px;padding:.5rem 0">Connect your Worker to load live data…</div>
+      </div>
+      <div class="two">
+        <div class="card">
+          <div class="card-title"><i class="ti ti-layout-grid"></i> Sector snapshot</div>
+          <div id="sector-area" style="color:var(--text3);font-size:13px">Awaiting data…</div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="ti ti-clock"></i> Market info</div>
+          <div style="font-size:13px;color:var(--text2);line-height:2.2;font-family:'DM Mono',monospace">
+            <div>Hours &nbsp;&nbsp;&nbsp; 10:00am – 4:00pm AEST</div>
+            <div>Pre-open &nbsp;7:00am – 10:00am</div>
+            <div>Data &nbsp;&nbsp;&nbsp;&nbsp; Yahoo Finance (~15 min)</div>
+            <div>Refresh &nbsp;&nbsp;Every 60s during hours</div>
+          </div>
+        </div>
+      </div>
+      <button class="btn" onclick="askAI('Give me a concise ASX market briefing — current conditions, sector leaders/laggards, and key themes to watch today','ai-mkt')" style="width:100%;justify-content:center;margin-top:4px">
+        <i class="ti ti-brain"></i> AI market brief
       </button>
-      <div class="ai-box" id="registry-ai" style="display:none;margin-top:.75rem;"></div>
+      <div class="ai-box" id="ai-mkt">
+        <div class="ai-label"><i class="ti ti-sparkles"></i> AI Analysis</div>
+        <div class="ai-response" id="ai-mkt-r"></div>
+      </div>
     </div>
-  </div>
-</div>
 
-<!-- DIVIDENDS -->
-<div class="section" id="section-dividends">
-  <div class="metric-grid">
-    <div class="metric"><div class="metric-label">Est. annual income</div><div class="metric-val" id="div-income">$0</div><div class="metric-sub">From holdings</div></div>
-    <div class="metric"><div class="metric-label">Avg gross yield</div><div class="metric-val" id="div-yield">0%</div><div class="metric-sub">Incl. franking</div></div>
-    <div class="metric"><div class="metric-label">Next ex-date</div><div class="metric-val" style="font-size:15px;" id="div-next">—</div><div class="metric-sub" id="div-next-code">—</div></div>
-    <div class="metric"><div class="metric-label">Franking credits</div><div class="metric-val" id="div-credits">$0</div><div class="metric-sub">Est. this year</div></div>
-  </div>
-
-  <div class="card">
-    <div class="card-title"><i class="ti ti-calendar" aria-hidden="true"></i>Dividend calendar</div>
-    <table>
-      <thead><tr><th>Code</th><th>Company</th><th>Ex-date</th><th>Pay date</th><th>Amount</th><th>Franking</th><th>Gross yield</th><th>DRP</th></tr></thead>
-      <tbody id="div-body"></tbody>
-    </table>
-  </div>
-
-  <div class="card">
-    <div class="card-title"><i class="ti ti-chart-bar" aria-hidden="true"></i>Dividend history</div>
-    <div style="position:relative;width:100%;height:200px;"><canvas id="div-chart" role="img" aria-label="Dividend income bar chart by year">Annual dividend income history.</canvas></div>
-  </div>
-  <button class="action-btn full-ai-btn" onclick="dividendAI()">
-    <i class="ti ti-brain" aria-hidden="true"></i> AI dividend strategy analysis ↗
-  </button>
-  <div class="ai-box" id="dividend-ai" style="display:none;margin-top:.75rem;"></div>
-</div>
-
-<!-- AI ANALYSIS -->
-<div class="section" id="section-ai">
-  <div class="card">
-    <div class="card-title"><i class="ti ti-brain" aria-hidden="true"></i>AI research assistant</div>
-    <div class="pill-row" id="prompt-pills">
-      <button class="pill" onclick="quickPrompt('Analyse BHP as a long-term ASX investment considering iron ore demand, dividends, and ESG factors')">BHP deep dive</button>
-      <button class="pill" onclick="quickPrompt('What are the top 5 ASX dividend stocks for income investors in 2025, including franking credits?')">Top dividend picks</button>
-      <button class="pill" onclick="quickPrompt('Compare CBA vs WBC vs ANZ vs NAB — which big 4 bank offers the best value on ASX right now?')">Big 4 banks</button>
-      <button class="pill" onclick="quickPrompt('What ASX sectors are best positioned for the current Australian interest rate environment?')">Rate outlook</button>
-      <button class="pill" onclick="quickPrompt('Explain franking credits and how Australian investors can maximise their after-tax dividend returns')">Franking explained</button>
-      <button class="pill" onclick="quickPrompt('What are the most promising ASX small cap mining stocks with near-term catalysts?')">Small cap miners</button>
+    <!-- SCREENER -->
+    <div class="section" id="sec-scr">
+      <div class="rrow"><div class="rrow-title">Stock Screener</div></div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-adjustments"></i> Filters</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px">
+          <div><div class="field-label">Min div yield %</div><input type="text" id="f-yld" placeholder="e.g. 3" style="width:100%"></div>
+          <div><div class="field-label">Max P/E</div><input type="text" id="f-pe" placeholder="e.g. 25" style="width:100%"></div>
+          <div><div class="field-label">Min mkt cap ($B)</div><input type="text" id="f-cap" placeholder="e.g. 2" style="width:100%"></div>
+          <div><div class="field-label">Max % from 52w high</div><input type="text" id="f-hi" placeholder="e.g. 10" style="width:100%"></div>
+        </div>
+        <div style="margin-bottom:16px">
+          <div class="field-label">Symbols (comma-separated, .AX suffix)</div>
+          <input type="text" id="f-syms" style="width:100%" placeholder="CBA.AX,BHP.AX,CSL.AX,WBC.AX,NAB.AX,ANZ.AX,RIO.AX,WES.AX,MQG.AX,TLS.AX,FMG.AX,WOW.AX,GMG.AX,TCL.AX,NCM.AX">
+        </div>
+        <button class="btn btn-accent" onclick="runScreener()"><i class="ti ti-search"></i> Fetch &amp; screen</button>
+      </div>
+      <div id="scr-out" style="display:none">
+        <div class="card">
+          <div class="card-title"><i class="ti ti-list"></i> Results <span id="scr-cnt" style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0"></span></div>
+          <div id="scr-loading" style="display:none;color:var(--text3);font-size:13px;padding:.5rem 0"><i class="ti ti-loader spin"></i> Fetching live data…</div>
+          <div class="tbl-wrap"><table><thead><tr><th>Code</th><th>Name</th><th>Price</th><th>Chg%</th><th>P/E</th><th>Div yield</th><th>Mkt cap</th><th>52w range</th></tr></thead>
+          <tbody id="scr-body"></tbody></table></div>
+          <div style="margin-top:12px">
+            <button class="btn" onclick="askAI('Analyse the ASX stocks from my screener results — yield sustainability, value opportunities, key risks for income investors','ai-scr')" style="width:100%;justify-content:center">
+              <i class="ti ti-brain"></i> AI analysis of results
+            </button>
+            <div class="ai-box" id="ai-scr" style="display:block;margin-top:0">
+              <div class="ai-label"><i class="ti ti-sparkles"></i> AI Analysis</div>
+              <div class="ai-response" id="ai-scr-r"></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div style="display:flex;gap:8px;margin-top:.5rem;">
-      <input type="text" id="ai-input" placeholder="Ask anything about ASX stocks, sectors, or strategy..." style="flex:1">
-      <button class="action-btn" onclick="runAI()"><i class="ti ti-send" aria-hidden="true"></i> Ask</button>
-    </div>
-    <div class="ai-box" id="ai-main-box" style="display:none;margin-top:.75rem;"></div>
-  </div>
 
-  <div class="card">
-    <div class="card-title"><i class="ti ti-star" aria-hidden="true"></i>Watchlist</div>
-    <table>
-      <thead><tr><th>Code</th><th>Company</th><th>Price</th><th>52w high</th><th>52w low</th><th>Analyst</th><th>AI signal</th></tr></thead>
-      <tbody id="watchlist-body"></tbody>
-    </table>
-    <div style="display:flex;gap:8px;margin-top:.75rem;">
-      <input type="text" id="watch-input" placeholder="Add ASX code" style="width:160px">
-      <button class="action-btn" onclick="addWatch()"><i class="ti ti-plus" aria-hidden="true"></i> Add to watchlist</button>
+    <!-- PORTFOLIO -->
+    <div class="section" id="sec-port">
+      <div class="rrow">
+        <div class="rrow-title">Portfolio</div>
+        <button class="btn" onclick="refreshPortfolio()"><i class="ti ti-refresh"></i> Refresh prices</button>
+      </div>
+      <div class="mg">
+        <div class="metric"><div class="metric-label">Portfolio value</div><div class="metric-val" id="p-tot">—</div><div class="metric-sub" id="p-chg" style="color:var(--text3)">Add holdings below</div></div>
+        <div class="metric"><div class="metric-label">Today's P&amp;L</div><div class="metric-val" id="p-pnl">—</div><div class="metric-sub" id="p-pnlp" style="color:var(--text3)">—</div></div>
+        <div class="metric"><div class="metric-label">Total cost</div><div class="metric-val" id="p-cost">—</div><div class="metric-sub" style="color:var(--text3)">All holdings</div></div>
+        <div class="metric"><div class="metric-label">Unrealised gain</div><div class="metric-val" id="p-gain">—</div><div class="metric-sub" id="p-gainp" style="color:var(--text3)">—</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-briefcase"></i> Holdings</div>
+        <div class="tbl-wrap"><table><thead><tr><th>Code</th><th>Shares</th><th>Avg cost</th><th>Live price</th><th>Value</th><th>Gain/Loss</th><th>Weight</th></tr></thead>
+        <tbody id="hold-body"><tr><td colspan="7" style="color:var(--text3);text-align:center;padding:24px">Add your first holding below</td></tr></tbody></table></div>
+        <div class="divider"></div>
+        <div class="add-row">
+          <input type="text" id="a-code" placeholder="Code e.g. CBA" style="width:120px">
+          <input type="text" id="a-shares" placeholder="Shares" style="width:90px">
+          <input type="text" id="a-cost" placeholder="Avg cost $" style="width:100px">
+          <button class="btn btn-accent" onclick="addHolding()"><i class="ti ti-plus"></i> Add</button>
+        </div>
+      </div>
+      <button class="btn" onclick="askAI('Analyse my ASX portfolio: '+portSummary(),'ai-port')" style="width:100%;justify-content:center">
+        <i class="ti ti-brain"></i> AI portfolio analysis
+      </button>
+      <div class="ai-box" id="ai-port" style="display:block">
+        <div class="ai-label"><i class="ti ti-sparkles"></i> AI Analysis</div>
+        <div class="ai-response" id="ai-port-r"></div>
+      </div>
     </div>
-  </div>
-</div>
+
+    <!-- DIVIDENDS -->
+    <div class="section" id="sec-div">
+      <div class="rrow"><div class="rrow-title">Dividends</div></div>
+      <div class="mg">
+        <div class="metric"><div class="metric-label">Est. annual income</div><div class="metric-val" id="div-inc">—</div><div class="metric-sub" style="color:var(--text3)">From holdings</div></div>
+        <div class="metric"><div class="metric-label">Avg gross yield</div><div class="metric-val" id="div-yld">—</div><div class="metric-sub" style="color:var(--text3)">Incl. franking</div></div>
+        <div class="metric"><div class="metric-label">Est. franking credits</div><div class="metric-val" id="div-fc">—</div><div class="metric-sub" style="color:var(--text3)">This FY</div></div>
+        <div class="metric"><div class="metric-label">Holdings w/ yield</div><div class="metric-val" id="div-cnt">0</div><div class="metric-sub" style="color:var(--text3)">Live data</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-list"></i> Dividend data — portfolio holdings</div>
+        <div id="div-msg" style="color:var(--text3);font-size:13px;padding:.5rem 0">Add holdings in Portfolio tab, then refresh prices to load dividend data.</div>
+        <div class="tbl-wrap"><table id="div-tbl" style="display:none"><thead><tr><th>Code</th><th>Name</th><th>Price</th><th>Div yield</th><th>Gross yield*</th><th>Mkt cap</th><th>P/E</th></tr></thead>
+        <tbody id="div-body"></tbody></table></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:12px">* Gross yield grossed-up at 30% corporate tax assuming 100% franking. Actual franking varies.</div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-calculator"></i> Franking credit calculator</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px">
+          <div><div class="field-label">Cash dividend per share ($)</div><input type="text" id="fc-d" placeholder="e.g. 2.65" style="width:100%" oninput="calcFranking()"></div>
+          <div><div class="field-label">Franking %</div><input type="text" id="fc-p" placeholder="e.g. 100" style="width:100%" oninput="calcFranking()"></div>
+          <div><div class="field-label">Number of shares</div><input type="text" id="fc-s" placeholder="e.g. 500" style="width:100%" oninput="calcFranking()"></div>
+        </div>
+        <div id="fc-result" style="font-size:13px;line-height:2.2;color:var(--text2);font-family:'DM Mono',monospace">Enter values above to calculate.</div>
+      </div>
+      <button class="btn" onclick="askAI('Analyse ASX dividend strategy for my portfolio: '+portSummary()+'. Cover yield sustainability, franking benefits for retail and SMSF investors, income risks.','ai-div')" style="width:100%;justify-content:center">
+        <i class="ti ti-brain"></i> AI dividend strategy
+      </button>
+      <div class="ai-box" id="ai-div" style="display:block">
+        <div class="ai-label"><i class="ti ti-sparkles"></i> AI Analysis</div>
+        <div class="ai-response" id="ai-div-r"></div>
+      </div>
+    </div>
+
+    <!-- REGISTRY -->
+    <div class="section" id="sec-reg">
+      <div class="rrow"><div class="rrow-title">Share Registry</div></div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-search"></i> Lookup</div>
+        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+          <input type="text" id="reg-code" placeholder="ASX code e.g. CBA" style="width:180px">
+          <button class="btn btn-accent" onclick="lookupReg()"><i class="ti ti-search"></i> Lookup</button>
+        </div>
+        <div id="reg-result" style="display:none">
+          <div class="mg" id="reg-metrics"></div>
+          <div class="card" style="padding:12px;margin-bottom:0">
+            <div style="position:relative;width:100%;height:200px"><canvas id="reg-chart" role="img" aria-label="12-month price chart">Price history.</canvas></div>
+          </div>
+          <div class="two" style="margin-top:16px">
+            <div>
+              <div class="field-label" style="margin-bottom:8px">Registry details</div>
+              <div id="reg-det" style="font-size:13px;line-height:2.2;font-family:'DM Mono',monospace;color:var(--text2)"></div>
+            </div>
+            <div>
+              <div class="field-label" style="margin-bottom:8px">DRP &amp; options</div>
+              <div id="reg-drp" style="font-size:13px;line-height:2.2;font-family:'DM Mono',monospace;color:var(--text2)"></div>
+            </div>
+          </div>
+          <button class="btn" onclick="askAI('Provide an investment overview of ASX:'+window._rc+' — business model, competitive position, dividend history, key risks, valuation.','ai-reg')" style="width:100%;justify-content:center;margin-top:12px">
+            <i class="ti ti-brain"></i> AI company overview
+          </button>
+          <div class="ai-box" id="ai-reg" style="display:block;margin-top:12px">
+            <div class="ai-label"><i class="ti ti-sparkles"></i> AI Analysis</div>
+            <div class="ai-response" id="ai-reg-r"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WATCHLIST -->
+    <div class="section" id="sec-watch">
+      <div class="rrow">
+        <div class="rrow-title">Watchlist</div>
+        <button class="btn" onclick="refreshWatch()"><i class="ti ti-refresh"></i> Refresh</button>
+      </div>
+      <div class="card">
+        <div class="tbl-wrap"><table><thead><tr><th>Code</th><th>Name</th><th>Price</th><th>Chg%</th><th>52w high</th><th>52w low</th><th>Mkt cap</th><th>P/E</th></tr></thead>
+        <tbody id="watch-body"><tr><td colspan="8" style="color:var(--text3);text-align:center;padding:24px">Add stocks to your watchlist</td></tr></tbody></table></div>
+        <div class="divider"></div>
+        <div class="add-row">
+          <input type="text" id="watch-in" placeholder="ASX code e.g. GMG" style="width:160px">
+          <button class="btn btn-accent" onclick="addWatch()"><i class="ti ti-plus"></i> Add</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI -->
+    <div class="section" id="sec-ai">
+      <div class="rrow"><div class="rrow-title">AI Research</div></div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-brain"></i> Ask anything about ASX</div>
+        <div class="pill-row">
+          <button class="pill" onclick="qp('Analyse BHP as a long-term ASX investment — iron ore demand, China risk, dividends, ESG')">BHP deep dive</button>
+          <button class="pill" onclick="qp('Top ASX dividend stocks for income investors — yield, franking, payout sustainability')">Top dividend picks</button>
+          <button class="pill" onclick="qp('Compare CBA vs WBC vs ANZ vs NAB — which big 4 bank offers best value on ASX now?')">Big 4 banks</button>
+          <button class="pill" onclick="qp('Which ASX sectors benefit from the current RBA rate environment and inflation outlook?')">Rate outlook</button>
+          <button class="pill" onclick="qp('Explain franking credits with examples — how Australian retail and SMSF investors maximise returns')">Franking credits</button>
+          <button class="pill" onclick="qp('Best ASX small cap mining stocks with near-term catalysts in 2025')">Small cap miners</button>
+          <button class="pill" onclick="qp('How should an Australian investor build a core ASX portfolio for long-term wealth?')">Core portfolio</button>
+          <button class="pill" onclick="qp('ASX REITs outlook — which property trusts offer best risk-adjusted yield right now?')">ASX REITs</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <input type="text" id="ai-q" placeholder="Ask anything about ASX stocks, sectors, dividends, or strategy…" style="flex:1">
+          <button class="btn btn-accent" onclick="runAI()"><i class="ti ti-send"></i> Ask</button>
+        </div>
+        <div class="ai-box" id="ai-main" style="display:block;margin-top:12px">
+          <div class="ai-label"><i class="ti ti-sparkles"></i> AI Analysis</div>
+          <div class="ai-response" id="ai-main-r" style="color:var(--text3)">Ask a question above or choose a quick prompt.</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /app -->
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
-const ASX_STOCKS = [
-  {code:'CBA',name:'Commonwealth Bank',price:136.42,change:1.23,changePct:0.91,pe:22.1,divYield:3.8,franking:100,mktCap:228.4,sector:'Financials',vol:'4.2M',hi52:139.80,lo52:98.40,analyst:'Buy'},
-  {code:'BHP',name:'BHP Group',price:43.21,change:-0.54,changePct:-1.23,pe:12.8,divYield:5.1,franking:100,mktCap:218.9,sector:'Materials',vol:'8.1M',hi52:49.50,lo52:38.20,analyst:'Hold'},
-  {code:'CSL',name:'CSL Limited',price:285.60,change:3.40,changePct:1.21,pe:38.4,divYield:1.2,franking:0,mktCap:135.2,sector:'Health Care',vol:'1.1M',hi52:310.20,lo52:255.00,analyst:'Buy'},
-  {code:'WBC',name:'Westpac Banking',price:31.84,change:0.22,changePct:0.69,pe:14.2,divYield:5.4,franking:100,mktCap:109.4,sector:'Financials',vol:'5.8M',hi52:33.90,lo52:24.70,analyst:'Hold'},
-  {code:'NAB',name:'Natl Australia Bank',price:38.12,change:0.45,changePct:1.19,pe:15.1,divYield:4.9,franking:100,mktCap:119.8,sector:'Financials',vol:'4.9M',hi52:40.20,lo52:29.80,analyst:'Buy'},
-  {code:'ANZ',name:'ANZ Group',price:28.76,change:-0.12,changePct:-0.42,pe:13.5,divYield:5.7,franking:100,mktCap:88.4,sector:'Financials',vol:'6.2M',hi52:31.10,lo52:24.10,analyst:'Hold'},
-  {code:'RIO',name:'Rio Tinto',price:118.50,change:1.80,changePct:1.54,pe:10.2,divYield:6.8,franking:0,mktCap:44.1,sector:'Materials',vol:'2.3M',hi52:135.40,lo52:108.20,analyst:'Buy'},
-  {code:'WES',name:'Wesfarmers',price:76.44,change:0.88,changePct:1.17,pe:31.2,divYield:2.9,franking:100,mktCap:86.2,sector:'Consumer Staples',vol:'1.8M',hi52:81.20,lo52:58.60,analyst:'Hold'},
-  {code:'MQG',name:'Macquarie Group',price:214.30,change:2.10,changePct:0.99,pe:18.6,divYield:3.1,franking:40,mktCap:82.4,sector:'Financials',vol:'0.9M',hi52:228.00,lo52:161.00,analyst:'Buy'},
-  {code:'TLS',name:'Telstra Group',price:4.12,change:-0.03,changePct:-0.72,pe:24.1,divYield:4.4,franking:100,mktCap:49.8,sector:'Industrials',vol:'12.4M',hi52:4.45,lo52:3.81,analyst:'Hold'},
-  {code:'FMG',name:'Fortescue',price:19.84,change:-0.31,changePct:-1.54,pe:8.9,divYield:7.2,franking:100,mktCap:60.9,sector:'Materials',vol:'9.8M',hi52:29.10,lo52:18.20,analyst:'Sell'},
-  {code:'WOW',name:'Woolworths Group',price:30.42,change:0.14,changePct:0.46,pe:26.3,divYield:3.3,franking:100,mktCap:36.8,sector:'Consumer Staples',vol:'2.1M',hi52:37.80,lo52:26.40,analyst:'Hold'},
-  {code:'GMG',name:'Goodman Group',price:36.18,change:0.62,changePct:1.74,pe:44.2,divYield:1.1,franking:0,mktCap:53.4,sector:'Real Estate',vol:'1.5M',hi52:38.90,lo52:24.60,analyst:'Buy'},
-  {code:'NCM',name:'Newmont Corp',price:88.20,change:1.40,changePct:1.61,pe:31.8,divYield:2.0,franking:0,mktCap:22.1,sector:'Materials',vol:'0.8M',hi52:95.00,lo52:60.40,analyst:'Buy'},
-  {code:'TCL',name:'Transurban',price:13.42,change:0.08,changePct:0.60,pe:58.4,divYield:4.8,franking:0,mktCap:30.1,sector:'Industrials',vol:'3.2M',hi52:14.20,lo52:12.10,analyst:'Hold'},
-];
+let W='', portfolio=[], watchlist=[], cache={}, regChart=null, autoTimer=null;
 
-const SECTORS = ['Financials','Materials','Health Care','Consumer Staples','Industrials','Real Estate'];
-const SECTOR_PERF = [1.24,-0.82,2.10,0.45,-0.31,1.62];
+const REG_DB={
+  CBA:{reg:'Computershare',ph:'1800 022 440',drp:true,disc:'0%',spp:true,abn:'48 123 123 124'},
+  BHP:{reg:'Computershare',ph:'1300 656 780',drp:true,disc:'0%',spp:false,abn:'49 004 028 077'},
+  WBC:{reg:'Computershare',ph:'1300 551 986',drp:true,disc:'1.5%',spp:true,abn:'33 007 457 141'},
+  NAB:{reg:'Computershare',ph:'1300 367 647',drp:true,disc:'0%',spp:true,abn:'12 004 044 937'},
+  ANZ:{reg:'Computershare',ph:'1800 11 33 99',drp:true,disc:'0%',spp:true,abn:'11 005 357 522'},
+  CSL:{reg:'Computershare',ph:'1300 554 474',drp:false,disc:'N/A',spp:false,abn:'99 051 588 348'},
+  RIO:{reg:'Computershare',ph:'1800 813 292',drp:false,disc:'N/A',spp:false,abn:'96 004 458 404'},
+  WES:{reg:'Computershare',ph:'1300 558 062',drp:true,disc:'0%',spp:true,abn:'28 008 984 049'},
+  MQG:{reg:'Computershare',ph:'1800 025 095',drp:true,disc:'0%',spp:false,abn:'94 122 169 279'},
+  TLS:{reg:'Computershare',ph:'1800 033 382',drp:true,disc:'0%',spp:true,abn:'33 051 775 556'},
+  FMG:{reg:'Computershare',ph:'1800 337 865',drp:true,disc:'0%',spp:false,abn:'57 002 594 872'},
+  GMG:{reg:'Link Market Services',ph:'1800 992 777',drp:true,disc:'0%',spp:false,abn:'69 000 123 071'},
+};
 
-let portfolio = [
-  {code:'CBA',shares:150,avgCost:118.20},
-  {code:'BHP',shares:200,avgCost:45.80},
-  {code:'CSL',shares:20,avgCost:264.50},
-  {code:'WBC',shares:300,avgCost:28.40},
-];
-let watchlist = [{code:'GMG'},{code:'FMG'},{code:'NCM'}];
-let screenerFranking = '';
-let divChartInst = null;
+function setSt(state,msg){document.getElementById('sdot').className='s-dot '+state;document.getElementById('stxt').textContent=msg;}
+async function call(path){if(!W)throw new Error('Not connected');const r=await fetch(W+path);if(!r.ok){let m='HTTP '+r.status;try{const b=await r.json();m=b.error||m;}catch(_){}throw new Error(m);}return r.json();}
+function ts(){return new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});}
+function pct(v){if(v==null)return'—';return(v>=0?'<span class="up">+':'<span class="dn">')+v.toFixed(2)+'%</span>';}
+function $$(v,d=0){if(v==null)return'—';return'$'+(v<0?'-':'')+Math.abs(v).toLocaleString('en-AU',{minimumFractionDigits:d,maximumFractionDigits:d});}
 
-function getStock(code){return ASX_STOCKS.find(s=>s.code===code.toUpperCase());}
-
-function showTab(id){
-  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('section-'+id).classList.add('active');
-  document.getElementById('tab-'+id).classList.add('active');
-  if(id==='portfolio') renderPortfolio();
-  if(id==='dividends') renderDividends();
-  if(id==='ai') renderWatchlist();
+async function connect(){
+  let url=document.getElementById('wurl').value.trim().replace(/\/+$/,'');
+  if(!url){setSt('err','Enter a Worker URL');return;}
+  if(!url.startsWith('http'))url='https://'+url;
+  W=url; setSt('busy','Connecting…');
+  try{
+    const d=await call('/indices');
+    renderIndices(d.results||[]);
+    setSt('live','Live · '+ts());
+    startAuto(); fetchMovers();
+  }catch(e){setSt('err','Failed: '+e.message);W='';}
 }
 
-function pct(v){return (v>=0?'<span class="up">+':'<span class="down">')+v.toFixed(2)+'%</span>';}
-function money(v,d=0){return '$'+(v<0?'-':'')+Math.abs(v).toLocaleString('en-AU',{minimumFractionDigits:d,maximumFractionDigits:d});}
-function miniSpark(arr,up){return arr.map(v=>`<div class="mini-bar" style="height:${v}px;background:${up?'#1D9E75':'#E24B4A'}"></div>`).join('');}
-
-function initOverview(){
-  const sorted=[...ASX_STOCKS].sort((a,b)=>Math.abs(b.changePct)-Math.abs(a.changePct)).slice(0,8);
-  const sparks=[[14,16,12,18,20,17,22],[22,18,15,19,14,16,13],[12,14,16,15,18,20,22],[18,20,16,22,14,18,21],[16,14,18,12,20,16,18],[14,18,16,22,18,20,24],[20,18,16,14,18,22,20],[22,20,18,16,20,18,16]];
-  document.getElementById('movers-body').innerHTML=sorted.map((s,i)=>`
-    <tr>
-      <td><div class="ticker">${s.code}</div></td>
-      <td><div class="ticker-name">${s.name}</div></td>
-      <td style="font-weight:500">${money(s.price,2)}</td>
-      <td>${s.changePct>=0?'<span class="badge badge-up">':'<span class="badge badge-down">'}${s.changePct>=0?'+':''}${s.changePct.toFixed(2)}%</span></td>
-      <td style="color:var(--color-text-secondary)">${s.vol}</td>
-      <td><span class="badge badge-sector">${s.sector}</span></td>
-    </tr>`).join('');
-
-  document.getElementById('sector-bars').innerHTML=SECTORS.map((s,i)=>{
-    const v=SECTOR_PERF[i],abs=Math.abs(v),color=v>=0?'#1D9E75':'#E24B4A';
-    return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-      <div style="width:80px;font-size:12px;color:var(--color-text-secondary);text-align:right;overflow:hidden;white-space:nowrap;">${s}</div>
-      <div style="flex:1;height:8px;background:var(--color-background-secondary);border-radius:4px;overflow:hidden;">
-        <div style="height:8px;background:${color};border-radius:4px;width:${(abs/3)*100}%;max-width:100%"></div>
-      </div>
-      <div style="width:48px;font-size:12px;font-weight:500;color:${color}">${v>=0?'+':''}${v.toFixed(2)}%</div>
-    </div>`;
-  }).join('');
-
-  const news=[
-    {h:'RBA holds rates at 3.85% amid inflation concerns',t:'28 May'},
-    {h:'BHP declares record dividend as iron ore holds above $100/t',t:'27 May'},
-    {h:'CBA Q3 cash profit beats estimates, mortgage growth steady',t:'27 May'},
-    {h:'ASX 200 hits 5-week high on US trade deal optimism',t:'26 May'},
-    {h:'CSL completes $3.5B Behring acquisition integration',t:'25 May'},
-  ];
-  document.getElementById('news-feed').innerHTML=news.map(n=>`
-    <div style="padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary);last-child{border:none}">
-      <div style="font-size:13px;color:var(--color-text-primary);line-height:1.4">${n.h}</div>
-      <div style="font-size:11px;color:var(--color-text-tertiary);margin-top:2px">${n.t}</div>
+function renderIndices(results){
+  const names={'^AXJO':'ASX 200','^AXAO':'ASX 300','^AORD':'All Ords','AUDUSD=X':'AUD/USD'};
+  document.getElementById('idx-grid').innerHTML=results.map(r=>`
+    <div class="metric">
+      <div class="metric-label">${names[r.symbol]||r.name||r.symbol}</div>
+      <div class="metric-val">${r.symbol==='AUDUSD=X'?(r.price||0).toFixed(4):(r.price||0).toLocaleString('en-AU')}</div>
+      <div class="metric-sub ${(r.changePct||0)>=0?'up':'dn'}">${(r.changePct||0)>=0?'+':''}${(r.changePct||0).toFixed(2)}%</div>
     </div>`).join('');
+  document.getElementById('mkt-upd').textContent='Updated '+ts()+' · ~15 min delay';
+}
+
+async function loadMarket(){if(!W){alert('Connect first.');return;}try{const d=await call('/indices');renderIndices(d.results||[]);setSt('live','Live · '+ts());fetchMovers();}catch(e){setSt('err',e.message);}}
+
+async function fetchMovers(){
+  const syms='CBA.AX,BHP.AX,CSL.AX,WBC.AX,NAB.AX,ANZ.AX,RIO.AX,WES.AX,MQG.AX,TLS.AX,FMG.AX,WOW.AX,GMG.AX,TCL.AX,NCM.AX';
+  try{
+    const d=await call('/quote?symbols='+syms);
+    (d.results||[]).forEach(s=>cache[s.code]=s);
+    const sorted=[...(d.results||[])].sort((a,b)=>Math.abs(b.changePct||0)-Math.abs(a.changePct||0));
+    document.getElementById('movers-area').innerHTML=`<div class="tbl-wrap"><table><thead><tr><th>Code</th><th>Name</th><th>Price</th><th>Change</th><th>Volume</th><th>52w range</th></tr></thead><tbody>${sorted.slice(0,10).map(s=>`<tr><td><div class="tk">${s.code}</div></td><td class="tks">${s.name||''}</td><td style="font-weight:500;font-family:'DM Mono',monospace">${$$(s.price,2)}</td><td>${(s.changePct||0)>=0?'<span class="badge b-up">+':'<span class="badge b-dn">'}${(s.changePct||0).toFixed(2)}%</span></td><td style="color:var(--text3);font-family:'DM Mono',monospace">${s.volume?(s.volume/1e6).toFixed(1)+'M':'—'}</td><td style="font-size:12px;color:var(--text3);font-family:'DM Mono',monospace">${$$(s.lo52,2)} – ${$$(s.hi52,2)}</td></tr>`).join('')}</tbody></table></div>`;
+    renderSectors(d.results||[]);
+  }catch(e){document.getElementById('movers-area').innerHTML=`<span style="color:var(--text3);font-size:13px">Error: ${e.message}</span>`;}
+}
+
+const SM={CBA:'Financials',WBC:'Financials',NAB:'Financials',ANZ:'Financials',MQG:'Financials',BHP:'Materials',RIO:'Materials',FMG:'Materials',NCM:'Materials',CSL:'Health Care',WES:'Consumer Staples',WOW:'Consumer Staples',TLS:'Industrials',TCL:'Industrials',GMG:'Real Estate'};
+function renderSectors(stocks){
+  const s={};
+  stocks.forEach(q=>{const sec=SM[q.code]||'Other';if(!s[sec])s[sec]=[];if(q.changePct!=null)s[sec].push(q.changePct);});
+  document.getElementById('sector-area').innerHTML=Object.entries(s).map(([sec,vals])=>{
+    const avg=vals.reduce((a,b)=>a+b,0)/vals.length,col=avg>=0?'var(--green)':'var(--red)',w=Math.min(Math.abs(avg)/3*100,100).toFixed(0);
+    return`<div class="sec-bar-wrap"><div class="sec-bar-label">${sec}</div><div class="sec-bar-track"><div class="sec-bar-fill" style="width:${w}%;background:${col}"></div></div><div class="sec-bar-val" style="color:${col}">${avg>=0?'+':''}${avg.toFixed(2)}%</div></div>`;
+  }).join('');
+}
+
+function startAuto(){if(autoTimer)clearInterval(autoTimer);autoTimer=setInterval(()=>{const h=new Date().getHours();if(h>=10&&h<16)loadMarket();},60000);}
+
+async function refreshPortfolio(){
+  if(!portfolio.length)return;
+  const syms=portfolio.map(h=>h.code+'.AX').join(',');
+  setSt('busy','Fetching…');
+  try{const d=await call('/quote?symbols='+syms);(d.results||[]).forEach(s=>cache[s.code]=s);setSt('live','Live · '+ts());renderPortfolio();renderDividends();}
+  catch(e){setSt('err',e.message);}
 }
 
 function renderPortfolio(){
-  let total=0,cost=0,pnl=0;
+  let tot=0,cost=0,pnl=0;
   const rows=portfolio.map(h=>{
-    const s=getStock(h.code)||{price:h.avgCost,changePct:0,name:h.code};
-    const val=s.price*h.shares,c=h.avgCost*h.shares,gain=val-c,gainPct=(gain/c)*100;
-    total+=val;cost+=c;pnl+=s.changePct/100*c;
-    return {h,s,val,c,gain,gainPct};
+    const s=cache[h.code],price=s?s.price:h.avgCost,val=price*h.shares,c=h.avgCost*h.shares,gain=val-c,gainP=(gain/c)*100;
+    tot+=val;cost+=c;if(s)pnl+=((s.changePct||0)/100)*val;
+    return{h,s,val,c,gain,gainP,price};
   });
-  document.getElementById('p-total').textContent=money(total);
-  document.getElementById('p-cost').textContent=money(cost);
-  const pnlPct=(pnl/cost)*100;
-  document.getElementById('p-pnl').innerHTML=`<span class="${pnl>=0?'up':'down'}">${money(pnl,0)}</span>`;
-  document.getElementById('p-pnl-pct').innerHTML=pct(pnlPct);
-  const totalGain=total-cost;
-  document.getElementById('p-gain').innerHTML=`<span class="${totalGain>=0?'up':'down'}">${money(totalGain,0)}</span>`;
-  document.getElementById('p-gain-pct').innerHTML=pct((totalGain/cost)*100);
-
-  document.getElementById('holdings-body').innerHTML=rows.map(r=>`
-    <tr>
-      <td><div class="ticker">${r.h.code}</div><div class="ticker-name">${r.s.name||r.h.code}</div></td>
-      <td>${r.h.shares.toLocaleString()}</td>
-      <td>${money(r.h.avgCost,2)}</td>
-      <td style="font-weight:500">${money(r.s.price,2)}</td>
-      <td>${money(r.val,0)}</td>
-      <td>${r.gain>=0?'<span class="badge badge-up">':'<span class="badge badge-down">'}${r.gain>=0?'+':''}${money(r.gain,0)} (${r.gainPct>=0?'+':''}${r.gainPct.toFixed(1)}%)</span></td>
-      <td>
-        <div style="font-size:12px;color:var(--color-text-secondary)">${((r.val/total)*100).toFixed(1)}%</div>
-        <div class="holding-bar"><div class="holding-fill" style="width:${((r.val/total)*100).toFixed(1)}%"></div></div>
-      </td>
-    </tr>`).join('');
+  document.getElementById('p-tot').textContent=$$(tot);
+  document.getElementById('p-cost').textContent=$$(cost);
+  const pnlP=cost>0?(pnl/cost)*100:0;
+  document.getElementById('p-pnl').innerHTML=`<span class="${pnl>=0?'up':'dn'}">${$$(pnl,0)}</span>`;
+  document.getElementById('p-pnlp').innerHTML=pct(pnlP);
+  const g=tot-cost;
+  document.getElementById('p-gain').innerHTML=`<span class="${g>=0?'up':'dn'}">${$$(g,0)}</span>`;
+  document.getElementById('p-gainp').innerHTML=pct(cost>0?g/cost*100:0);
+  if(!rows.length){document.getElementById('hold-body').innerHTML='<tr><td colspan="7" style="color:var(--text3);text-align:center;padding:24px">No holdings yet</td></tr>';return;}
+  document.getElementById('hold-body').innerHTML=rows.map(r=>`<tr><td><div class="tk">${r.h.code}</div><div class="tks">${r.s?.name||r.h.code}</div></td><td style="font-family:'DM Mono',monospace">${r.h.shares.toLocaleString()}</td><td style="font-family:'DM Mono',monospace">${$$(r.h.avgCost,2)}</td><td style="font-weight:600;font-family:'DM Mono',monospace">${$$(r.price,2)}</td><td style="font-family:'DM Mono',monospace">${$$(r.val,0)}</td><td>${r.gain>=0?'<span class="badge b-up">+':'<span class="badge b-dn">'}${$$(r.gain,0)} (${r.gainP>=0?'+':''}${r.gainP.toFixed(1)}%)</span></td><td><div style="font-size:12px;color:var(--text3);font-family:'DM Mono',monospace">${tot>0?((r.val/tot)*100).toFixed(1):'0'}%</div><div class="hbar"><div class="hfill" style="width:${tot>0?((r.val/tot)*100).toFixed(0):'0'}%"></div></div></td></tr>`).join('');
 }
 
 function addHolding(){
-  const code=document.getElementById('add-code').value.trim().toUpperCase();
-  const shares=parseFloat(document.getElementById('add-shares').value)||0;
-  const avgCost=parseFloat(document.getElementById('add-cost').value)||0;
-  if(!code||!shares||!avgCost){alert('Enter code, shares and cost.');return;}
+  const code=document.getElementById('a-code').value.trim().toUpperCase();
+  const shares=parseFloat(document.getElementById('a-shares').value)||0;
+  const avgCost=parseFloat(document.getElementById('a-cost').value)||0;
+  if(!code||!shares||!avgCost){alert('Enter code, shares, and avg cost.');return;}
+  if(portfolio.find(h=>h.code===code)){alert(code+' already in portfolio.');return;}
   portfolio.push({code,shares,avgCost});
-  document.getElementById('add-code').value='';
-  document.getElementById('add-shares').value='';
-  document.getElementById('add-cost').value='';
-  renderPortfolio();
+  document.getElementById('a-code').value='';document.getElementById('a-shares').value='';document.getElementById('a-cost').value='';
+  renderPortfolio();if(W)refreshPortfolio();
 }
 
-function renderDividends(){
-  const divData=[
-    {code:'CBA',name:'Commonwealth Bank',exDate:'12 Feb 2026',payDate:'7 Apr 2026',amount:2.65,franking:100,grossYield:4.89,drp:true},
-    {code:'WBC',name:'Westpac Banking',exDate:'18 Mar 2026',payDate:'15 May 2026',amount:0.86,franking:100,grossYield:7.71,drp:true},
-    {code:'BHP',name:'BHP Group',exDate:'2 Mar 2026',payDate:'28 Apr 2026',amount:1.10,franking:100,grossYield:7.29,drp:false},
-    {code:'NAB',name:'Natl Australia Bank',exDate:'3 Jun 2026',payDate:'1 Jul 2026',amount:0.87,franking:100,grossYield:6.99,drp:true},
-    {code:'ANZ',name:'ANZ Group',exDate:'10 Jun 2026',payDate:'8 Jul 2026',amount:0.82,franking:100,grossYield:8.14,drp:true},
-    {code:'FMG',name:'Fortescue',exDate:'4 Apr 2026',payDate:'2 May 2026',amount:0.71,franking:100,grossYield:10.29,drp:false},
-    {code:'RIO',name:'Rio Tinto',exDate:'5 Mar 2026',payDate:'1 Apr 2026',amount:4.02,franking:0,grossYield:6.80,drp:false},
-    {code:'TLS',name:'Telstra',exDate:'26 Aug 2026',payDate:'26 Sep 2026',amount:0.09,franking:100,grossYield:6.29,drp:true},
-  ];
+function portSummary(){return portfolio.map(h=>{const s=cache[h.code];return`${h.code}: ${h.shares} shares @ $${h.avgCost}, live ${s?'$'+s.price:'unknown'}, yield ${s?.divYield?s.divYield+'%':'—'}`;}).join('; ')||'No holdings yet';}
 
-  let income=0,credits=0;
-  portfolio.forEach(h=>{
-    const d=divData.find(d=>d.code===h.code);
-    if(d){income+=d.amount*2*h.shares;credits+=(d.franking/100)*(d.amount*2*h.shares)*(30/70);}
-  });
-  document.getElementById('div-income').textContent=money(income,0);
-  document.getElementById('div-credits').textContent=money(credits,0);
-  const avgY=portfolio.length?portfolio.reduce((a,h)=>{const d=divData.find(x=>x.code===h.code);return a+(d?d.grossYield:0);},0)/portfolio.length:0;
-  document.getElementById('div-yield').textContent=avgY.toFixed(1)+'%';
-
-  const future=divData.filter(d=>{const dt=new Date(d.exDate);return dt>new Date();}).sort((a,b)=>new Date(a.exDate)-new Date(b.exDate));
-  if(future.length){document.getElementById('div-next').textContent=future[0].exDate;document.getElementById('div-next-code').textContent=future[0].code;}
-
-  document.getElementById('div-body').innerHTML=divData.map(d=>`
-    <tr>
-      <td class="ticker">${d.code}</td>
-      <td style="font-size:12px;color:var(--color-text-secondary)">${d.name}</td>
-      <td>${d.exDate}</td>
-      <td>${d.payDate}</td>
-      <td style="font-weight:500">${money(d.amount,2)}</td>
-      <td>${d.franking===100?'<span class="badge badge-up">100% Franked</span>':d.franking===0?'<span class="badge badge-neutral">Unfranked</span>':`<span class="badge badge-neutral">${d.franking}% Franked</span>`}</td>
-      <td class="up">${d.grossYield.toFixed(2)}%</td>
-      <td>${d.drp?'<i class="ti ti-check" style="color:#1D9E75" aria-hidden="true"></i>':'—'}</td>
-    </tr>`).join('');
-
-  if(divChartInst){divChartInst.destroy();divChartInst=null;}
-  const ctx=document.getElementById('div-chart').getContext('2d');
-  divChartInst=new Chart(ctx,{
-    type:'bar',
-    data:{
-      labels:['FY2020','FY2021','FY2022','FY2023','FY2024','FY2025(est)'],
-      datasets:[
-        {label:'Cash dividends',data:[3200,2800,4100,4800,5400,5900],backgroundColor:'#378ADD'},
-        {label:'Franking credits',data:[980,820,1400,1680,1890,2065],backgroundColor:'#1D9E75'},
-      ]
-    },
-    options:{
-      responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false}},
-      scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,ticks:{callback:v=>'$'+v.toLocaleString()}}}
-    }
-  });
+async function runScreener(){
+  if(!W){alert('Connect Worker first.');return;}
+  const raw=document.getElementById('f-syms').value.trim();
+  const syms=raw||'CBA.AX,BHP.AX,CSL.AX,WBC.AX,NAB.AX,ANZ.AX,RIO.AX,WES.AX,MQG.AX,TLS.AX,FMG.AX,WOW.AX,GMG.AX,TCL.AX,NCM.AX,ALL.AX,COH.AX,REA.AX,QBE.AX,IAG.AX';
+  const minY=parseFloat(document.getElementById('f-yld').value)||0;
+  const maxP=parseFloat(document.getElementById('f-pe').value)||9999;
+  const minC=parseFloat(document.getElementById('f-cap').value)||0;
+  const maxHi=parseFloat(document.getElementById('f-hi').value)||9999;
+  document.getElementById('scr-out').style.display='block';
+  document.getElementById('scr-loading').style.display='block';
+  document.getElementById('scr-body').innerHTML='';
+  try{
+    const d=await call('/quote?symbols='+syms);
+    document.getElementById('scr-loading').style.display='none';
+    const res=(d.results||[]).filter(s=>{
+      if(s.divYield!=null&&s.divYield<minY)return false;
+      if(s.pe!=null&&s.pe>maxP)return false;
+      if(s.mktCap!=null&&minC&&s.mktCap<minC)return false;
+      if(s.hi52&&s.price){const pctFromHi=Math.abs((s.price-s.hi52)/s.hi52*100);if(pctFromHi>maxHi)return false;}
+      return true;
+    });
+    document.getElementById('scr-cnt').textContent='('+res.length+' stocks)';
+    document.getElementById('scr-body').innerHTML=res.map(s=>{
+      const fh=s.hi52?((s.price-s.hi52)/s.hi52*100).toFixed(1):null;
+      return`<tr><td><div class="tk">${s.code}</div></td><td class="tks">${s.name||''}</td><td style="font-weight:600;font-family:'DM Mono',monospace">${$$(s.price,2)}</td><td>${pct(s.changePct)}</td><td style="font-family:'DM Mono',monospace">${s.pe!=null?s.pe.toFixed(1)+'x':'—'}</td><td>${s.divYield!=null?'<span class="up" style="font-family:\'DM Mono\',monospace">'+s.divYield.toFixed(2)+'%</span>':'—'}</td><td style="font-family:'DM Mono',monospace">${s.mktCap!=null?'$'+s.mktCap.toFixed(1)+'B':'—'}</td><td style="font-size:12px;color:var(--text3);font-family:'DM Mono',monospace">${$$(s.lo52,2)}–${$$(s.hi52,2)}${fh?'<br>'+fh+'% from hi':''}</td></tr>`;
+    }).join('');
+  }catch(e){document.getElementById('scr-loading').style.display='none';document.getElementById('scr-body').innerHTML=`<tr><td colspan="8" style="color:var(--text3);text-align:center;padding:16px">Error: ${e.message}</td></tr>`;}
 }
 
-function runScreener(){
-  const sector=document.getElementById('f-sector').value;
-  const minYield=parseFloat(document.getElementById('f-yield').value)||0;
-  const maxPE=parseFloat(document.getElementById('f-pe').value)||999;
-  const minCap=parseFloat(document.getElementById('f-cap').value)||0;
-
-  let results=ASX_STOCKS.filter(s=>{
-    if(sector&&s.sector!==sector)return false;
-    if(s.divYield<minYield)return false;
-    if(s.pe>maxPE)return false;
-    if(s.mktCap<minCap)return false;
-    if(screenerFranking==='100'&&s.franking!==100)return false;
-    if(screenerFranking==='0'&&s.franking!==0)return false;
-    if(screenerFranking==='partial'&&(s.franking===0||s.franking===100))return false;
-    return true;
-  });
-
-  document.getElementById('result-count').textContent=`(${results.length} stocks)`;
-  document.getElementById('screener-results').style.display='block';
-  document.getElementById('screener-body').innerHTML=results.map(s=>`
-    <tr>
-      <td class="ticker">${s.code}</td>
-      <td style="font-size:12px;color:var(--color-text-secondary)">${s.name}</td>
-      <td style="font-weight:500">${money(s.price,2)}</td>
-      <td>${s.pe.toFixed(1)}x</td>
-      <td class="up">${s.divYield.toFixed(1)}%</td>
-      <td>${s.franking===100?'<span class="badge badge-up">100%</span>':s.franking===0?'<span class="badge badge-neutral">0%</span>':`<span class="badge badge-neutral">${s.franking}%</span>`}</td>
-      <td>$${s.mktCap.toFixed(1)}B</td>
-      <td><span class="badge badge-sector">${s.sector}</span></td>
-    </tr>`).join('');
-}
-
-function togglePill(el,group){
-  document.querySelectorAll(`#franking-pills .pill`).forEach(p=>p.classList.remove('active'));
-  el.classList.add('active');
-  screenerFranking=el.dataset.val;
-}
-
-const REGISTRY_DATA={
-  CBA:{registry:'Computershare',address:'Yarra Falls, 452 Johnston St, Abbotsford VIC 3067',phone:'1800 022 440',drp:true,drpDiscount:'0%',spp:true,sharesOnIssue:'1,674M',topHolder:'HSBC Custody Nominees (26.2%)',abn:'48 123 123 124'},
-  BHP:{registry:'Computershare',address:'Yarra Falls, 452 Johnston St, Abbotsford VIC 3067',phone:'1300 656 780',drp:true,drpDiscount:'0%',spp:false,sharesOnIssue:'5,060M',topHolder:'HSBC Custody Nominees (14.8%)',abn:'49 004 028 077'},
-  WBC:{registry:'Computershare',address:'Yarra Falls, 452 Johnston St, Abbotsford VIC 3067',phone:'1300 551 986',drp:true,drpDiscount:'1.5%',spp:true,sharesOnIssue:'3,434M',topHolder:'HSBC Custody Nominees (18.4%)',abn:'33 007 457 141'},
-  NAB:{registry:'Computershare',address:'Yarra Falls, 452 Johnston St, Abbotsford VIC 3067',phone:'1300 367 647',drp:true,drpDiscount:'0%',spp:true,sharesOnIssue:'3,144M',topHolder:'HSBC Custody Nominees (22.1%)',abn:'12 004 044 937'},
-  ANZ:{registry:'Computershare',address:'Yarra Falls, 452 Johnston St, Abbotsford VIC 3067',phone:'1800 11 33 99',drp:true,drpDiscount:'0%',spp:true,sharesOnIssue:'3,074M',topHolder:'HSBC Custody Nominees (19.6%)',abn:'11 005 357 522'},
-  CSL:{registry:'Computershare',address:'Yarra Falls, 452 Johnston St, Abbotsford VIC 3067',phone:'1300 554 474',drp:false,drpDiscount:'N/A',spp:false,sharesOnIssue:'471M',topHolder:'HSBC Custody Nominees (11.4%)',abn:'99 051 588 348'},
-  RIO:{registry:'Computershare',address:'Yarra Falls, 452 Johnston St, Abbotsford VIC 3067',phone:'1800 813 292',drp:false,drpDiscount:'N/A',spp:false,sharesOnIssue:'372M',topHolder:'HSBC Custody Nominees (12.8%)',abn:'96 004 458 404'},
-};
-
-function lookupRegistry(){
+async function lookupReg(){
   const code=document.getElementById('reg-code').value.trim().toUpperCase();
-  const s=getStock(code);
-  const r=REGISTRY_DATA[code];
-  if(!s){alert('Stock not found in demo data. Try: CBA, BHP, CSL, WBC, NAB, ANZ, RIO');return;}
-  const rd=r||{registry:'Link Market Services',address:'Level 12, 680 George St, Sydney NSW 2000',phone:'1300 554 474',drp:false,drpDiscount:'N/A',spp:false,sharesOnIssue:'N/A',topHolder:'N/A',abn:'N/A'};
-
-  document.getElementById('registry-result').style.display='block';
-  document.getElementById('reg-metrics').innerHTML=`
-    <div class="metric"><div class="metric-label">Price</div><div class="metric-val">${money(s.price,2)}</div><div class="metric-sub ${s.changePct>=0?'up':'down'}">${s.changePct>=0?'+':''}${s.changePct.toFixed(2)}%</div></div>
-    <div class="metric"><div class="metric-label">Mkt cap</div><div class="metric-val">$${s.mktCap.toFixed(1)}B</div><div class="metric-sub">${s.sector}</div></div>
-    <div class="metric"><div class="metric-label">Div yield</div><div class="metric-val">${s.divYield.toFixed(1)}%</div><div class="metric-sub">${s.franking===100?'Fully franked':s.franking===0?'Unfranked':s.franking+'% franked'}</div></div>
-    <div class="metric"><div class="metric-label">P/E ratio</div><div class="metric-val">${s.pe.toFixed(1)}x</div><div class="metric-sub">Trailing</div></div>`;
-
-  document.getElementById('reg-details').innerHTML=`
-    <div><span style="color:var(--color-text-secondary)">Registry: </span>${rd.registry}</div>
-    <div><span style="color:var(--color-text-secondary)">Phone: </span>${rd.phone}</div>
-    <div><span style="color:var(--color-text-secondary)">ABN: </span>${rd.abn}</div>
-    <div><span style="color:var(--color-text-secondary)">Shares on issue: </span>${rd.sharesOnIssue}</div>
-    <div><span style="color:var(--color-text-secondary)">Top holder: </span>${rd.topHolder}</div>`;
-  document.getElementById('reg-drp').innerHTML=`
-    <div><span style="color:var(--color-text-secondary)">DRP available: </span>${rd.drp?'<span style="color:#1D9E75">Yes</span>':'<span style="color:#A32D2D">No</span>'}</div>
-    <div><span style="color:var(--color-text-secondary)">DRP discount: </span>${rd.drpDiscount}</div>
-    <div><span style="color:var(--color-text-secondary)">SPP: </span>${rd.spp?'<span style="color:#1D9E75">Available</span>':'N/A'}</div>
-    <div><span style="color:var(--color-text-secondary)">Address: </span><span style="font-size:12px">${rd.address}</span></div>`;
-  window._lastRegCode=code;
+  if(!code){alert('Enter an ASX code.');return;}
+  if(!W){alert('Connect Worker first.');return;}
+  document.getElementById('reg-result').style.display='block';
+  document.getElementById('reg-metrics').innerHTML='<div class="sk" style="height:80px;border-radius:8px;grid-column:span 6"></div>';
+  try{
+    const[qd,cd]=await Promise.all([call('/quote?symbols='+code+'.AX'),call('/chart?symbol='+code+'.AX&range=1y&interval=1wk')]);
+    const s=qd.results?.[0];
+    if(!s){document.getElementById('reg-metrics').innerHTML='<div style="color:var(--text3);font-size:13px">Stock not found.</div>';return;}
+    cache[s.code]=s;
+    document.getElementById('reg-metrics').innerHTML=`
+      <div class="metric"><div class="metric-label">Price</div><div class="metric-val">${$$(s.price,2)}</div><div class="metric-sub ${(s.changePct||0)>=0?'up':'dn'}">${(s.changePct||0)>=0?'+':''}${(s.changePct||0).toFixed(2)}%</div></div>
+      <div class="metric"><div class="metric-label">Mkt cap</div><div class="metric-val">${s.mktCap?'$'+s.mktCap.toFixed(1)+'B':'—'}</div><div class="metric-sub" style="color:var(--text3)">AUD</div></div>
+      <div class="metric"><div class="metric-label">Div yield</div><div class="metric-val">${s.divYield!=null?s.divYield.toFixed(2)+'%':'—'}</div><div class="metric-sub" style="color:var(--text3)">Trailing</div></div>
+      <div class="metric"><div class="metric-label">P/E ratio</div><div class="metric-val">${s.pe!=null?s.pe.toFixed(1)+'x':'—'}</div><div class="metric-sub" style="color:var(--text3)">Trailing</div></div>
+      <div class="metric"><div class="metric-label">52w high</div><div class="metric-val">${$$(s.hi52,2)}</div><div class="metric-sub dn">${s.hi52?((s.price-s.hi52)/s.hi52*100).toFixed(1)+'%':''}</div></div>
+      <div class="metric"><div class="metric-label">52w low</div><div class="metric-val">${$$(s.lo52,2)}</div><div class="metric-sub up">${s.lo52?'+'+((s.price-s.lo52)/s.lo52*100).toFixed(1)+'%':''}</div></div>`;
+    const pts=cd.points||[];
+    if(regChart){regChart.destroy();regChart=null;}
+    const ctx=document.getElementById('reg-chart').getContext('2d');
+    const col=pts.length>1&&pts[pts.length-1].close>=pts[0].close?'#00d17a':'#ff4757';
+    regChart=new Chart(ctx,{type:'line',data:{labels:pts.map(p=>p.date),datasets:[{label:code,data:pts.map(p=>p.close),borderColor:col,borderWidth:2,pointRadius:0,tension:0.3,fill:true,backgroundColor:col+'18'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{maxTicksLimit:6,font:{size:11},color:'#555d6b'},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{callback:v=>'$'+v.toLocaleString(),font:{size:11},color:'#555d6b'},grid:{color:'rgba(255,255,255,0.04)'}}}}});
+    const rd=REG_DB[code]||{reg:'Link Market Services',ph:'1300 554 474',drp:false,disc:'N/A',spp:false,abn:'N/A'};
+    document.getElementById('reg-det').innerHTML=`<div><span style="color:var(--text3)">Company&nbsp;&nbsp; </span>${s.name||code}</div><div><span style="color:var(--text3)">Registry&nbsp;&nbsp; </span>${rd.reg}</div><div><span style="color:var(--text3)">Phone&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>${rd.ph}</div><div><span style="color:var(--text3)">ABN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>${rd.abn}</div>`;
+    document.getElementById('reg-drp').innerHTML=`<div><span style="color:var(--text3)">DRP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>${rd.drp?'<span style="color:var(--green)">Available</span>':'No'}</div><div><span style="color:var(--text3)">Discount&nbsp;&nbsp; </span>${rd.disc}</div><div><span style="color:var(--text3)">SPP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>${rd.spp?'<span style="color:var(--green)">Available</span>':'N/A'}</div><div><span style="color:var(--text3)">Day range&nbsp; </span>${$$(s.dayLow,2)} – ${$$(s.dayHigh,2)}</div>`;
+    window._rc=code;
+  }catch(e){document.getElementById('reg-metrics').innerHTML=`<div style="color:var(--text3);font-size:13px">Error: ${e.message}</div>`;}
 }
 
-function renderWatchlist(){
-  document.getElementById('watchlist-body').innerHTML=watchlist.map(w=>{
-    const s=getStock(w.code);
-    if(!s)return'';
-    const signals=['Accumulate','Hold','Monitor','Buy dip','Overbought'];
-    const sig=signals[Math.floor(Math.random()*signals.length)];
-    const sigColor=sig==='Accumulate'||sig==='Buy dip'?'badge-up':sig==='Overbought'?'badge-down':'badge-neutral';
-    return`<tr>
-      <td><span class="star">★</span> <span class="ticker">${s.code}</span></td>
-      <td style="font-size:12px;color:var(--color-text-secondary)">${s.name}</td>
-      <td style="font-weight:500">${money(s.price,2)}</td>
-      <td style="color:var(--color-text-secondary)">${money(s.hi52,2)}</td>
-      <td style="color:var(--color-text-secondary)">${money(s.lo52,2)}</td>
-      <td><span class="badge ${s.analyst==='Buy'?'badge-up':s.analyst==='Sell'?'badge-down':'badge-neutral'}">${s.analyst}</span></td>
-      <td><span class="badge ${sigColor}">${sig}</span></td>
-    </tr>`;
+async function renderDividends(){
+  if(!portfolio.length){document.getElementById('div-cnt').textContent='0';return;}
+  const syms=portfolio.map(h=>h.code+'.AX').join(',');
+  try{
+    let stocks=portfolio.map(h=>cache[h.code]).filter(Boolean);
+    if(!stocks.length&&W){const d=await call('/quote?symbols='+syms);(d.results||[]).forEach(s=>cache[s.code]=s);stocks=d.results||[];}
+    let inc=0,fc=0,cost=0;
+    portfolio.forEach(h=>{const s=cache[h.code];if(s?.divYield){inc+=(s.divYield/100)*s.price*h.shares;fc+=(s.divYield/100)*s.price*h.shares*(30/70)*0.5;}cost+=h.avgCost*h.shares;});
+    const gy=cost>0?(inc/cost*100)*10/7:0;
+    document.getElementById('div-inc').textContent=$$(inc,0);
+    document.getElementById('div-yld').textContent=gy.toFixed(2)+'%';
+    document.getElementById('div-fc').textContent=$$(fc,0);
+    document.getElementById('div-cnt').textContent=stocks.filter(s=>s.divYield).length;
+    document.getElementById('div-msg').style.display='none';
+    document.getElementById('div-tbl').style.display='';
+    document.getElementById('div-body').innerHTML=stocks.map(s=>`<tr><td class="tk">${s.code}</td><td class="tks">${s.name||''}</td><td style="font-family:'DM Mono',monospace;font-weight:600">${$$(s.price,2)}</td><td>${s.divYield!=null?'<span class="up" style="font-family:\'DM Mono\',monospace">'+s.divYield.toFixed(2)+'%</span>':'—'}</td><td>${s.divYield!=null?'<span class="up" style="font-family:\'DM Mono\',monospace">'+(s.divYield*10/7).toFixed(2)+'%</span>':'—'}</td><td style="font-family:'DM Mono',monospace">${s.mktCap!=null?'$'+s.mktCap.toFixed(1)+'B':'—'}</td><td style="font-family:'DM Mono',monospace">${s.pe!=null?s.pe.toFixed(1)+'x':'—'}</td></tr>`).join('');
+  }catch(e){document.getElementById('div-msg').textContent='Error: '+e.message;document.getElementById('div-msg').style.display='';}
+}
+
+function calcFranking(){
+  const d=parseFloat(document.getElementById('fc-d').value)||0,p=parseFloat(document.getElementById('fc-p').value)||0,s=parseFloat(document.getElementById('fc-s').value)||0;
+  if(!d||!s){document.getElementById('fc-result').textContent='Enter values above to calculate.';return;}
+  const cash=d*s,fc=(p/100)*cash*(30/70),gross=cash+fc;
+  document.getElementById('fc-result').innerHTML=`<div><span style="color:var(--text3)">Cash dividend &nbsp;&nbsp;&nbsp;&nbsp; </span>${$$(cash,2)}</div><div><span style="color:var(--text3)">Franking credits (${p}%) </span><span class="up">${$$(fc,2)}</span></div><div><span style="color:var(--text3)">Gross dividend &nbsp;&nbsp;&nbsp;&nbsp; </span>${$$(gross,2)}</div><div style="font-size:11px;color:var(--text3);margin-top:8px">SMSF in pension phase may reclaim ${$$(fc,2)} as a cash refund from the ATO.</div>`;
+}
+
+async function refreshWatch(){
+  if(!watchlist.length||!W)return;
+  const syms=watchlist.map(w=>w+'.AX').join(',');
+  try{const d=await call('/quote?symbols='+syms);(d.results||[]).forEach(s=>cache[s.code]=s);renderWatch();}catch(_){}
+}
+
+function renderWatch(){
+  if(!watchlist.length){document.getElementById('watch-body').innerHTML='<tr><td colspan="8" style="color:var(--text3);text-align:center;padding:24px">Add stocks to your watchlist</td></tr>';return;}
+  document.getElementById('watch-body').innerHTML=watchlist.map(code=>{
+    const s=cache[code];
+    if(!s)return`<tr><td><span class="star">★</span> <span class="tk">${code}</span></td><td colspan="7" style="color:var(--text3);font-size:12px">Click Refresh to load live data</td></tr>`;
+    return`<tr><td><span class="star">★</span> <span class="tk">${s.code}</span></td><td class="tks">${s.name||''}</td><td style="font-weight:600;font-family:'DM Mono',monospace">${$$(s.price,2)}</td><td>${pct(s.changePct)}</td><td style="font-family:'DM Mono',monospace">${$$(s.hi52,2)}</td><td style="font-family:'DM Mono',monospace">${$$(s.lo52,2)}</td><td style="font-family:'DM Mono',monospace">${s.mktCap!=null?'$'+s.mktCap.toFixed(1)+'B':'—'}</td><td style="font-family:'DM Mono',monospace">${s.pe!=null?s.pe.toFixed(1)+'x':'—'}</td></tr>`;
   }).join('');
 }
 
 function addWatch(){
-  const code=document.getElementById('watch-input').value.trim().toUpperCase();
+  const code=document.getElementById('watch-in').value.trim().toUpperCase();
   if(!code)return;
-  if(!watchlist.find(w=>w.code===code))watchlist.push({code});
-  document.getElementById('watch-input').value='';
-  renderWatchlist();
+  if(watchlist.includes(code)){alert(code+' already in watchlist.');return;}
+  watchlist.push(code);document.getElementById('watch-in').value='';
+  renderWatch();if(W)refreshWatch();
 }
 
-async function callClaude(prompt,targetId){
-  const box=document.getElementById(targetId);
+async function askAI(prompt,boxId){
+  const rId=boxId+'-r', box=document.getElementById(boxId);
   box.style.display='block';
-  box.innerHTML='<div class="ai-loading"><i class="ti ti-loader" aria-hidden="true"></i> Analysing...</div>';
+  document.getElementById(rId).innerHTML='<div class="ai-loading"><i class="ti ti-loader spin"></i> Analysing…</div>';
   try{
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:1000,
-        system:'You are an expert ASX (Australian Securities Exchange) investment analyst. You provide clear, concise analysis about Australian stocks, sectors, dividends, franking credits, and market conditions. Keep responses to 3-5 focused paragraphs. Use Australian context — RBA rates, ASX indices, SMSF considerations, imputation credits, etc.',
-        messages:[{role:'user',content:prompt}]
-      })
-    });
-    const data=await resp.json();
-    const text=data.content?.map(c=>c.text||'').join('')||'No response.';
-    box.innerHTML=`<div class="ai-response">${text}</div>`;
-  }catch(e){box.innerHTML='<div class="ai-loading">Unable to connect to AI. Please try again.</div>';}
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:'You are an expert ASX investment analyst. Provide concise, practical analysis for Australian investors. Use Australian context — RBA, ASIC, SMSF, franking credits, ASX. 3-5 paragraphs max.',messages:[{role:'user',content:prompt}]})});
+    const d=await r.json();
+    document.getElementById(rId).innerHTML=d.content?.map(c=>c.text||'').join('')||'No response.';
+  }catch(e){document.getElementById(rId).innerHTML='<span style="color:var(--text3)">AI unavailable — try again.</span>';}
 }
 
-function analysePortfolio(){
-  const summary=portfolio.map(h=>{const s=getStock(h.code);return`${h.code}: ${h.shares} shares @ $${h.avgCost} avg cost, current $${s?s.price:'-'}`;}).join(', ');
-  callClaude(`Analyse this ASX portfolio and provide insights on diversification, risk, dividend income potential, and suggestions for improvement: ${summary}`,'portfolio-ai');
+function runAI(){const q=document.getElementById('ai-q').value.trim();if(q)askAI(q,'ai-main');}
+function qp(p){document.getElementById('ai-q').value=p;runAI();}
+
+function showTab(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  document.getElementById('tab-'+id).classList.add('active');
+  if(id==='port')renderPortfolio();
+  if(id==='div')renderDividends();
+  if(id==='watch')renderWatch();
 }
 
-function screenAI(){
-  const sector=document.getElementById('f-sector').value||'all sectors';
-  const minYield=document.getElementById('f-yield').value;
-  const maxPE=document.getElementById('f-pe').value;
-  callClaude(`Provide analysis of ASX stocks matching these screener criteria: sector=${sector}, min dividend yield=${minYield||'any'}%, max P/E=${maxPE||'any'}x. What should investors look for in these kinds of stocks, and what risks should they be aware of?`,'screener-ai');
-}
-
-function registryAI(){
-  const code=window._lastRegCode||'CBA';
-  const s=getStock(code);
-  callClaude(`Provide a concise investment overview of ${code} (${s?s.name:code}) listed on the ASX. Cover: business model, competitive position, dividend track record and franking, key risks, and current valuation context.`,'registry-ai');
-}
-
-function dividendAI(){
-  callClaude(`Analyse the dividend landscape on the ASX for income investors. Cover: which sectors offer the best combination of yield and franking credits, how imputation credits benefit Australian tax residents and SMSFs, the sustainability of high-yield payers like banks and miners, and a recommended strategy for building an income portfolio on the ASX.`,'dividend-ai');
-}
-
-function runAI(){
-  const q=document.getElementById('ai-input').value.trim();
-  if(!q)return;
-  callClaude(q,'ai-main-box');
-}
-
-function quickPrompt(p){
-  document.getElementById('ai-input').value=p;
-  runAI();
-}
-
-initOverview();
+document.getElementById('ai-q').addEventListener('keydown',e=>{if(e.key==='Enter')runAI();});
+document.getElementById('reg-code').addEventListener('keydown',e=>{if(e.key==='Enter')lookupReg();});
 </script>
+</body>
+</html>
