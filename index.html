@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ASX Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;600;700&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #080b0f;
+    --bg2: #0e1318;
+    --bg3: #141a22;
+    --border: rgba(255,255,255,0.06);
+    --text: #dde4ee;
+    --text2: #6b7b8f;
+    --text3: #2d3a48;
+    --green: #00d17a;
+    --green2: #00ff8c;
+    --amber: #f5a623;
+    --blue: #4a9cf6;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* Animated grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,209,122,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,209,122,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Radial glow */
+  body::after {
+    content: '';
+    position: fixed;
+    top: -20%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 600px;
+    background: radial-gradient(ellipse, rgba(0,209,122,0.06) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrap {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 24px;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 64px;
+    animation: fadeUp 0.8s ease both;
+  }
+
+  .logo-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .logo-mark {
+    position: relative;
+    width: 36px;
+    height: 36px;
+  }
+
+  .logo-mark::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 1.5px solid var(--green);
+    border-radius: 8px;
+    animation: borderPulse 3s ease-in-out infinite;
+  }
+
+  .logo-mark::after {
+    content: '';
+    position: absolute;
+    inset: 6px;
+    background: var(--green);
+    border-radius: 3px;
+    animation: corePulse 3s ease-in-out infinite;
+  }
+
+  @keyframes borderPulse {
+    0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(0,209,122,0); }
+    50% { opacity: 0.7; transform: scale(1.05); box-shadow: 0 0 20px rgba(0,209,122,0.2); }
+  }
+
+  @keyframes corePulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+
+  .logo-text {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+
+  .logo-text span {
+    color: var(--green);
+  }
+
+  .tagline {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text2);
+    margin-bottom: 12px;
+  }
+
+  .badge-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 3px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    color: var(--text2);
+  }
+
+  .badge.live {
+    background: rgba(0,209,122,0.08);
+    border-color: rgba(0,209,122,0.2);
+    color: var(--green);
+  }
+
+  /* Cards grid */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    width: 100%;
+    max-width: 780px;
+    animation: fadeUp 0.8s 0.15s ease both;
+  }
+
+  .card {
+    position: relative;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .card.v1::before {
+    background: radial-gradient(ellipse at top left, rgba(0,209,122,0.06), transparent 60%);
+  }
+
+  .card.v2::before {
+    background: radial-gradient(ellipse at top left, rgba(74,156,246,0.06), transparent 60%);
+  }
+
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
+
+  .card.v1:hover { border-color: rgba(0,209,122,0.25); }
+  .card.v2:hover { border-color: rgba(74,156,246,0.25); }
+
+  .card:hover::before { opacity: 1; }
+
+  .card-inner { position: relative; z-index: 1; }
+
+  .card-version {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card.v1 .card-version { color: var(--green); }
+  .card.v2 .card-version { color: var(--blue); }
+
+  .version-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .card.v1 .version-dot { background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .card.v2 .version-dot { background: var(--blue); box-shadow: 0 0 8px var(--blue); }
+
+  .card-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .card-desc {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+
+  .feature-list {
+    list-style: none;
+    margin-bottom: 24px;
+  }
+
+  .feature-list li {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text2);
+    padding: 4px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .feature-list li:last-child { border-bottom: none; }
+
+  .feature-list li::before {
+    content: '';
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .card.v1 .feature-list li::before { background: var(--green); }
+  .card.v2 .feature-list li::before { background: var(--blue); }
+
+  .card-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 9px 18px;
+    border-radius: 7px;
+    border: 1px solid;
+    transition: all 0.15s ease;
+  }
+
+  .card.v1 .card-cta {
+    background: rgba(0,209,122,0.1);
+    border-color: rgba(0,209,122,0.3);
+    color: var(--green);
+  }
+
+  .card.v1:hover .card-cta {
+    background: var(--green);
+    border-color: var(--green);
+    color: #000;
+  }
+
+  .card.v2 .card-cta {
+    background: rgba(74,156,246,0.1);
+    border-color: rgba(74,156,246,0.3);
+    color: var(--blue);
+  }
+
+  .card.v2:hover .card-cta {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: #000;
+  }
+
+  .arrow {
+    transition: transform 0.15s ease;
+  }
+
+  .card:hover .arrow { transform: translateX(4px); }
+
+  /* Corner decoration */
+  .card-corner {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 32px;
+    font-weight: 700;
+    opacity: 0.04;
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .card.v1 .card-corner { color: var(--green); }
+  .card.v2 .card-corner { color: var(--blue); }
+
+  /* Footer */
+  .footer {
+    margin-top: 52px;
+    text-align: center;
+    animation: fadeUp 0.8s 0.3s ease both;
+  }
+
+  .footer-line {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    color: var(--text3);
+    text-transform: uppercase;
+    flex-wrap: wrap;
+  }
+
+  .footer-line span { color: var(--text3); }
+  .footer-line a { color: var(--text2); text-decoration: none; transition: color 0.15s; }
+  .footer-line a:hover { color: var(--green); }
+  .sep { color: var(--text3); }
+
+  /* Ticker tape */
+  .ticker-wrap {
+    width: 100%;
+    max-width: 780px;
+    overflow: hidden;
+    margin-bottom: 48px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 0;
+    animation: fadeUp 0.8s 0.05s ease both;
+  }
+
+  .ticker-inner {
+    display: flex;
+    gap: 0;
+    animation: ticker 30s linear infinite;
+    white-space: nowrap;
+    width: max-content;
+  }
+
+  .ticker-item {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    color: var(--text2);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .ticker-item .sym { color: var(--text); font-weight: 600; }
+  .ticker-item .up { color: var(--green); }
+  .ticker-item .dn { color: #f05252; }
+  .ticker-sep { color: var(--text3); }
+
+  @keyframes ticker {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 520px) {
+    .logo-text { font-size: 22px; }
+    .card { padding: 22px; }
+    .card-title { font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo-row">
+      <div class="logo-mark"></div>
+      <div class="logo-text">ASX <span>Hub</span></div>
+    </div>
+    <div class="tagline">Australian Share Registry · Live Market Data · AI Analysis</div>
+    <div class="badge-row">
+      <span class="badge live">● live data</span>
+      <span class="badge">yahoo finance</span>
+      <span class="badge">cloudflare workers</span>
+      <span class="badge">ai powered</span>
+    </div>
+  </div>
+
+  <!-- Ticker tape -->
+  <div class="ticker-wrap">
+    <div class="ticker-inner">
+      <!-- repeated twice for seamless loop -->
+      <span class="ticker-item"><span class="sym">CBA</span> <span class="up">▲</span> <span class="up">+0.91%</span></span><span class="ticker-sep">·</span>
+      <span class="ticker-item"><span class="sym">BHP</span> <span class="dn">▼</span> <span class="dn">−1.23%</span></span><span class="ticker-sep">·</span>
+      <span class="ticker-item"><span class="sym">CSL</span> <span class="up">▲</span> <span class="up">+1.21%</span></span><span class="ticker-sep">·</span>
+      <span class="ticker-item"><span class="sym">WBC</span> <span class="up">▲</span> <span class="up">+0.69%</span></span><span class="ticker-sep">·</span>
+      <span class="ticker-item"><span class="sym">NAB</span> <span class="up">▲</span> <span class="up">+1.19%</span></span><span class="ticker-sep">·</span>
+      <span class="ticker-item"><span class="sym">ANZ</span> <span class="dn">▼</span> <span class="dn">−0.42%</span></span><span class="ticker-sep">·</span>
+      <span class="ticker-item"><span class="sym">RIO</span> <span class="up">▲</span> <span class="up">+1.54%</span></span><span class="ticker-sep">·</span>
+      <span class="ticker-item"><span class="sym">WES</span> <span class="up">▲</span> <span class="up">+1.17%</span></span><span class="ticker-sep">·</span>
+      <span class="ticker-item"><span class="sym">MQG</span> <span class="up">▲</span> <span class="up">+0.99%</span></span><span class="ticker-sep">·</span>
+      <span class="ticker-item"><span class="sym">FMG</span> <span class="dn">▼</span> <span class="dn">−1.54%</span></span><span class="ticker-sep">·</span>
+      <span class="ticker-item"><span class="sym">GMG</span> <span class="up">▲</span> <span class="up">+1.74%</span></span><span class="ticker-sep">·</span>
+      <span class="ticker-item"><span class="sym">ASX 200</span> <span class="up">▲</span> <span class="up">8,658</span></span><span class="ticker-sep">·</span>
+      <span class="ticker-item"><span class="sym">AUD/USD</span> <span class="dn">▼</span> <span class="dn">0.6532</span></span><span class="ticker-sep">·</span>
+      <!-- duplicate for loop -->
+      <span class="ticker-item"><span class="sym">CBA</span> <span class="up">▲</span> <span class="up">+0.91%</span></span><span class="ticker-sep">·</span>
+      <span class="ticker-item"><span class="sym">BHP</span> <span class="dn">▼</span> <span class="dn">−1.23%</span></span><span class="ticker-sep">·</span>
+      <span class="ticker-item"><span class="sym">CSL</span> <span class="up">▲</span> <span class="up">+1.21%</span></span><span class="ticker-sep">·</span>
+      <span class="ticker-item"><span class="sym">WBC</span> <span class="up">▲</span> <span class="up">+0.69%</span></span><span class="ticker-sep">·</span>
+      <span class="ticker-item"><span class="sym">NAB</span> <span class="up">▲</span> <span class="up">+1.19%</span></span><span class="ticker-sep">·</span>
+      <span class="ticker-item"><span class="sym">ANZ</span> <span class="dn">▼</span> <span class="dn">−0.42%</span></span><span class="ticker-sep">·</span>
+      <span class="ticker-item"><span class="sym">RIO</span> <span class="up">▲</span> <span class="up">+1.54%</span></span><span class="ticker-sep">·</span>
+      <span class="ticker-item"><span class="sym">WES</span> <span class="up">▲</span> <span class="up">+1.17%</span></span><span class="ticker-sep">·</span>
+      <span class="ticker-item"><span class="sym">MQG</span> <span class="up">▲</span> <span class="up">+0.99%</span></span><span class="ticker-sep">·</span>
+      <span class="ticker-item"><span class="sym">FMG</span> <span class="dn">▼</span> <span class="dn">−1.54%</span></span><span class="ticker-sep">·</span>
+      <span class="ticker-item"><span class="sym">GMG</span> <span class="up">▲</span> <span class="up">+1.74%</span></span><span class="ticker-sep">·</span>
+      <span class="ticker-item"><span class="sym">ASX 200</span> <span class="up">▲</span> <span class="up">8,658</span></span><span class="ticker-sep">·</span>
+      <span class="ticker-item"><span class="sym">AUD/USD</span> <span class="dn">▼</span> <span class="dn">0.6532</span></span><span class="ticker-sep">·</span>
+    </div>
+  </div>
+
+  <!-- Cards -->
+  <div class="cards">
+
+    <!-- V1 -->
+    <a href="asx-hub.html" class="card v1">
+      <div class="card-corner">V1</div>
+      <div class="card-inner">
+        <div class="card-version"><div class="version-dot"></div>Version 1 · Vanilla JS</div>
+        <div class="card-title">ASX Hub</div>
+        <div class="card-desc">Full-featured ASX dashboard built with vanilla HTML, CSS and JavaScript. No dependencies, loads instantly.</div>
+        <ul class="feature-list">
+          <li>Live market indices & top movers</li>
+          <li>Portfolio tracker with P&amp;L</li>
+          <li>Stock screener with filters</li>
+          <li>Share registry lookup</li>
+          <li>Dividends &amp; franking calculator</li>
+          <li>AI analysis via Anthropic Worker</li>
+        </ul>
+        <span class="card-cta">Open dashboard <span class="arrow">→</span></span>
+      </div>
+    </a>
+
+    <!-- V2 -->
+    <a href="asx-hub-v2-react.html" class="card v2">
+      <div class="card-corner">V2</div>
+      <div class="card-inner">
+        <div class="card-version"><div class="version-dot"></div>Version 2 · React</div>
+        <div class="card-title">ASX Hub React</div>
+        <div class="card-desc">Rebuilt as a React application with component-based architecture, Recharts price graphs, and a refined terminal aesthetic.</div>
+        <ul class="feature-list">
+          <li>React 18 with hooks architecture</li>
+          <li>Recharts interactive price history</li>
+          <li>IBM Plex Mono terminal design</li>
+          <li>All V1 features included</li>
+          <li>Cleaner state management</li>
+          <li>AI analysis via Anthropic Worker</li>
+        </ul>
+        <span class="card-cta">Open dashboard <span class="arrow">→</span></span>
+      </div>
+    </a>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="footer-line">
+      <span>ASX Hub</span>
+      <span class="sep">·</span>
+      <span>Data via Yahoo Finance (~15 min delay)</span>
+      <span class="sep">·</span>
+      <span>Powered by Cloudflare Workers</span>
+      <span class="sep">·</span>
+      <span>AI by Anthropic Claude</span>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
