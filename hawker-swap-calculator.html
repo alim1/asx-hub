@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hawker Swap Calculator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root, [data-theme="light"] {
+      --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+      --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+      --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+      --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+      --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+      --text-2xl: clamp(2rem, 1.2rem + 2.5vw, 3.5rem);
+      --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
+      --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem;
+      --space-12: 3rem; --space-16: 4rem; --space-20: 5rem;
+      --color-bg: #f7f6f2; --color-surface: #f9f8f5; --color-surface-2: #fbfbf9;
+      --color-surface-offset: #f1eeea; --color-border: #d4d1ca; --color-divider: #dcd9d5;
+      --color-text: #28251d; --color-text-muted: #6f6a61; --color-text-faint: #9e998f;
+      --color-text-inverse: #f9f8f4; --color-primary: #01696f; --color-primary-hover: #0c4e54;
+      --color-success: #437a22; --color-warning: #964219; --color-error: #a12c7b; --color-blue:#006494;
+      --radius-sm: 0.375rem; --radius-md: 0.75rem; --radius-lg: 1rem; --radius-xl: 1.5rem; --radius-full:9999px;
+      --shadow-sm: 0 1px 2px rgba(40,37,29,.06); --shadow-md: 0 12px 32px rgba(40,37,29,.08);
+      --font-display: 'Instrument Serif', Georgia, serif; --font-body: 'Inter', Arial, sans-serif;
+    }
+    [data-theme="dark"] {
+      --color-bg: #171614; --color-surface: #1c1b19; --color-surface-2: #201f1d; --color-surface-offset:#252320;
+      --color-border: #393836; --color-divider: #2a2927; --color-text: #ece8e1; --color-text-muted: #b5aea5;
+      --color-text-faint: #8a837a; --color-text-inverse: #171614; --color-primary: #63a8ad; --color-primary-hover:#7bbac0;
+      --color-success: #87bf62; --color-warning: #d58a62; --color-error: #dc79b6; --color-blue:#77afd6;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,.25); --shadow-md: 0 12px 32px rgba(0,0,0,.35);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+    body{min-height:100dvh;background:radial-gradient(circle at top right, color-mix(in srgb, var(--color-primary) 8%, transparent), transparent 32%), var(--color-bg); color:var(--color-text); font: var(--text-base)/1.6 var(--font-body)}
+    img,svg{display:block;max-width:100%}
+    button,select,input{font:inherit;color:inherit}
+    button{cursor:pointer;border:none}
+    a{color:inherit}
+    :focus-visible{outline:2px solid var(--color-primary);outline-offset:3px;border-radius:var(--radius-sm)}
+    .skip-link{position:absolute;left:-9999px;top:auto}.skip-link:focus{left:1rem;top:1rem;background:var(--color-surface);padding:.75rem 1rem;border-radius:var(--radius-md);z-index:1000}
+    .shell{width:min(1180px, calc(100% - 2rem));margin:0 auto}
+    header{position:sticky;top:0;z-index:20;backdrop-filter:blur(16px);background:color-mix(in srgb, var(--color-bg) 82%, transparent);border-bottom:1px solid color-mix(in srgb, var(--color-text) 10%, transparent)}
+    .nav{display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);padding:var(--space-4) 0}
+    .brand{display:flex;align-items:center;gap:.9rem;text-decoration:none}
+    .brand-mark{width:2.5rem;height:2.5rem;padding:.45rem;border-radius:.8rem;background:linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 18%, var(--color-surface)), var(--color-surface-2));color:var(--color-primary);box-shadow:var(--shadow-sm)}
+    .brand-text small{display:block;font-size:var(--text-xs);letter-spacing:.08em;text-transform:uppercase;color:var(--color-text-muted)}
+    .brand-text strong{font-size:var(--text-sm)}
+    .theme-toggle{display:grid;place-items:center;width:2.75rem;height:2.75rem;border-radius:999px;background:var(--color-surface);border:1px solid color-mix(in srgb, var(--color-text) 10%, transparent)}
+    main{padding:clamp(1.5rem,3vw,2.5rem) 0 var(--space-16)}
+    .hero{display:grid;grid-template-columns:1.2fr .9fr;gap:var(--space-8);align-items:start;padding:var(--space-8) 0 var(--space-10)}
+    .eyebrow{display:inline-flex;gap:.5rem;align-items:center;padding:.38rem .75rem;border-radius:999px;background:color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));color:var(--color-primary);font-size:var(--text-xs);letter-spacing:.07em;text-transform:uppercase}
+    h1{font-family:var(--font-display);font-size:clamp(2.8rem, 6vw, 5.8rem);line-height:.95;letter-spacing:-.03em;max-width:11ch;margin-top:var(--space-5)}
+    .lede{font-size:var(--text-lg);color:var(--color-text-muted);max-width:58ch;margin-top:var(--space-5)}
+    .hero-card,.panel,.insight-card,.alt-card{background:color-mix(in srgb, var(--color-surface) 92%, transparent);border:1px solid color-mix(in srgb, var(--color-text) 10%, transparent);box-shadow:var(--shadow-sm);border-radius:var(--radius-xl)}
+    .hero-card{padding:var(--space-6);display:grid;gap:var(--space-5)}
+    .hero-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-3)}
+    .stat{padding:var(--space-4);border-radius:var(--radius-lg);background:var(--color-surface-offset)}
+    .stat strong{display:block;font-size:var(--text-lg)}
+    .stat span{font-size:var(--text-xs);text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted)}
+    .layout{display:grid;grid-template-columns:1.2fr .8fr;gap:var(--space-6);align-items:start}
+    .panel{padding:var(--space-6)}
+    .panel h2{font-size:var(--text-xl);font-family:var(--font-display);margin-bottom:var(--space-5)}
+    .field-grid{display:grid;grid-template-columns:repeat(2, minmax(0,1fr));gap:var(--space-4)}
+    .field{display:grid;gap:.45rem}
+    .field label{font-size:var(--text-sm);font-weight:600}
+    select{width:100%;padding:.9rem 1rem;border-radius:var(--radius-md);border:1px solid color-mix(in srgb, var(--color-text) 12%, transparent);background:var(--color-surface-2)}
+    .swaps{display:grid;gap:var(--space-3);margin-top:var(--space-5)}
+    .swap-item{display:flex;gap:.9rem;align-items:flex-start;padding:1rem;border-radius:var(--radius-lg);background:var(--color-surface-offset);border:1px solid transparent}
+    .swap-item input{margin-top:.25rem;accent-color:var(--color-primary)}
+    .swap-copy strong{display:block;font-size:var(--text-sm)}
+    .swap-copy span{display:block;color:var(--color-text-muted);font-size:var(--text-sm)}
+    .kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-3);margin-top:var(--space-5)}
+    .kpi{padding:var(--space-4);border-radius:var(--radius-lg);background:linear-gradient(180deg, var(--color-surface-2), var(--color-surface-offset));border:1px solid color-mix(in srgb, var(--color-text) 8%, transparent)}
+    .kpi .label{font-size:var(--text-xs);text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted)}
+    .kpi .value{font-size:clamp(1.6rem,2vw,2.2rem);font-weight:800;line-height:1.05;margin:.35rem 0}
+    .delta{font-size:var(--text-sm);font-weight:600}
+    .good{color:var(--color-success)} .warn{color:var(--color-warning)} .bad{color:var(--color-error)}
+    .alerts,.ranked-list,.dish-notes{display:grid;gap:var(--space-3);margin-top:var(--space-5)}
+    .alert{padding:1rem 1rem 1rem 1.1rem;border-radius:var(--radius-lg);border-left:4px solid var(--alert-color);background:color-mix(in srgb, var(--alert-color) 10%, var(--color-surface))}
+    .alert strong{display:block;margin-bottom:.2rem}
+    .alert p{color:var(--color-text-muted);font-size:var(--text-sm)}
+    .ranked-item{display:grid;grid-template-columns:auto 1fr auto;gap:var(--space-4);align-items:center;padding:1rem;border-radius:var(--radius-lg);background:var(--color-surface-offset)}
+    .rank{width:2.15rem;height:2.15rem;border-radius:999px;display:grid;place-items:center;font-weight:800;background:color-mix(in srgb, var(--color-primary) 14%, var(--color-surface));color:var(--color-primary)}
+    .ranked-item strong{display:block}
+    .ranked-item span{display:block;font-size:var(--text-sm);color:var(--color-text-muted)}
+    .pill{padding:.4rem .65rem;border-radius:999px;font-size:var(--text-xs);text-transform:uppercase;letter-spacing:.07em;background:var(--color-surface-2);border:1px solid color-mix(in srgb, var(--color-text) 10%, transparent)}
+    .legend{display:flex;flex-wrap:wrap;gap:.65rem;margin-top:var(--space-4)}
+    .legend .pill{display:flex;gap:.4rem;align-items:center}
+    .dot{width:.65rem;height:.65rem;border-radius:999px;background:currentColor}
+    .microcopy{font-size:var(--text-sm);color:var(--color-text-muted);margin-top:var(--space-4)}
+    .notes-list{display:grid;gap:.8rem}
+    .note{padding:1rem;border-radius:var(--radius-lg);background:var(--color-surface-offset)}
+    .note strong{display:block;margin-bottom:.18rem}
+    footer{padding-top:var(--space-8);color:var(--color-text-muted);font-size:var(--text-sm)}
+    @media (max-width: 940px){
+      .hero,.layout{grid-template-columns:1fr}
+    }
+    @media (max-width: 640px){
+      .field-grid,.kpi-grid,.hero-grid{grid-template-columns:1fr}
+      h1{font-size:clamp(2.4rem, 13vw, 4rem)}
+      .shell{width:min(100% - 1rem, 1180px)}
+      .panel,.hero-card{padding:1.1rem}
+      .ranked-item{grid-template-columns:auto 1fr}
+      .ranked-item .pill{grid-column:2}
+    }
+    @media (prefers-reduced-motion: reduce){*{scroll-behavior:auto;transition:none!important}}
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header>
+    <div class="shell nav">
+      <a class="brand" href="#top" aria-label="Hawker Swap Calculator home">
+        <svg class="brand-mark" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+          <path d="M13 22c4-7 11-11 19-11 8 0 15 4 19 11" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+          <path d="M18 27h28c2 0 3 2 3 4 0 12-8 22-17 22S15 43 15 31c0-2 1-4 3-4Z" stroke="currentColor" stroke-width="4"/>
+          <path d="M24 20c0 4 3 7 8 7s8-3 8-7" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+        </svg>
+        <div class="brand-text">
+          <small>Interactive nutrition tool</small>
+          <strong>Hawker Swap Calculator</strong>
+        </div>
+      </a>
+      <button class="theme-toggle" data-theme-toggle aria-label="Switch color mode"></button>
+    </div>
+  </header>
+
+  <main id="content" class="shell">
+    <section class="hero">
+      <div>
+        <span class="eyebrow">Food court smart swaps</span>
+        <h1>See what one stall-side tweak can save.</h1>
+        <p class="lede">Pick a popular Malaysian hawker dish, turn on practical ingredient swaps, and the calculator estimates how much calories, sodium, and saturated fat you trim without leaving the food court behind.</p>
+      </div>
+      <aside class="hero-card" aria-label="How the tool works">
+        <div class="hero-grid">
+          <div class="stat"><span>Tracks</span><strong>3 nutrients</strong></div>
+          <div class="stat"><span>Compares</span><strong>Base vs swap</strong></div>
+          <div class="stat"><span>Suggests</span><strong>3 better choices</strong></div>
+        </div>
+        <div class="notes-list">
+          <div class="note"><strong>Smart alerts</strong> Flags dishes that push past daily thresholds for calories, sodium, or saturated fat.</div>
+          <div class="note"><strong>Practical swaps</strong> Uses realistic hawker-style changes like less sambal, grilled protein, or broth on the side.</div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="layout" aria-label="Calculator and guidance">
+      <section class="panel">
+        <h2>Calculator</h2>
+        <div class="field-grid">
+          <div class="field">
+            <label for="dishSelect">Choose a dish</label>
+            <select id="dishSelect"></select>
+          </div>
+          <div class="field">
+            <label for="servingSelect">Serving context</label>
+            <select id="servingSelect">
+              <option value="1">Typical serving</option>
+              <option value="0.8">Smaller portion (80%)</option>
+              <option value="1.2">Large portion (120%)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="swaps" id="swaps"></div>
+
+        <div class="kpi-grid" aria-live="polite">
+          <article class="kpi">
+            <div class="label">Calories</div>
+            <div class="value" id="caloriesValue">0 kcal</div>
+            <div class="delta" id="caloriesDelta"></div>
+          </article>
+          <article class="kpi">
+            <div class="label">Sodium</div>
+            <div class="value" id="sodiumValue">0 mg</div>
+            <div class="delta" id="sodiumDelta"></div>
+          </article>
+          <article class="kpi">
+            <div class="label">Sat fat</div>
+            <div class="value" id="satfatValue">0 g</div>
+            <div class="delta" id="satfatDelta"></div>
+          </article>
+        </div>
+
+        <div class="dish-notes" id="dishNotes"></div>
+        <p class="microcopy">Estimates are meant for stall-order decision support, not lab analysis. Actual values vary by vendor, portion size, oil use, and condiments.</p>
+      </section>
+
+      <aside class="panel">
+        <h2>Smart alerts</h2>
+        <div class="legend" aria-hidden="true">
+          <span class="pill" style="color:var(--color-success)"><span class="dot"></span>Within target</span>
+          <span class="pill" style="color:var(--color-warning)"><span class="dot"></span>Caution</span>
+          <span class="pill" style="color:var(--color-error)"><span class="dot"></span>High impact</span>
+        </div>
+        <div class="alerts" id="alerts"></div>
+
+        <h2 style="margin-top:1.5rem">Better choices nearby</h2>
+        <div class="ranked-list" id="alternatives"></div>
+      </aside>
+    </section>
+
+    <footer>
+      Nutrient thresholds used here: 2,000 kcal, 2,000 mg sodium, and 20 g saturated fat per day.
+    </footer>
+  </main>
+
+  <script>
+    const appData = {
+      thresholds: { calories: 2000, sodium: 2000, satFat: 20 },
+      dishes: [
+        {
+          id: 'nasi-lemak',
+          name: 'Nasi Lemak',
+          stall: 'Malay / mixed rice stall',
+          notes: 'Coconut rice, sambal, fried anchovies, peanuts, egg, and usually fried chicken or rendang-style protein drive both sodium and saturated fat upward.',
+          base: { calories: 780, sodium: 1680, satFat: 13.5 },
+          swaps: [
+            { id:'half-coconut-rice', label:'Ask for half coconut rice + extra cucumber', desc:'Cuts rice and coconut milk load while keeping volume.', delta:{ calories:-120, sodium:-20, satFat:-2.2 } },
+            { id:'less-sambal', label:'Request less sambal', desc:'Reduces sugar-oil-chilli mix and hidden sodium.', delta:{ calories:-55, sodium:-240, satFat:-0.6 } },
+            { id:'grilled-protein', label:'Swap fried chicken for grilled/poached chicken', desc:'Biggest fat-saving move for this dish.', delta:{ calories:-150, sodium:-250, satFat:-4.3 } },
+            { id:'skip-ikan-bilis', label:'Go easy on anchovies and peanuts', desc:'Keeps crunch but trims sodium and fat.', delta:{ calories:-65, sodium:-180, satFat:-1.1 } }
+          ],
+          alternatives:[
+            { name:'Sliced fish soup with rice', why:'Lowest sodium-to-volume ratio among common stalls and very low saturated fat.', calories:430, sodium:820, satFat:2.1 },
+            { name:'Yong tau foo in soup, no fried pieces', why:'Lets you build a higher-vegetable bowl with broth instead of oily gravies.', calories:390, sodium:760, satFat:2.6 },
+            { name:'Chicken rice, skin removed, sauce light', why:'Usually lower saturated fat than nasi lemak and easier to portion.', calories:520, sodium:980, satFat:3.5 }
+          ]
+        },
+        {
+          id: 'fried-bee-hoon',
+          name: 'Fried Bee Hoon',
+          stall: 'Economy noodles stall',
+          notes: 'Oil, soy-based sauces, and processed add-ons can make a plain-looking plate surprisingly high in sodium.',
+          base: { calories: 430, sodium: 1220, satFat: 4.2 },
+          swaps: [
+            { id:'less-oil', label:'Ask for less oil during frying', desc:'One of the easiest seller-side changes.', delta:{ calories:-70, sodium:0, satFat:-0.9 } },
+            { id:'extra-veg', label:'Add extra greens and bean sprouts', desc:'Bulks the plate up while displacing noodles.', delta:{ calories:-35, sodium:-30, satFat:-0.1 } },
+            { id:'light-soy', label:'Go easy on soy sauce and gravy', desc:'Targets the biggest sodium source.', delta:{ calories:-15, sodium:-260, satFat:0 } },
+            { id:'lean-protein', label:'Choose egg or lean chicken instead of luncheon meat', desc:'Cuts processed meat sodium and saturated fat.', delta:{ calories:-45, sodium:-210, satFat:-1.0 } }
+          ],
+          alternatives:[
+            { name:'Soup bee hoon with fish slices', why:'Keeps the noodle format but removes the stir-fry oil load.', calories:360, sodium:760, satFat:1.8 },
+            { name:'Ban mian soup', why:'Broth-based noodle option that is often lighter in oil.', calories:410, sodium:840, satFat:2.4 },
+            { name:'Mixed vegetable rice with steamed tofu and egg', why:'Lets you control sauces and spread sodium across simpler items.', calories:450, sodium:880, satFat:2.8 }
+          ]
+        },
+        {
+          id: 'char-kway-teow',
+          name: 'Char Kway Teow',
+          stall: 'Wok-fried noodles stall',
+          notes: 'The wok aroma usually comes with lard, sweet soy, and preserved ingredients that push calories and sodium up fast.',
+          base: { calories: 740, sodium: 1540, satFat: 10.1 },
+          swaps: [
+            { id:'less-noodles', label:'Half noodle portion + extra cockles/veg', desc:'Most of the calorie drop comes from starch reduction.', delta:{ calories:-130, sodium:-60, satFat:-0.6 } },
+            { id:'no-lard', label:'Ask for no extra lard or pork crackling', desc:'Helps lower saturated fat without changing the dish entirely.', delta:{ calories:-95, sodium:0, satFat:-2.8 } },
+            { id:'light-sauce', label:'Request lighter dark soy and chilli paste', desc:'Direct sodium trim.', delta:{ calories:-35, sodium:-250, satFat:-0.2 } },
+            { id:'more-bean-sprouts', label:'Extra bean sprouts instead of sausage/fishcake', desc:'Swaps a processed add-on for volume.', delta:{ calories:-80, sodium:-160, satFat:-1.7 } }
+          ],
+          alternatives:[
+            { name:'Fish ball noodle soup, sauce separate', why:'Preserves the noodle craving with far less frying fat.', calories:420, sodium:900, satFat:2.3 },
+            { name:'Kway teow soup with chicken', why:'Same noodle family, much lower oil load.', calories:400, sodium:850, satFat:2.0 },
+            { name:'Thunder tea rice', why:'Higher vegetable density and usually lower saturated fat.', calories:470, sodium:760, satFat:1.9 }
+          ]
+        },
+        {
+          id: 'mee-goreng',
+          name: 'Mee Goreng',
+          stall: 'Mamak / Indian-Muslim stall',
+          notes: 'Sweet sauces, oil, and fried tofu or sausage can turn mee goreng into a high-sodium, high-calorie plate quickly.',
+          base: { calories: 690, sodium: 1710, satFat: 8.4 },
+          swaps: [
+            { id:'less-sauce', label:'Use less sweet soy and chilli sauce', desc:'Meaningful sodium drop and some calorie savings.', delta:{ calories:-45, sodium:-310, satFat:-0.1 } },
+            { id:'egg-not-sausage', label:'Choose egg instead of sausage or luncheon meat', desc:'Reduces processed meat load.', delta:{ calories:-60, sodium:-220, satFat:-1.4 } },
+            { id:'less-oil-goreng', label:'Ask for less oil', desc:'Useful for both calories and sat fat.', delta:{ calories:-80, sodium:0, satFat:-1.2 } },
+            { id:'add-veg-goreng', label:'Add cabbage and tomato, trim noodles slightly', desc:'Improves fullness with fewer calories.', delta:{ calories:-55, sodium:-40, satFat:-0.2 } }
+          ],
+          alternatives:[
+            { name:'Mee soup with chicken', why:'Same base ingredient, lighter cooking method.', calories:430, sodium:860, satFat:2.2 },
+            { name:'Appam with dhal', why:'Usually lower oil than fried noodles and can be more portion-aware.', calories:380, sodium:620, satFat:1.6 },
+            { name:'Tandoori chicken with salad and small naan', why:'Protein-forward order with better fat profile.', calories:510, sodium:970, satFat:3.4 }
+          ]
+        },
+        {
+          id: 'nasi-goreng',
+          name: 'Nasi Goreng',
+          stall: 'Malay / Indonesian stall',
+          notes: 'Fried rice absorbs oil easily, and flavour often depends on salty sauces, fried egg, and processed toppings.',
+          base: { calories: 742, sodium: 1467, satFat: 11.3 },
+          swaps: [
+            { id:'half-rice', label:'Use less rice and add vegetables', desc:'Best calorie-saving swap for fried rice.', delta:{ calories:-125, sodium:-40, satFat:-0.4 } },
+            { id:'no-fried-egg', label:'Swap fried egg for hard-boiled egg', desc:'Small but easy saturated fat win.', delta:{ calories:-40, sodium:0, satFat:-1.1 } },
+            { id:'less-sauce-rice', label:'Light soy and ketchup usage', desc:'Cuts sodium from seasoning.', delta:{ calories:-20, sodium:-230, satFat:0 } },
+            { id:'lean-protein-rice', label:'Replace sausage with chicken breast or tofu', desc:'Trims processed meat fat and salt.', delta:{ calories:-70, sodium:-210, satFat:-1.9 } }
+          ],
+          alternatives:[
+            { name:'Plain rice with stir-fried vegetables and steamed chicken', why:'Lets you separate components and avoid the oil-heavy wok mix.', calories:520, sodium:840, satFat:2.7 },
+            { name:'Economy rice with two veg and tofu', why:'Better sodium control when gravies are limited.', calories:460, sodium:790, satFat:2.1 },
+            { name:'Soto ayam with a small rice portion', why:'Lower fat broth-based meal with strong flavour.', calories:440, sodium:860, satFat:1.8 }
+          ]
+        }
+      ]
+    };
+
+    const els = {
+      dishSelect: document.getElementById('dishSelect'),
+      servingSelect: document.getElementById('servingSelect'),
+      swaps: document.getElementById('swaps'),
+      alerts: document.getElementById('alerts'),
+      alternatives: document.getElementById('alternatives'),
+      dishNotes: document.getElementById('dishNotes'),
+      caloriesValue: document.getElementById('caloriesValue'),
+      sodiumValue: document.getElementById('sodiumValue'),
+      satfatValue: document.getElementById('satfatValue'),
+      caloriesDelta: document.getElementById('caloriesDelta'),
+      sodiumDelta: document.getElementById('sodiumDelta'),
+      satfatDelta: document.getElementById('satfatDelta')
+    };
+
+    const format = {
+      kcal: v => `${Math.round(v)} kcal`,
+      mg: v => `${Math.round(v)} mg`,
+      g: v => `${(Math.round(v * 10) / 10).toFixed(1)} g`,
+      pct: v => `${Math.round(v)}%`
+    };
+
+    function currentDish() {
+      return appData.dishes.find(d => d.id === els.dishSelect.value) || appData.dishes[0];
+    }
+
+    function selectedSwaps(dish) {
+      return dish.swaps.filter(s => document.getElementById(s.id)?.checked);
+    }
+
+    function computeDish(dish) {
+      const scale = Number(els.servingSelect.value || 1);
+      const base = {
+        calories: dish.base.calories * scale,
+        sodium: dish.base.sodium * scale,
+        satFat: dish.base.satFat * scale
+      };
+      const applied = selectedSwaps(dish);
+      const totals = { ...base };
+      applied.forEach(s => {
+        totals.calories += s.delta.calories * scale;
+        totals.sodium += s.delta.sodium * scale;
+        totals.satFat += s.delta.satFat * scale;
+      });
+      totals.calories = Math.max(0, totals.calories);
+      totals.sodium = Math.max(0, totals.sodium);
+      totals.satFat = Math.max(0, totals.satFat);
+      return { base, totals, applied, scale };
+    }
+
+    function metricTone(value, threshold) {
+      const ratio = value / threshold;
+      if (ratio >= 1) return 'bad';
+      if (ratio >= 0.75) return 'warn';
+      return 'good';
+    }
+
+    function renderDishMenu() {
+      els.dishSelect.innerHTML = appData.dishes.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+    }
+
+    function renderSwaps(dish) {
+      els.swaps.innerHTML = dish.swaps.map((swap, index) => `
+        <label class="swap-item" for="${swap.id}">
+          <input id="${swap.id}" type="checkbox" ${index === 0 ? 'checked' : ''}>
+          <div class="swap-copy">
+            <strong>${swap.label}</strong>
+            <span>${swap.desc}</span>
+          </div>
+        </label>
+      `).join('');
+      els.swaps.querySelectorAll('input').forEach(input => input.addEventListener('change', update));
+    }
+
+    function renderNotes(dish, result) {
+      const reduced = {
+        calories: result.base.calories - result.totals.calories,
+        sodium: result.base.sodium - result.totals.sodium,
+        satFat: result.base.satFat - result.totals.satFat
+      };
+      const topSwap = result.applied
+        .map(s => ({ label: s.label, score: Math.abs(s.delta.sodium) + Math.abs(s.delta.calories) + Math.abs(s.delta.satFat) * 100 }))
+        .sort((a,b) => b.score - a.score)[0];
+      els.dishNotes.innerHTML = `
+        <div class="note"><strong>Dish context</strong>${dish.notes}</div>
+        <div class="note"><strong>Estimated savings</strong>${format.kcal(reduced.calories)} fewer calories, ${format.mg(reduced.sodium)} less sodium, and ${format.g(reduced.satFat)} less saturated fat versus the selected base portion.</div>
+        <div class="note"><strong>Priority move</strong>${topSwap ? topSwap.label : 'No swaps selected yet'} delivers the strongest combined nutrient improvement right now.</div>
+      `;
+    }
+
+    function renderKPIs(result) {
+      const defs = [
+        ['calories', els.caloriesValue, els.caloriesDelta, format.kcal, appData.thresholds.calories],
+        ['sodium', els.sodiumValue, els.sodiumDelta, format.mg, appData.thresholds.sodium],
+        ['satFat', els.satfatValue, els.satfatDelta, format.g, appData.thresholds.satFat]
+      ];
+      defs.forEach(([key, valueEl, deltaEl, formatter, threshold]) => {
+        const value = result.totals[key];
+        const base = result.base[key];
+        const saved = base - value;
+        valueEl.textContent = formatter(value);
+        valueEl.className = `value ${metricTone(value, threshold)}`;
+        const ratio = Math.round((value / threshold) * 100);
+        deltaEl.className = `delta ${saved > 0 ? 'good' : metricTone(value, threshold)}`;
+        deltaEl.textContent = `${saved > 0 ? `${formatter(saved)} saved` : 'No reduction yet'} · ${ratio}% of daily limit`;
+      });
+    }
+
+    function smartAlerts(dish, result) {
+      const items = [];
+      const checks = [
+        { key:'calories', label:'Calories', value: result.totals.calories, threshold: appData.thresholds.calories, unit: format.kcal, tip:'Consider sharing the dish, asking for less rice/noodles, or pairing with clear soup.' },
+        { key:'sodium', label:'Sodium', value: result.totals.sodium, threshold: appData.thresholds.sodium, unit: format.mg, tip:'Sauces, sambal, anchovies, fishcake, and processed meats are usually the fastest sodium cuts.' },
+        { key:'satFat', label:'Saturated fat', value: result.totals.satFat, threshold: appData.thresholds.satFat, unit: format.g, tip:'Fried proteins, coconut-rich rice, lard, and processed meats are the common saturated-fat drivers.' }
+      ];
+
+      checks.forEach(check => {
+        const ratio = check.value / check.threshold;
+        if (ratio >= 1) {
+          items.push({ tone:'bad', title:`${check.label} exceeds the daily benchmark`, body:`This order is estimated at ${check.unit(check.value)}, which is above the daily guide of ${check.unit(check.threshold)}. ${check.tip}` });
+        } else if (ratio >= 0.75) {
+          items.push({ tone:'warn', title:`${check.label} is already high for one meal`, body:`At ${Math.round(ratio*100)}% of the daily benchmark, this dish can crowd out the rest of your day's intake. ${check.tip}` });
+        }
+      });
+
+      if (result.applied.length >= 2) {
+        const savedSodium = result.base.sodium - result.totals.sodium;
+        const savedSatFat = result.base.satFat - result.totals.satFat;
+        items.push({ tone:'good', title:'Smart swap combination active', body:`Your selected swaps are trimming ${format.mg(savedSodium)} sodium and ${format.g(savedSatFat)} saturated fat from the starting dish.` });
+      }
+
+      if (!items.length) {
+        items.push({ tone:'good', title:'This build stays within the key meal guardrails', body:'Nothing crosses the built-in warning levels right now, so this is a relatively moderate choice for a hawker meal.' });
+      }
+      els.alerts.innerHTML = items.map(item => `<article class="alert" style="--alert-color:${item.tone==='good'?'var(--color-success)':item.tone==='warn'?'var(--color-warning)':'var(--color-error)'}"><strong>${item.title}</strong><p>${item.body}</p></article>`).join('');
+    }
+
+    function renderAlternatives(dish) {
+      const ranked = [...dish.alternatives]
+        .map(a => ({ ...a, score: a.calories/10 + a.sodium/20 + a.satFat*20 }))
+        .sort((a,b) => a.score - b.score)
+        .slice(0,3);
+      els.alternatives.innerHTML = ranked.map((alt, idx) => `
+        <article class="ranked-item">
+          <div class="rank">${idx + 1}</div>
+          <div>
+            <strong>${alt.name}</strong>
+            <span>${alt.why}</span>
+          </div>
+          <div class="pill">${format.kcal(alt.calories)} · ${format.mg(alt.sodium)} · ${format.g(alt.satFat)} sat fat</div>
+        </article>
+      `).join('');
+    }
+
+    function update() {
+      const dish = currentDish();
+      const result = computeDish(dish);
+      renderKPIs(result);
+      renderNotes(dish, result);
+      smartAlerts(dish, result);
+      renderAlternatives(dish);
+    }
+
+    function bindDishChange() {
+      els.dishSelect.addEventListener('change', () => {
+        renderSwaps(currentDish());
+        update();
+      });
+      els.servingSelect.addEventListener('change', update);
+    }
+
+    (function initTheme(){
+      const root = document.documentElement;
+      const toggle = document.querySelector('[data-theme-toggle]');
+      let mode = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      function draw(){
+        root.setAttribute('data-theme', mode);
+        toggle.innerHTML = mode === 'dark'
+          ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>'
+          : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+        toggle.setAttribute('aria-label', `Switch to ${mode === 'dark' ? 'light' : 'dark'} mode`);
+      }
+      toggle.addEventListener('click', ()=>{ mode = mode === 'dark' ? 'light' : 'dark'; draw(); });
+      draw();
+    })();
+
+    renderDishMenu();
+    renderSwaps(appData.dishes[0]);
+    bindDishChange();
+    els.dishSelect.value = appData.dishes[0].id;
+    update();
+  </script>
+</body>
+</html>
