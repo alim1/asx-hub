@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;600;700&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
- 
+
   :root {
     --bg: #080b0f;
     --bg2: #0e1318;
@@ -21,9 +21,8 @@
     --green2: #00ff8c;
     --amber: #f5a623;
     --blue: #4a9cf6;
-    --purple: #a78bfa;
   }
- 
+
   html, body {
     height: 100%;
     background: var(--bg);
@@ -31,7 +30,8 @@
     font-family: 'IBM Plex Sans', sans-serif;
     overflow-x: hidden;
   }
- 
+
+  /* Animated grid background */
   body::before {
     content: '';
     position: fixed;
@@ -43,7 +43,8 @@
     pointer-events: none;
     z-index: 0;
   }
- 
+
+  /* Radial glow */
   body::after {
     content: '';
     position: fixed;
@@ -56,7 +57,7 @@
     pointer-events: none;
     z-index: 0;
   }
- 
+
   .wrap {
     position: relative;
     z-index: 1;
@@ -67,13 +68,14 @@
     justify-content: center;
     padding: 60px 24px;
   }
- 
+
+  /* Header */
   .header {
     text-align: center;
     margin-bottom: 64px;
     animation: fadeUp 0.8s ease both;
   }
- 
+
   .logo-row {
     display: flex;
     align-items: center;
@@ -81,13 +83,13 @@
     gap: 12px;
     margin-bottom: 20px;
   }
- 
+
   .logo-mark {
     position: relative;
     width: 36px;
     height: 36px;
   }
- 
+
   .logo-mark::before {
     content: '';
     position: absolute;
@@ -96,7 +98,7 @@
     border-radius: 8px;
     animation: borderPulse 3s ease-in-out infinite;
   }
- 
+
   .logo-mark::after {
     content: '';
     position: absolute;
@@ -105,17 +107,17 @@
     border-radius: 3px;
     animation: corePulse 3s ease-in-out infinite;
   }
- 
+
   @keyframes borderPulse {
     0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(0,209,122,0); }
     50% { opacity: 0.7; transform: scale(1.05); box-shadow: 0 0 20px rgba(0,209,122,0.2); }
   }
- 
+
   @keyframes corePulse {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.6; }
   }
- 
+
   .logo-text {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 28px;
@@ -124,9 +126,11 @@
     text-transform: uppercase;
     color: var(--text);
   }
- 
-  .logo-text span { color: var(--green); }
- 
+
+  .logo-text span {
+    color: var(--green);
+  }
+
   .tagline {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 11px;
@@ -136,7 +140,7 @@
     color: var(--text2);
     margin-bottom: 12px;
   }
- 
+
   .badge-row {
     display: flex;
     align-items: center;
@@ -144,7 +148,7 @@
     gap: 8px;
     flex-wrap: wrap;
   }
- 
+
   .badge {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 9px;
@@ -157,13 +161,14 @@
     border: 1px solid var(--border);
     color: var(--text2);
   }
- 
+
   .badge.live {
     background: rgba(0,209,122,0.08);
     border-color: rgba(0,209,122,0.2);
     color: var(--green);
   }
- 
+
+  /* Cards grid */
   .cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -172,12 +177,7 @@
     max-width: 780px;
     animation: fadeUp 0.8s 0.15s ease both;
   }
- 
-  /* Full-width card for embedded tools */
-  .card.full-width {
-    grid-column: 1 / -1;
-  }
- 
+
   .card {
     position: relative;
     background: var(--bg2);
@@ -190,7 +190,7 @@
     transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
     overflow: hidden;
   }
- 
+
   .card::before {
     content: '';
     position: absolute;
@@ -199,27 +199,27 @@
     opacity: 0;
     transition: opacity 0.2s ease;
   }
- 
-  .card.v1::before { background: radial-gradient(ellipse at top left, rgba(0,209,122,0.06), transparent 60%); }
-  .card.v2::before { background: radial-gradient(ellipse at top left, rgba(74,156,246,0.06), transparent 60%); }
-  .card.v3::before { background: radial-gradient(ellipse at top left, rgba(167,139,250,0.06), transparent 60%); }
- 
+
+  .card.v1::before {
+    background: radial-gradient(ellipse at top left, rgba(0,209,122,0.06), transparent 60%);
+  }
+
+  .card.v2::before {
+    background: radial-gradient(ellipse at top left, rgba(74,156,246,0.06), transparent 60%);
+  }
+
   .card:hover {
     transform: translateY(-3px);
     box-shadow: 0 20px 60px rgba(0,0,0,0.4);
   }
- 
-  /* Embedded card doesn't lift on hover */
-  .card.embed:hover { transform: none; }
- 
+
   .card.v1:hover { border-color: rgba(0,209,122,0.25); }
   .card.v2:hover { border-color: rgba(74,156,246,0.25); }
-  .card.v3:hover { border-color: rgba(167,139,250,0.25); }
- 
+
   .card:hover::before { opacity: 1; }
- 
+
   .card-inner { position: relative; z-index: 1; }
- 
+
   .card-version {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 9px;
@@ -231,22 +231,20 @@
     align-items: center;
     gap: 8px;
   }
- 
+
   .card.v1 .card-version { color: var(--green); }
   .card.v2 .card-version { color: var(--blue); }
-  .card.v3 .card-version { color: var(--purple); }
- 
+
   .version-dot {
     width: 6px;
     height: 6px;
     border-radius: 50%;
     flex-shrink: 0;
   }
- 
+
   .card.v1 .version-dot { background: var(--green); box-shadow: 0 0 8px var(--green); }
   .card.v2 .version-dot { background: var(--blue); box-shadow: 0 0 8px var(--blue); }
-  .card.v3 .version-dot { background: var(--purple); box-shadow: 0 0 8px var(--purple); }
- 
+
   .card-title {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 18px;
@@ -255,19 +253,19 @@
     color: var(--text);
     margin-bottom: 8px;
   }
- 
+
   .card-desc {
     font-size: 13px;
     color: var(--text2);
     line-height: 1.6;
     margin-bottom: 20px;
   }
- 
+
   .feature-list {
     list-style: none;
     margin-bottom: 24px;
   }
- 
+
   .feature-list li {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 11px;
@@ -278,9 +276,9 @@
     gap: 8px;
     border-bottom: 1px solid var(--border);
   }
- 
+
   .feature-list li:last-child { border-bottom: none; }
- 
+
   .feature-list li::before {
     content: '';
     width: 4px;
@@ -288,11 +286,10 @@
     border-radius: 50%;
     flex-shrink: 0;
   }
- 
+
   .card.v1 .feature-list li::before { background: var(--green); }
   .card.v2 .feature-list li::before { background: var(--blue); }
-  .card.v3 .feature-list li::before { background: var(--purple); }
- 
+
   .card-cta {
     display: inline-flex;
     align-items: center;
@@ -307,16 +304,38 @@
     border: 1px solid;
     transition: all 0.15s ease;
   }
- 
-  .card.v1 .card-cta { background: rgba(0,209,122,0.1); border-color: rgba(0,209,122,0.3); color: var(--green); }
-  .card.v1:hover .card-cta { background: var(--green); border-color: var(--green); color: #000; }
- 
-  .card.v2 .card-cta { background: rgba(74,156,246,0.1); border-color: rgba(74,156,246,0.3); color: var(--blue); }
-  .card.v2:hover .card-cta { background: var(--blue); border-color: var(--blue); color: #000; }
- 
-  .arrow { transition: transform 0.15s ease; }
+
+  .card.v1 .card-cta {
+    background: rgba(0,209,122,0.1);
+    border-color: rgba(0,209,122,0.3);
+    color: var(--green);
+  }
+
+  .card.v1:hover .card-cta {
+    background: var(--green);
+    border-color: var(--green);
+    color: #000;
+  }
+
+  .card.v2 .card-cta {
+    background: rgba(74,156,246,0.1);
+    border-color: rgba(74,156,246,0.3);
+    color: var(--blue);
+  }
+
+  .card.v2:hover .card-cta {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: #000;
+  }
+
+  .arrow {
+    transition: transform 0.15s ease;
+  }
+
   .card:hover .arrow { transform: translateX(4px); }
- 
+
+  /* Corner decoration */
   .card-corner {
     position: absolute;
     top: 20px;
@@ -328,38 +347,17 @@
     line-height: 1;
     pointer-events: none;
   }
- 
+
   .card.v1 .card-corner { color: var(--green); }
   .card.v2 .card-corner { color: var(--blue); }
-  .card.v3 .card-corner { color: var(--purple); }
- 
-  /* Embed card header */
-  .embed-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
- 
-  .embed-header-left { display: flex; flex-direction: column; gap: 4px; }
- 
-  .embed-iframe {
-    width: 100%;
-    height: 600px;
-    border: none;
-    border-radius: 8px;
-    background: var(--bg3);
-    display: block;
-  }
- 
+
+  /* Footer */
   .footer {
     margin-top: 52px;
     text-align: center;
     animation: fadeUp 0.8s 0.3s ease both;
   }
- 
+
   .footer-line {
     display: flex;
     align-items: center;
@@ -372,12 +370,13 @@
     text-transform: uppercase;
     flex-wrap: wrap;
   }
- 
+
   .footer-line span { color: var(--text3); }
   .footer-line a { color: var(--text2); text-decoration: none; transition: color 0.15s; }
   .footer-line a:hover { color: var(--green); }
   .sep { color: var(--text3); }
- 
+
+  /* Ticker tape */
   .ticker-wrap {
     width: 100%;
     max-width: 780px;
@@ -388,7 +387,7 @@
     padding: 8px 0;
     animation: fadeUp 0.8s 0.05s ease both;
   }
- 
+
   .ticker-inner {
     display: flex;
     gap: 0;
@@ -396,7 +395,7 @@
     white-space: nowrap;
     width: max-content;
   }
- 
+
   .ticker-item {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 10px;
@@ -407,33 +406,32 @@
     align-items: center;
     gap: 6px;
   }
- 
+
   .ticker-item .sym { color: var(--text); font-weight: 600; }
   .ticker-item .up { color: var(--green); }
   .ticker-item .dn { color: #f05252; }
   .ticker-sep { color: var(--text3); }
- 
+
   @keyframes ticker {
     0% { transform: translateX(0); }
     100% { transform: translateX(-50%); }
   }
- 
+
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(16px); }
     to { opacity: 1; transform: translateY(0); }
   }
- 
+
   @media (max-width: 520px) {
     .logo-text { font-size: 22px; }
     .card { padding: 22px; }
     .card-title { font-size: 16px; }
-    .embed-iframe { height: 500px; }
   }
 </style>
 </head>
 <body>
 <div class="wrap">
- 
+
   <!-- Header -->
   <div class="header">
     <div class="logo-row">
@@ -448,10 +446,11 @@
       <span class="badge">ai powered</span>
     </div>
   </div>
- 
+
   <!-- Ticker tape -->
   <div class="ticker-wrap">
     <div class="ticker-inner">
+      <!-- repeated twice for seamless loop -->
       <span class="ticker-item"><span class="sym">CBA</span> <span class="up">▲</span> <span class="up">+0.91%</span></span><span class="ticker-sep">·</span>
       <span class="ticker-item"><span class="sym">BHP</span> <span class="dn">▼</span> <span class="dn">−1.23%</span></span><span class="ticker-sep">·</span>
       <span class="ticker-item"><span class="sym">CSL</span> <span class="up">▲</span> <span class="up">+1.21%</span></span><span class="ticker-sep">·</span>
@@ -481,10 +480,10 @@
       <span class="ticker-item"><span class="sym">AUD/USD</span> <span class="dn">▼</span> <span class="dn">0.6532</span></span><span class="ticker-sep">·</span>
     </div>
   </div>
- 
+
   <!-- Cards -->
   <div class="cards">
- 
+
     <!-- V1 -->
     <a href="asx-hub.html" class="card v1">
       <div class="card-corner">V1</div>
@@ -503,7 +502,7 @@
         <span class="card-cta">Open dashboard <span class="arrow">→</span></span>
       </div>
     </a>
- 
+
     <!-- V2 -->
     <a href="hawker-swap-calculator.html" class="card v2">
       <div class="card-corner">V2</div>
@@ -519,15 +518,21 @@
         <span class="card-cta">Open dashboard <span class="arrow">→</span></span>
       </div>
     </a>
- 
+
     <!-- V3 -->
+    <a href="hawker-swap-calculator.html" class="card v2">
     <a href="chongqing_personal.html" class="card v2">
       <div class="card-corner">V2</div>
       <div class="card-inner">
         <div class="card-version"><div class="version-dot"></div>Version 1</div>
+        <div class="card-title">Hawker Food Swap Calculator</div>
+        <div class="card-desc">Interactive Nutrition Tool.</div>
         <div class="card-title">Chongqing Holiday</div>
         <div class="card-desc">Personal Itinerary</div>
         <ul class="feature-list">
+          <li>Food Court Smart Swap</li>
+          <li>IBM Plex Mono terminal design</li>
+          <li>Cleaner state management</li>
           <li>Accommodation</li>
           <li>Attractions</li>
           <li>Flight</li>
@@ -535,30 +540,9 @@
         <span class="card-cta">Open dashboard <span class="arrow">→</span></span>
       </div>
     </a>
- 
-    <!-- Pension Calculator — embedded full-width -->
-    <div class="card v3 embed full-width">
-      <div class="card-corner">AU</div>
-      <div class="card-inner">
-        <div class="embed-header">
-          <div class="embed-header-left">
-            <div class="card-version"><div class="version-dot"></div>Interactive Tool · Embedded</div>
-            <div class="card-title">AU Pension Calculator</div>
-          </div>
-        </div>
-        <iframe
-          src="https://claude.site/public/artifacts/400650c2-b63c-4612-a340-e64323c2414b/embed"
-          title="au_pension_calculator"
-          class="embed-iframe"
-          frameborder="0"
-          allow="clipboard-write"
-          allowfullscreen
-        ></iframe>
-      </div>
-    </div>
- 
+
   </div>
- 
+
   <!-- Footer -->
   <div class="footer">
     <div class="footer-line">
@@ -571,8 +555,7 @@
       <span>AI by Anthropic Claude</span>
     </div>
   </div>
- 
+
 </div>
 </body>
 </html>
- 
