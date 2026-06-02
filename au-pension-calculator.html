@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Australian Age Pension Calculator 2026</title>
+  <meta name="description" content="Estimate your Australian Age Pension entitlement. Includes income test, assets test, deeming rules, rent assistance, and overseas portability. Rates effective 20 March 2026." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; }
+    body {
+      font-family: 'Sora', 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 50%, #f0fdf4 100%);
+      min-height: 100vh;
+      color: #0f172a;
+      padding: 24px 16px 48px;
+    }
+
+    /* ── Layout ── */
+    .wrap { max-width: 980px; margin: 0 auto; }
+
+    .header { text-align: center; margin-bottom: 32px; }
+    .header-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: #0d9488; color: #fff; border-radius: 40px;
+      padding: 6px 18px; font-size: 11px; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 14px;
+    }
+    .header h1 {
+      font-size: clamp(24px, 5vw, 38px); font-weight: 800;
+      color: #0f172a; line-height: 1.1; margin-bottom: 8px;
+    }
+    .header p { color: #475569; font-size: 13px; }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+    @media (min-width: 720px) {
+      .main-grid.has-results { grid-template-columns: 1fr 1fr; }
+    }
+
+    .card {
+      background: #fff; border-radius: 20px;
+      padding: 28px; border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+    }
+
+    /* ── Section headings ── */
+    .section-title {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+      color: #0d9488; text-transform: uppercase;
+      border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;
+      margin: 0 0 14px;
+    }
+    .section { margin-bottom: 28px; }
+
+    /* ── Sliders ── */
+    .slider-wrap { margin-bottom: 20px; }
+    .slider-header {
+      display: flex; justify-content: space-between;
+      align-items: baseline; margin-bottom: 5px;
+    }
+    .slider-label { font-size: 13px; font-weight: 600; color: #334155; }
+    .slider-value { font-size: 15px; font-weight: 700; color: #0f766e; }
+    .slider-helper { font-size: 11px; color: #94a3b8; margin-bottom: 6px; }
+    .slider-track {
+      position: relative; height: 6px; border-radius: 4px;
+      background: #e2e8f0; margin-bottom: 4px;
+    }
+    .slider-fill {
+      position: absolute; left: 0; top: 0; height: 100%;
+      border-radius: 4px;
+      background: linear-gradient(90deg, #0d9488, #0f766e);
+      pointer-events: none;
+    }
+    .slider-thumb {
+      position: absolute; top: 50%; width: 18px; height: 18px;
+      border-radius: 50%; background: #0f766e;
+      border: 3px solid #fff; box-shadow: 0 1px 6px rgba(15,118,110,0.4);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+    .slider-track input[type=range] {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      width: 100%; opacity: 0; cursor: pointer; height: 24px;
+      margin: 0; -webkit-appearance: none;
+    }
+    .slider-minmax {
+      display: flex; justify-content: space-between; font-size: 10px; color: #cbd5e1;
+    }
+
+    /* ── Toggles ── */
+    .toggle-wrap {
+      display: flex; align-items: center; gap: 12px;
+      cursor: pointer; padding: 10px 14px; border-radius: 10px;
+      margin-bottom: 10px; transition: background 0.2s, border-color 0.2s;
+      border: 1.5px solid #e2e8f0; background: #f8fafc;
+      user-select: none;
+    }
+    .toggle-wrap.on { background: #f0fdfa; border-color: #99f6e4; }
+    .toggle-pill {
+      width: 40px; height: 22px; border-radius: 11px;
+      position: relative; background: #cbd5e1;
+      flex-shrink: 0; transition: background 0.2s;
+    }
+    .toggle-wrap.on .toggle-pill { background: #0d9488; }
+    .toggle-knob {
+      position: absolute; top: 3px; left: 3px;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+      transition: left 0.2s;
+    }
+    .toggle-wrap.on .toggle-knob { left: 21px; }
+    .toggle-text-label { font-size: 13px; font-weight: 600; color: #1e293b; }
+    .toggle-text-desc { font-size: 11px; color: #64748b; }
+
+    /* ── Calculate button ── */
+    .calc-btn {
+      width: 100%; padding: 14px 0;
+      background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+      color: #fff; border: none; border-radius: 12px;
+      font-size: 15px; font-weight: 700; cursor: pointer;
+      letter-spacing: 0.04em; font-family: 'Sora', sans-serif;
+      box-shadow: 0 4px 16px rgba(13,148,136,0.3);
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+    .calc-btn:hover { box-shadow: 0 6px 20px rgba(13,148,136,0.4); }
+    .calc-btn:active { transform: scale(0.98); }
+    .calc-btn-note { text-align: center; font-size: 10px; color: #94a3b8; margin-top: 10px; }
+
+    /* ── Results column ── */
+    .results-col { display: flex; flex-direction: column; gap: 16px; }
+
+    /* ── Hero result card ── */
+    .hero-card {
+      background: linear-gradient(135deg, #0d9488 0%, #0c4a6e 100%);
+      border-radius: 20px; padding: 28px;
+      color: #fff; box-shadow: 0 8px 32px rgba(13,148,136,0.3);
+    }
+    .hero-label { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.75; margin-bottom: 6px; }
+    .hero-amount { font-size: clamp(36px, 8vw, 52px); font-weight: 800; line-height: 1; }
+    .hero-annual { font-size: 14px; opacity: 0.85; margin-top: 6px; }
+    .hero-badge {
+      display: inline-block; margin-top: 16px;
+      background: rgba(255,255,255,0.15); border-radius: 8px;
+      padding: 5px 12px; font-size: 12px; font-weight: 600;
+    }
+
+    /* ── Not eligible card ── */
+    .ineligible-card {
+      background: #fff5f5; border: 1.5px solid #fecaca;
+      border-radius: 20px; padding: 24px;
+    }
+    .ineligible-card h3 { font-size: 18px; font-weight: 700; color: #dc2626; margin-bottom: 10px; }
+    .ineligible-card p { font-size: 13px; color: #7f1d1d; line-height: 1.6; }
+
+    /* ── Result rows ── */
+    .result-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 0; border-bottom: 1px solid #f1f5f9;
+      font-size: 13px;
+    }
+    .result-row:last-child { border-bottom: none; }
+    .result-row-label { color: #64748b; display: flex; align-items: center; gap: 6px; }
+    .result-row-dot { width: 6px; height: 6px; border-radius: 50%; background: #f59e0b; display: inline-block; }
+    .result-row-value { font-weight: 600; color: #0f766e; }
+
+    .result-total-row {
+      display: flex; justify-content: space-between;
+      padding: 10px 0 2px; border-top: 2px solid #0d9488; margin-top: 4px;
+    }
+    .result-total-label { font-weight: 700; font-size: 14px; color: #0f172a; }
+    .result-total-value { font-weight: 800; font-size: 15px; color: #0f766e; }
+
+    .result-subtotal-row {
+      display: flex; justify-content: space-between;
+      padding: 8px 0; border-top: 2px solid #e2e8f0; margin-top: 4px;
+    }
+    .result-subtotal-label { font-weight: 700; font-size: 13px; color: #0f172a; }
+    .result-subtotal-value { font-weight: 800; font-size: 13px; color: #0f766e; }
+
+    /* ── Deeming box ── */
+    .deeming-box {
+      background: #f0fdfa; border-radius: 8px;
+      padding: 10px 12px; margin: 6px 0 4px;
+      border: 1px solid #99f6e4;
+    }
+    .deeming-title { font-size: 11px; font-weight: 700; color: #0f766e; margin-bottom: 4px; }
+    .deeming-detail { font-size: 11px; color: #134e4a; line-height: 1.7; }
+
+    .income-excess-box {
+      background: #fff7ed; border-radius: 8px;
+      padding: 8px 12px; margin-top: 6px;
+      border: 1px solid #fed7aa;
+      font-size: 11px; color: #9a3412;
+    }
+
+    /* ── Info cards (overseas / tips) ── */
+    .info-card {
+      border-radius: 16px; padding: 16px 18px;
+    }
+    .info-card.overseas { background: #fffbeb; border: 1.5px solid #fde68a; }
+    .info-card.tips     { background: #f0f9ff; border: 1.5px solid #bae6fd; }
+    .info-card-title { font-weight: 700; font-size: 13px; margin-bottom: 6px; }
+    .info-card.overseas .info-card-title { color: #92400e; }
+    .info-card.tips     .info-card-title { color: #0369a1; }
+    .info-card-body { font-size: 12px; line-height: 1.6; }
+    .info-card.overseas .info-card-body { color: #78350f; }
+    .info-card.tips     .info-card-body { color: #0c4a6e; }
+
+    /* ── Threshold grid ── */
+    .threshold-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    }
+    .threshold-cell {
+      background: #fff; border-radius: 8px; padding: 8px 10px;
+      border: 1px solid #e2e8f0;
+    }
+    .threshold-cell-label { font-size: 10px; color: #94a3b8; margin-bottom: 2px; }
+    .threshold-cell-value { font-size: 12px; font-weight: 700; color: #334155; }
+
+    /* ── Disclaimer ── */
+    .disclaimer {
+      background: #f8fafc; border-radius: 12px; padding: 12px 16px;
+      border: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8; line-height: 1.6;
+    }
+    .disclaimer a { color: #0d9488; }
+
+    /* ── Reference table ── */
+    .ref-table-wrap {
+      background: #fff; border-radius: 20px; padding: 24px 28px;
+      border: 1px solid #e2e8f0; box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+      margin-top: 24px; overflow-x: auto;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    thead tr { background: #f0fdfa; }
+    th {
+      padding: 8px 12px; text-align: left;
+      color: #0f766e; font-weight: 700;
+      border-bottom: 2px solid #99f6e4;
+    }
+    td { padding: 8px 12px; border-bottom: 1px solid #f1f5f9; color: #475569; }
+    tr:nth-child(odd) td { background: #fff; }
+    tr:nth-child(even) td { background: #f8fafc; }
+    td:first-child { font-weight: 600; color: #0f172a; }
+    .table-note { font-size: 11px; color: #94a3b8; margin-top: 10px; }
+
+    /* ── Hidden ── */
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-badge">🇦🇺 Australian Government · Centrelink</div>
+    <h1>Age Pension Calculator</h1>
+    <p>Rates effective <strong>20 March 2026 – 19 September 2026</strong> · Based on Services Australia rules</p>
+  </div>
+
+  <!-- Main grid -->
+  <div class="main-grid" id="mainGrid">
+
+    <!-- ── INPUT PANEL ── -->
+    <div class="card">
+
+      <div class="section">
+        <h2 class="section-title">Your Profile</h2>
+        <div class="slider-wrap" id="sw-age"></div>
+        <div class="toggle-wrap" id="tog-couple" onclick="toggleField('isCouple')">
+          <div class="toggle-pill"><div class="toggle-knob"></div></div>
+          <div><div class="toggle-text-label">Part of a couple?</div><div class="toggle-text-desc">Includes de facto and registered relationships</div></div>
+        </div>
+        <div class="toggle-wrap" id="tog-homeowner" onclick="toggleField('isHomeowner')">
+          <div class="toggle-pill"><div class="toggle-knob"></div></div>
+          <div><div class="toggle-text-label">Own your home?</div><div class="toggle-text-desc">Primary residence is excluded from the assets test</div></div>
+        </div>
+        <div class="toggle-wrap" id="tog-overseas" onclick="toggleField('isOverseas')">
+          <div class="toggle-pill"><div class="toggle-knob"></div></div>
+          <div><div class="toggle-text-label">Living outside Australia?</div><div class="toggle-text-desc">Overseas portability rules apply</div></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2 class="section-title">Residency</h2>
+        <div class="slider-wrap" id="sw-resident"></div>
+        <div id="sw-worklife-wrap">
+          <div class="slider-wrap" id="sw-worklife"></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2 class="section-title">Income</h2>
+        <div class="slider-wrap" id="sw-income"></div>
+      </div>
+
+      <div class="section">
+        <h2 class="section-title">Assets</h2>
+        <div class="slider-wrap" id="sw-financial"></div>
+        <div class="slider-wrap" id="sw-nonfinancial"></div>
+      </div>
+
+      <div class="section">
+        <h2 class="section-title">Rent Assistance</h2>
+        <div class="toggle-wrap" id="tog-renting" onclick="toggleField('isRenting')">
+          <div class="toggle-pill"><div class="toggle-knob"></div></div>
+          <div><div class="toggle-text-label">Currently renting?</div><div class="toggle-text-desc">You may be eligible for Rent Assistance on top of the pension</div></div>
+        </div>
+        <div id="sw-rent-wrap" class="hidden">
+          <div class="slider-wrap" id="sw-rent"></div>
+        </div>
+      </div>
+
+      <button class="calc-btn" onclick="calculate()">Calculate My Pension →</button>
+      <p class="calc-btn-note">General estimate only. Not financial advice. Verify with Services Australia / Centrelink.</p>
+    </div>
+
+    <!-- ── RESULTS PANEL ── -->
+    <div class="results-col hidden" id="resultsCol"></div>
+
+  </div><!-- /main-grid -->
+
+  <!-- Reference table -->
+  <div class="ref-table-wrap">
+    <h2 class="section-title" style="margin-bottom:16px">Current Maximum Rates · 20 March 2026 – 19 September 2026</h2>
+    <table>
+      <thead>
+        <tr><th>Situation</th><th>Per Fortnight</th><th>Per Year</th><th>Base</th><th>Pension Supp.</th><th>Energy Supp.</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Single</td><td>$1,200.90</td><td>~$31,223</td><td>$1,100.30</td><td>$86.50</td><td>$14.10</td></tr>
+        <tr><td>Couple (each)</td><td>$905.20</td><td>~$23,535</td><td>$829.40</td><td>$65.20</td><td>$10.60</td></tr>
+        <tr><td>Couple (combined)</td><td>$1,810.40</td><td>~$47,070</td><td>$1,658.80</td><td>$130.40</td><td>$21.20</td></tr>
+      </tbody>
+    </table>
+    <p class="table-note">Source: Services Australia · Rates indexed twice yearly (March &amp; September)</p>
+  </div>
+
+</div><!-- /wrap -->
+
+<script>
+// ─── RATES ───────────────────────────────────────────────────────────────────
+const RATES = {
+  single:  { base:1100.30, pensionSupplement:86.50, pensionSupplementMin:46.60, energySupplement:14.10, total:1200.90 },
+  couple:  { base:829.40,  pensionSupplement:65.20, pensionSupplementMin:35.10, energySupplement:10.60, total:905.20, totalCombined:1810.40 },
+  incomeTest: { singleFreeArea:218, coupleFreeArea:380, reductionRate:0.50, singleCutoff:2619.80, coupleCutoffCombined:4000.80 },
+  assetsTest: {
+    singleHomeowner:321500,   singleNonHomeowner:579500,
+    coupleHomeowner:481500,   coupleNonHomeowner:739500,
+    singleHomeownerCutoff:722000,   singleNonHomeownerCutoff:980000,
+    coupleHomeownerCutoff:1085000,  coupleNonHomeownerCutoff:1343000,
+    taperPer1000:3.00,
+  },
+  deeming: { singleLowThreshold:64200, coupleLowThreshold:106200, lowRate:0.0125, highRate:0.0325 },
+  rentAssistance: { singleMinRent:154.80, singleMax:219.40, coupleMinRent:250.80, coupleMax:206.80, rate:0.75 },
+};
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+const state = {
+  age: 68,
+  isCouple: false,
+  isHomeowner: true,
+  isOverseas: false,
+  yearsResident: 35,
+  yearsResidentWorkingLife: 30,
+  otherIncomePa: 0,
+  financialAssets: 200000,
+  nonFinancialAssets: 30000,
+  isRenting: false,
+  fortnightlyRent: 800,
+  calculated: false,
+};
+
+// ─── FORMATTERS ───────────────────────────────────────────────────────────────
+const fmtAUD  = n => new Intl.NumberFormat('en-AU',{style:'currency',currency:'AUD',maximumFractionDigits:0}).format(n);
+const fmtAUDF = n => new Intl.NumberFormat('en-AU',{style:'currency',currency:'AUD',minimumFractionDigits:2,maximumFractionDigits:2}).format(n);
+const r2 = n => Math.round(n * 100) / 100;
+
+// ─── CALCULATION ──────────────────────────────────────────────────────────────
+function calcDeemedIncome(fin, isCouple) {
+  const thresh = isCouple ? RATES.deeming.coupleLowThreshold : RATES.deeming.singleLowThreshold;
+  return (Math.min(fin, thresh) * RATES.deeming.lowRate + Math.max(0, fin - thresh) * RATES.deeming.highRate) / 26;
+}
+
+function calculatePension(s) {
+  const res = { eligible:false, reason:'', pensionFortnight:0, annualPension:0,
+                breakdown:{}, incomeTestAmount:0, assetsTestAmount:0, limitingTest:'', warnings:[] };
+
+  if (s.age < 67) { res.reason = 'You need to be at least 67 to receive the Age Pension (current pension age from 1 July 2023).'; return res; }
+  if (s.yearsResident < 10) { res.reason = 'You need at least 10 years of Australian residence to qualify for the Age Pension.'; return res; }
+
+  const maxRate = s.isCouple ? RATES.couple.total : RATES.single.total;
+  const totalAssets = s.financialAssets + s.nonFinancialAssets;
+
+  // Assets test
+  const assetLower = s.isCouple
+    ? (s.isHomeowner ? RATES.assetsTest.coupleHomeowner : RATES.assetsTest.coupleNonHomeowner)
+    : (s.isHomeowner ? RATES.assetsTest.singleHomeowner : RATES.assetsTest.singleNonHomeowner);
+  const assetCutoff = s.isCouple
+    ? (s.isHomeowner ? RATES.assetsTest.coupleHomeownerCutoff : RATES.assetsTest.coupleNonHomeownerCutoff)
+    : (s.isHomeowner ? RATES.assetsTest.singleHomeownerCutoff : RATES.assetsTest.singleNonHomeownerCutoff);
+
+  if (totalAssets >= assetCutoff) {
+    res.reason = `Assets of ${fmtAUD(totalAssets)} exceed the cut-off of ${fmtAUD(assetCutoff)} for a ${s.isCouple?'couple':'single'} ${s.isHomeowner?'homeowner':'non-homeowner'}. Not eligible for any Age Pension.`;
+    return res;
+  }
+
+  const assetsTestPension = totalAssets <= assetLower
+    ? maxRate
+    : Math.max(0, maxRate - ((totalAssets - assetLower) / 1000) * RATES.assetsTest.taperPer1000);
+
+  // Income test
+  const deemedIncome = calcDeemedIncome(s.financialAssets, s.isCouple);
+  const totalIncomeFn = s.otherIncomeFortnight + deemedIncome;
+  const freeArea = s.isCouple ? RATES.incomeTest.coupleFreeArea : RATES.incomeTest.singleFreeArea;
+  const incomeCutoff = s.isCouple ? RATES.incomeTest.coupleCutoffCombined : RATES.incomeTest.singleCutoff;
+
+  if (totalIncomeFn >= incomeCutoff) {
+    res.reason = `Combined fortnightly income of ${fmtAUDF(totalIncomeFn)} exceeds the cut-off of ${fmtAUDF(incomeCutoff)}. Not eligible for any Age Pension.`;
+    return res;
+  }
+
+  const incomeTestPension = totalIncomeFn <= freeArea
+    ? maxRate
+    : Math.max(0, maxRate - (totalIncomeFn - freeArea) * RATES.incomeTest.reductionRate);
+
+  // Lower of two tests
+  let totalPension = Math.min(assetsTestPension, incomeTestPension);
+  const limitingTest = assetsTestPension <= incomeTestPension ? 'Assets Test' : 'Income Test';
+
+  // Overseas portability
+  let portabilityFactor = 1;
+  if (s.isOverseas) {
+    portabilityFactor = Math.min(Math.max(s.yearsResidentWorkingLife, 0), 35) / 35;
+    totalPension *= portabilityFactor;
+    res.warnings.push(`Overseas proportional rate: ${s.yearsResidentWorkingLife}/35 years = ${(portabilityFactor*100).toFixed(1)}% of eligible rate applied.`);
+  }
+
+  // Component breakdown (display only)
+  let energySupplement = 0, pensionSupplement = 0, basePension = totalPension;
+  if (!s.isOverseas && totalPension > 0) {
+    const suppMax = s.isCouple ? RATES.couple.pensionSupplement    : RATES.single.pensionSupplement;
+    const suppMin = s.isCouple ? RATES.couple.pensionSupplementMin : RATES.single.pensionSupplementMin;
+    const eSupp   = s.isCouple ? RATES.couple.energySupplement     : RATES.single.energySupplement;
+    energySupplement = eSupp;
+    pensionSupplement = Math.max(suppMin, suppMax * (totalPension / maxRate));
+    if (pensionSupplement + energySupplement > totalPension) {
+      energySupplement = 0;
+      pensionSupplement = Math.min(suppMin, totalPension);
+    }
+    basePension = totalPension - pensionSupplement - energySupplement;
+  }
+
+  // Rent assistance
+  let rentAssistance = 0;
+  if (!s.isOverseas && s.isRenting && s.fortnightlyRent > 0 && totalPension > 0) {
+    const raMin = s.isCouple ? RATES.rentAssistance.coupleMinRent : RATES.rentAssistance.singleMinRent;
+    const raMax = s.isCouple ? RATES.rentAssistance.coupleMax     : RATES.rentAssistance.singleMax;
+    if (s.fortnightlyRent > raMin)
+      rentAssistance = Math.min((s.fortnightlyRent - raMin) * RATES.rentAssistance.rate, raMax);
+  }
+
+  const totalFortnightly = totalPension + rentAssistance;
+
+  if (assetsTestPension < incomeTestPension)
+    res.warnings.push('Your pension is limited by the Assets Test. Reducing assessable assets could increase your payment.');
+  else if (incomeTestPension < assetsTestPension)
+    res.warnings.push('Your pension is limited by the Income Test. Reducing assessable income (or restructuring financial assets) could increase your payment.');
+
+  res.eligible = true;
+  res.pensionFortnight = r2(totalFortnightly);
+  res.annualPension    = r2(totalFortnightly * 26);
+  res.incomeTestAmount = r2(incomeTestPension);
+  res.assetsTestAmount = r2(assetsTestPension);
+  res.limitingTest     = limitingTest;
+  res.breakdown = {
+    basePension:           r2(basePension),
+    pensionSupplement:     r2(pensionSupplement),
+    energySupplement:      r2(energySupplement),
+    rentAssistance:        r2(rentAssistance),
+    deemedIncomeFortnight: r2(deemedIncome),
+    totalIncomeFortnight:  r2(totalIncomeFn),
+    totalAssets,
+    maxRate,
+    portabilityFactor: s.isOverseas ? portabilityFactor : null,
+    freeArea,
+    assetLower,
+    assetCutoff,
+    incomeCutoff,
+  };
+  return res;
+}
+
+// ─── SLIDER FACTORY ───────────────────────────────────────────────────────────
+function makeSlider(containerId, opts) {
+  // opts: { key, label, min, max, step, format, helper }
+  const wrap = document.getElementById(containerId);
+  if (!wrap) return;
+
+  wrap.innerHTML = `
+    <div class="slider-header">
+      <span class="slider-label">${opts.label}</span>
+      <span class="slider-value" id="sv-${opts.key}"></span>
+    </div>
+    ${opts.helper ? `<div class="slider-helper">${opts.helper}</div>` : ''}
+    <div class="slider-track" id="st-${opts.key}">
+      <div class="slider-fill" id="sf-${opts.key}"></div>
+      <input type="range" min="${opts.min}" max="${opts.max}" step="${opts.step||1}"
+             id="si-${opts.key}" oninput="onSlider('${opts.key}', this.value)" />
+      <div class="slider-thumb" id="sth-${opts.key}"></div>
+    </div>
+    <div class="slider-minmax">
+      <span id="smin-${opts.key}"></span>
+      <span id="smax-${opts.key}"></span>
+    </div>`;
+
+  // Store opts for updates
+  wrap._opts = opts;
+  updateSliderDisplay(opts.key, opts);
+}
+
+function updateSliderDisplay(key, opts) {
+  if (!opts) return;
+  const val = state[key];
+  const pct = ((val - opts.min) / (opts.max - opts.min)) * 100;
+  const fmt = opts.format || (v => v);
+
+  const sv  = document.getElementById('sv-'  + key);
+  const sf  = document.getElementById('sf-'  + key);
+  const sth = document.getElementById('sth-' + key);
+  const si  = document.getElementById('si-'  + key);
+  const smin = document.getElementById('smin-' + key);
+  const smax = document.getElementById('smax-' + key);
+
+  if (sv)  sv.textContent  = fmt(val);
+  if (sf)  sf.style.width  = pct + '%';
+  if (sth) sth.style.left  = pct + '%';
+  if (si)  si.value        = val;
+  if (smin) smin.textContent = fmt(opts.min);
+  if (smax) smax.textContent = fmt(opts.max);
+}
+
+function onSlider(key, rawVal) {
+  state[key] = Number(rawVal);
+  // Find opts — stored on the wrapper
+  const containers = {
+    age:'sw-age', yearsResident:'sw-resident', yearsResidentWorkingLife:'sw-worklife',
+    otherIncomePa:'sw-income', financialAssets:'sw-financial',
+    nonFinancialAssets:'sw-nonfinancial', fortnightlyRent:'sw-rent'
+  };
+  const wrap = document.getElementById(containers[key]);
+  if (wrap && wrap._opts) updateSliderDisplay(key, wrap._opts);
+  if (state.calculated) calculate();
+}
+
+// ─── TOGGLE HANDLER ───────────────────────────────────────────────────────────
+function toggleField(key) {
+  state[key] = !state[key];
+  const togId = { isCouple:'tog-couple', isHomeowner:'tog-homeowner', isOverseas:'tog-overseas', isRenting:'tog-renting' };
+  const el = document.getElementById(togId[key]);
+  if (el) el.classList.toggle('on', state[key]);
+
+  // Show/hide conditional sections
+  if (key === 'isOverseas') {
+    document.getElementById('sw-worklife-wrap').classList.toggle('hidden', !state.isOverseas);
+  }
+  if (key === 'isRenting') {
+    document.getElementById('sw-rent-wrap').classList.toggle('hidden', !state.isRenting || state.isOverseas);
+  }
+
+  if (state.calculated) calculate();
+}
+
+// ─── RENDER RESULTS ───────────────────────────────────────────────────────────
+function resultRow(label, value, dot) {
+  return `<div class="result-row">
+    <span class="result-row-label">${dot ? '<span class="result-row-dot"></span>' : ''}${label}</span>
+    <span class="result-row-value">${value}</span>
+  </div>`;
+}
+
+function renderResults(res) {
+  const col = document.getElementById('resultsCol');
+  const s   = state;
+
+  if (!res.eligible) {
+    col.innerHTML = `
+      <div class="ineligible-card">
+        <h3>❌ Not Eligible</h3>
+        <p>${res.reason}</p>
+      </div>`;
+    return;
+  }
+
+  const bd = res.breakdown;
+  const freeArea = s.isCouple ? RATES.incomeTest.coupleFreeArea : RATES.incomeTest.singleFreeArea;
+  const excessIncome = bd.totalIncomeFortnight - freeArea;
+
+  // Deeming detail
+  const thresh = s.isCouple ? RATES.deeming.coupleLowThreshold : RATES.deeming.singleLowThreshold;
+  const lowPart  = Math.min(s.financialAssets, thresh);
+  const highPart = Math.max(0, s.financialAssets - thresh);
+  let deemingHtml;
+  if (s.financialAssets <= 0) {
+    deemingHtml = `<p style="font-size:11px;color:#64748b">No financial assets — no deemed income.</p>`;
+  } else {
+    deemingHtml = `<div class="deeming-detail">
+      First ${fmtAUD(lowPart)} × 1.25% p.a. = ${fmtAUDF(lowPart * 0.0125 / 26)}/fn
+      ${highPart > 0 ? `<br>Next ${fmtAUD(highPart)} × 3.25% p.a. = ${fmtAUDF(highPart * 0.0325 / 26)}/fn` : ''}
+      <br><strong>Total deemed income = ${fmtAUDF(bd.deemedIncomeFortnight)}/fn</strong>
+    </div>`;
+  }
+
+  // Thresholds
+  const maxCutoff = s.isCouple
+    ? (s.isHomeowner ? RATES.assetsTest.coupleHomeownerCutoff    : RATES.assetsTest.coupleNonHomeownerCutoff)
+    : (s.isHomeowner ? RATES.assetsTest.singleHomeownerCutoff    : RATES.assetsTest.singleNonHomeownerCutoff);
+  const incomeCutoff = s.isCouple ? RATES.incomeTest.coupleCutoffCombined : RATES.incomeTest.singleCutoff;
+
+  // Warnings
+  const warningsHtml = res.warnings.length ? `
+    <div class="info-card tips">
+      <div class="info-card-title">💡 Tips</div>
+      <div class="info-card-body">${res.warnings.map(w=>`• ${w}`).join('<br>')}</div>
+    </div>` : '';
+
+  // Overseas
+  const overseasHtml = s.isOverseas ? `
+    <div class="info-card overseas">
+      <div class="info-card-title">🌏 Overseas Portability</div>
+      <div class="info-card-body">
+        Working-life residence: <strong>${s.yearsResidentWorkingLife} / 35 years</strong> =
+        <strong>${(bd.portabilityFactor*100).toFixed(1)}%</strong> of eligible rate applied.<br>
+        After 6 weeks overseas: Pension Supplement reduces to base amount; Energy Supplement &amp; concession cards cease.<br>
+        After 26 weeks: proportional rate applies based on working-life residence.
+      </div>
+    </div>` : '';
+
+  col.innerHTML = `
+    <!-- Hero -->
+    <div class="hero-card">
+      <div class="hero-label">Estimated Fortnightly Payment</div>
+      <div class="hero-amount">${fmtAUDF(res.pensionFortnight)}</div>
+      <div class="hero-annual">≈ ${fmtAUD(res.annualPension)} per year</div>
+      <div class="hero-badge">Limited by: ${res.limitingTest}</div>
+    </div>
+
+    <!-- Means tests -->
+    <div class="card" style="padding:20px 20px 12px">
+      <h2 class="section-title">Means Tests</h2>
+      ${resultRow('Income Test result', fmtAUDF(res.incomeTestAmount)+'/fn', res.limitingTest==='Income Test')}
+      ${resultRow('Assets Test result', fmtAUDF(res.assetsTestAmount)+'/fn', res.limitingTest==='Assets Test')}
+      <p style="font-size:11px;color:#94a3b8;margin-top:10px">🟡 = limiting test (lower amount is used)</p>
+    </div>
+
+    <!-- Payment breakdown -->
+    <div class="card" style="padding:20px 20px 14px">
+      <h2 class="section-title">Payment Breakdown (Fortnightly)</h2>
+      ${resultRow('Base pension', fmtAUDF(bd.basePension))}
+      ${!s.isOverseas ? resultRow('+ Pension supplement', fmtAUDF(bd.pensionSupplement)) : ''}
+      ${!s.isOverseas ? resultRow('+ Energy supplement', fmtAUDF(bd.energySupplement)) : ''}
+      <div class="result-subtotal-row">
+        <span class="result-subtotal-label">= Pension subtotal</span>
+        <span class="result-subtotal-value">${fmtAUDF(bd.basePension + bd.pensionSupplement + bd.energySupplement)}</span>
+      </div>
+      ${bd.rentAssistance > 0 ? resultRow('+ Rent assistance (separate)', fmtAUDF(bd.rentAssistance)) : ''}
+      <div class="result-total-row">
+        <span class="result-total-label">Total per fortnight</span>
+        <span class="result-total-value">${fmtAUDF(res.pensionFortnight)}</span>
+      </div>
+    </div>
+
+    <!-- Income & deeming -->
+    <div class="card" style="padding:20px 20px 14px">
+      <h2 class="section-title">Income Test Detail (Fortnightly)</h2>
+      ${resultRow('Other assessable income (entered)', fmtAUDF(s.otherIncomePa / 26))}
+      <div class="deeming-box">
+        <div class="deeming-title">🏦 Deeming on financial assets (${fmtAUD(s.financialAssets)})</div>
+        ${deemingHtml}
+      </div>
+      ${resultRow('Total assessable income (other + deemed)', fmtAUDF(bd.totalIncomeFortnight))}
+      ${resultRow('Income free area', fmtAUDF(freeArea))}
+      ${excessIncome > 0 ? `
+        <div class="income-excess-box">
+          Income <strong>${fmtAUDF(bd.totalIncomeFortnight)}</strong> exceeds free area
+          <strong>${fmtAUDF(freeArea)}</strong> by <strong>${fmtAUDF(excessIncome)}</strong>.
+          Pension reduced by 50¢ per $1 excess = <strong>–${fmtAUDF(excessIncome * 0.5)}/fn</strong>.
+        </div>` : ''}
+    </div>
+
+    ${overseasHtml}
+    ${warningsHtml}
+
+    <!-- Thresholds -->
+    <div class="card" style="background:#f8fafc;padding:16px 18px">
+      <h2 class="section-title" style="color:#64748b">Your Thresholds (March 2026)</h2>
+      <div class="threshold-grid">
+        <div class="threshold-cell"><div class="threshold-cell-label">Full pension max</div><div class="threshold-cell-value">${fmtAUDF(bd.maxRate)}/fn</div></div>
+        <div class="threshold-cell"><div class="threshold-cell-label">Assets: full pension below</div><div class="threshold-cell-value">${fmtAUD(bd.assetLower)}</div></div>
+        <div class="threshold-cell"><div class="threshold-cell-label">Assets: cut-off</div><div class="threshold-cell-value">${fmtAUD(maxCutoff)}</div></div>
+        <div class="threshold-cell"><div class="threshold-cell-label">Income: cut-off</div><div class="threshold-cell-value">${fmtAUDF(incomeCutoff)}/fn</div></div>
+      </div>
+    </div>
+
+    <!-- Disclaimer -->
+    <div class="disclaimer">
+      <strong>Disclaimer:</strong> This calculator provides general estimates based on Services Australia rules
+      effective 20 March 2026. It does not account for all circumstances (e.g. gifting rules, granny flat
+      interest, certain visa types, social security agreements). Always verify your entitlement with
+      <a href="https://www.servicesaustralia.gov.au" target="_blank" rel="noreferrer">Services Australia</a>
+      or a licensed financial adviser.
+    </div>
+  `;
+}
+
+// ─── CALCULATE ────────────────────────────────────────────────────────────────
+function calculate() {
+  const params = {
+    age:                    state.age,
+    isCouple:               state.isCouple,
+    isHomeowner:            state.isHomeowner,
+    isOverseas:             state.isOverseas,
+    yearsResident:          state.yearsResident,
+    yearsResidentWorkingLife: state.yearsResidentWorkingLife,
+    otherIncomeFortnight:   state.otherIncomePa / 26,
+    financialAssets:        state.financialAssets,
+    nonFinancialAssets:     state.nonFinancialAssets,
+    isRenting:              state.isRenting,
+    fortnightlyRent:        state.fortnightlyRent,
+  };
+
+  const res = calculatePension(params);
+  renderResults(res);
+
+  state.calculated = true;
+  document.getElementById('resultsCol').classList.remove('hidden');
+  document.getElementById('mainGrid').classList.add('has-results');
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+(function init() {
+  makeSlider('sw-age',         { key:'age',                    label:'Your Age',                                          min:60,  max:90,      step:1,    helper:'Age Pension age is 67+',                             format:v=>v+' yrs' });
+  makeSlider('sw-resident',    { key:'yearsResident',          label:'Total years Australian resident',                   min:0,   max:60,      step:1,    helper:'Must be 10+ years to qualify',                       format:v=>v+' yrs' });
+  makeSlider('sw-worklife',    { key:'yearsResidentWorkingLife',label:'Years resident during working life (age 16 to pension age)', min:0, max:35, step:1, helper:'35 years needed for full overseas pension',          format:v=>v+' yrs' });
+  makeSlider('sw-income',      { key:'otherIncomePa',          label:'Other annual income (excl. financial assets)',       min:0,   max:100000,  step:500,  helper:'Wages, rental income, overseas pension, etc. Deeming calculated automatically.', format:fmtAUD });
+  makeSlider('sw-financial',   { key:'financialAssets',        label:'Financial assets',                                  min:0,   max:1500000, step:5000, helper:'Bank, shares, super, managed funds. Deeming income calculated automatically.', format:fmtAUD });
+  makeSlider('sw-nonfinancial',{ key:'nonFinancialAssets',     label:'Other assessable assets',                           min:0,   max:500000,  step:2500, helper:'Vehicle, furniture, investment property (excl. primary residence if homeowner).', format:fmtAUD });
+  makeSlider('sw-rent',        { key:'fortnightlyRent',        label:'Fortnightly rent',                                  min:0,   max:2500,    step:10,   format:fmtAUDF });
+
+  // Hide working-life slider initially
+  document.getElementById('sw-worklife-wrap').classList.add('hidden');
+  document.getElementById('sw-rent-wrap').classList.add('hidden');
+
+  // Set initial toggle states (homeowner = on by default)
+  document.getElementById('tog-homeowner').classList.add('on');
+})();
+</script>
+</body>
+</html>
