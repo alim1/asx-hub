@@ -1,0 +1,1546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Salary Sacrifice Super Calculator</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --surface: #172033;
+    --surface-2: #1c2a3f;
+    --border: #334155;
+    --border-light: #3d5170;
+    --text-primary: #e2e8f0;
+    --text-secondary: #C0CCDA;
+    --text-muted: #7A8EA6;
+    --accent: #38bdf8;
+    --accent-dim: #0ea5e9;
+    --green: #34d399;
+    --green-dim: #10b981;
+    --amber: #fbbf24;
+    --amber-dim: #f59e0b;
+    --red: #f87171;
+    --red-dim: #ef4444;
+    --purple: #a78bfa;
+    --input-bg: #162032;
+    --input-border: #334155;
+    --input-focus: #38bdf8;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  .page-header {
+    background: linear-gradient(135deg, #0f172a 0%, #1a2744 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 24px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .page-header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.3px;
+  }
+
+  .page-header p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+  }
+
+  .fy-selector {
+    display: flex;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+
+  .fy-btn {
+    padding: 8px 16px;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+
+  .fy-btn.active {
+    background: var(--accent);
+    color: #0f172a;
+    font-weight: 600;
+  }
+
+  .fy-btn:hover:not(.active) { background: var(--surface-2); color: var(--text-primary); }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 0;
+    min-height: calc(100vh - 80px);
+  }
+
+  /* LEFT PANEL - INPUTS */
+  .inputs-panel {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 24px;
+    overflow-y: auto;
+    max-height: calc(100vh - 80px);
+    position: sticky;
+    top: 0;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .input-group {
+    margin-bottom: 16px;
+  }
+
+  .input-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    letter-spacing: 0.02em;
+  }
+
+  .input-row {
+    display: flex;
+    align-items: center;
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    transition: border-color 0.15s;
+  }
+
+  .input-row:focus-within {
+    border-color: var(--input-focus);
+    box-shadow: 0 0 0 3px rgba(56,189,248,0.12);
+  }
+
+  .input-prefix, .input-suffix {
+    padding: 0 10px;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 13px;
+    background: transparent;
+    user-select: none;
+  }
+
+  .input-row input, .input-row select {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-primary);
+    font-size: 14px;
+    padding: 9px 0;
+    font-family: inherit;
+    min-width: 0;
+  }
+
+  .input-row select { cursor: pointer; }
+
+  input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+  .hint {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  .auto-badge {
+    display: inline-block;
+    background: rgba(56,189,248,0.15);
+    color: var(--accent);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-left: 6px;
+    letter-spacing: 0.04em;
+  }
+
+  .divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    padding: 8px 0;
+  }
+
+  .toggle-row span {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  .toggle {
+    width: 36px; height: 20px;
+    background: var(--border);
+    border-radius: 10px;
+    position: relative;
+    transition: background 0.2s;
+    cursor: pointer;
+  }
+
+  .toggle.on { background: var(--accent); }
+
+  .toggle::after {
+    content: '';
+    position: absolute;
+    width: 16px; height: 16px;
+    background: white;
+    border-radius: 50%;
+    top: 2px; left: 2px;
+    transition: left 0.2s;
+  }
+
+  .toggle.on::after { left: 18px; }
+
+  .collapsible-body { overflow: hidden; transition: max-height 0.3s ease; }
+
+  /* RIGHT PANEL - OUTPUT */
+  .output-panel {
+    padding: 24px;
+    overflow-y: auto;
+  }
+
+  .output-grid {
+    display: grid;
+    gap: 20px;
+  }
+
+  /* CARDS */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255,255,255,0.02);
+  }
+
+  .card-icon {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .icon-blue { background: rgba(56,189,248,0.15); }
+  .icon-green { background: rgba(52,211,153,0.15); }
+  .icon-amber { background: rgba(251,191,36,0.15); }
+  .icon-purple { background: rgba(167,139,250,0.15); }
+
+  .card-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.1px;
+  }
+
+  .card-subtitle {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 1px;
+  }
+
+  .card-body { padding: 18px; }
+
+  /* TAX BREAKDOWN SECTION */
+  .tax-compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .tax-column {
+    background: var(--surface-2);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    border: 1px solid var(--border);
+  }
+
+  .tax-col-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 12px;
+  }
+
+  .tax-col-label.sacrifice { color: var(--green); }
+  .tax-col-label.baseline { color: var(--text-muted); }
+
+  .tax-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+    gap: 8px;
+  }
+
+  .tax-line-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+  }
+
+  .tax-line-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-align: right;
+  }
+
+  .tax-line-value.negative { color: var(--red); }
+  .tax-line-value.positive { color: var(--green); }
+
+  .tax-separator { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
+
+  .tax-total-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .tax-total-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .tax-total-value {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--accent);
+  }
+
+  .tax-bracket-table {
+    background: var(--input-bg);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .tbr {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 8px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+  }
+
+  .tbr:last-child { border-bottom: none; }
+  .tbr.header { background: rgba(56,189,248,0.06); }
+  .tbr-label { font-size: 12px; color: var(--text-secondary); }
+  .tbr-label.header-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+  .tbr-rate { font-size: 12px; color: var(--text-muted); text-align: right; }
+  .tbr-amount { font-size: 12px; font-weight: 600; color: var(--text-primary); text-align: right; min-width: 60px; }
+  .tbr-amount.zero { color: var(--text-muted); }
+
+  /* SAVINGS SECTION */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .stat-box {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    text-align: center;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+
+  .stat-value {
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1.1;
+  }
+
+  .stat-value.green { color: var(--green); }
+  .stat-value.amber { color: var(--amber); }
+  .stat-value.red { color: var(--red); }
+  .stat-value.accent { color: var(--accent); }
+
+  .stat-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  /* PER-$1000 TABLE */
+  .comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .comparison-table th {
+    background: rgba(56,189,248,0.08);
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .comparison-table td {
+    padding: 11px 14px;
+    font-size: 13px;
+    border-bottom: 1px solid rgba(51,65,85,0.6);
+  }
+
+  .comparison-table tr:last-child td { border-bottom: none; }
+
+  .comparison-table tr.highlight-row td {
+    background: rgba(52,211,153,0.07);
+    font-weight: 700;
+    color: var(--green);
+    font-size: 14px;
+  }
+
+  .td-scenario { color: var(--text-secondary); }
+  .td-value { text-align: right; font-weight: 600; color: var(--text-primary); }
+  .td-value.red { color: var(--red); }
+  .td-value.green { color: var(--green); }
+
+  /* SUPER PROJECTION */
+  .projection-compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .proj-card {
+    background: var(--surface-2);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    border: 1px solid var(--border);
+    text-align: center;
+  }
+
+  .proj-card.featured {
+    border-color: var(--green);
+    background: rgba(52,211,153,0.05);
+  }
+
+  .proj-scenario {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  .proj-scenario.green { color: var(--green); }
+
+  .proj-balance {
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 4px;
+  }
+
+  .proj-balance.green { color: var(--green); }
+  .proj-balance.muted { color: var(--text-secondary); }
+
+  .proj-sub { font-size: 12px; color: var(--text-muted); }
+
+  .proj-advantage {
+    text-align: center;
+    background: rgba(52,211,153,0.1);
+    border: 1px solid rgba(52,211,153,0.25);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    margin-bottom: 16px;
+  }
+
+  .proj-advantage-label {
+    font-size: 12px;
+    color: var(--green);
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+
+  .proj-advantage-value {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--green);
+  }
+
+  .proj-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+
+  .proj-table th {
+    padding: 8px 12px;
+    text-align: right;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border);
+    background: rgba(56,189,248,0.05);
+  }
+
+  .proj-table th:first-child { text-align: left; }
+
+  .proj-table td {
+    padding: 8px 12px;
+    text-align: right;
+    color: var(--text-secondary);
+    border-bottom: 1px solid rgba(51,65,85,0.4);
+  }
+
+  .proj-table td:first-child { text-align: left; color: var(--text-muted); }
+  .proj-table td.green { color: var(--green); font-weight: 600; }
+  .proj-table td.muted { color: var(--text-muted); }
+  .proj-table tr:last-child td { border-bottom: none; font-weight: 700; color: var(--text-primary); font-size: 13px; }
+  .proj-table tr:last-child td.green { color: var(--green); }
+
+  /* EXPLANATIONS */
+  .explain-box {
+    background: rgba(56,189,248,0.05);
+    border: 1px solid rgba(56,189,248,0.15);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    margin-top: 14px;
+  }
+
+  .explain-box p {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+
+  .explain-box strong { color: var(--accent); font-weight: 600; }
+
+  /* WARNINGS */
+  .warning-box {
+    background: rgba(251,191,36,0.08);
+    border: 1px solid rgba(251,191,36,0.25);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    margin-top: 12px;
+    display: none;
+  }
+
+  .warning-box.visible { display: block; }
+
+  .warning-box p {
+    font-size: 12px;
+    color: var(--amber);
+    line-height: 1.6;
+  }
+
+  .div293-box {
+    background: rgba(248,113,113,0.07);
+    border: 1px solid rgba(248,113,113,0.2);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    margin-top: 12px;
+    display: none;
+  }
+
+  .div293-box.visible { display: block; }
+
+  .div293-box p { font-size: 12px; color: var(--red); line-height: 1.6; }
+
+  /* MTR BADGE */
+  .mtr-display {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .mtr-label { font-size: 12px; color: var(--text-secondary); }
+  .mtr-value { font-size: 18px; font-weight: 800; color: var(--amber); }
+
+  /* COLLAPSIBLE EXPLAINERS */
+  details.calc-explainer {
+    margin-top: 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+
+  details.calc-explainer summary {
+    padding: 10px 14px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    user-select: none;
+    background: rgba(56,189,248,0.04);
+    transition: background 0.15s;
+  }
+
+  details.calc-explainer summary::-webkit-details-marker { display: none; }
+  details.calc-explainer summary:hover { background: rgba(56,189,248,0.09); }
+
+  details.calc-explainer[open] summary {
+    border-bottom: 1px solid var(--border);
+  }
+
+  details.calc-explainer[open] summary .arrow { transform: rotate(90deg); }
+
+  .arrow { display: inline-block; transition: transform 0.2s; font-style: normal; }
+
+  .expl-body {
+    padding: 18px;
+    background: var(--input-bg);
+  }
+
+  .expl-body p {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    line-height: 1.85;
+    margin-bottom: 12px;
+  }
+
+  .expl-body p:last-child { margin-bottom: 0; }
+  .expl-body strong { color: var(--text-primary); font-weight: 600; }
+  .expl-body em { color: var(--text-muted); font-style: normal; }
+
+  .expl-body h4 {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-muted);
+    margin: 14px 0 8px;
+  }
+
+  .expl-body h4:first-child { margin-top: 0; }
+
+  .expl-mini-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0 14px;
+    font-size: 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+
+  .expl-mini-table th {
+    text-align: left;
+    padding: 7px 12px;
+    background: rgba(56,189,248,0.06);
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .expl-mini-table td {
+    padding: 7px 12px;
+    border-bottom: 1px solid rgba(51,65,85,0.4);
+    color: var(--text-secondary);
+  }
+
+  .expl-mini-table tr:last-child td { border-bottom: none; }
+  .expl-mini-table td:last-child { text-align: right; font-weight: 600; color: var(--text-primary); }
+  .expl-mini-table td.green { color: var(--green); }
+  .expl-mini-table td.amber { color: var(--amber); }
+  .expl-mini-table td.accent { color: var(--accent); }
+
+  /* DISCLAIMER */
+  .disclaimer {
+    margin-top: 20px;
+    padding: 12px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    .inputs-panel { max-height: none; position: relative; }
+    .tax-compare-grid { grid-template-columns: 1fr; }
+    .stats-row { grid-template-columns: 1fr 1fr; }
+    .projection-compare { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div>
+    <h1>🏦 Salary Sacrifice Super Calculator</h1>
+    <p>Australian super concessional contributions — ATO rates 2024–25 & 2025–26</p>
+  </div>
+  <div class="fy-selector">
+    <button class="fy-btn active" id="fy2425" onclick="setFY('2425')">FY 2024–25</button>
+    <button class="fy-btn" id="fy2526" onclick="setFY('2526')">FY 2025–26</button>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- LEFT: INPUTS -->
+  <div class="inputs-panel">
+
+    <div class="section-label">Your Income</div>
+
+    <div class="input-group">
+      <label>Gross Annual Salary</label>
+      <div class="input-row">
+        <span class="input-prefix">$</span>
+        <input type="number" id="salary" value="100000" min="0" max="2000000" step="1000" oninput="calc()">
+        <span class="input-suffix">/ yr</span>
+      </div>
+    </div>
+
+    <div class="input-group">
+      <label>Salary Sacrifice Amount</label>
+      <div class="input-row">
+        <span class="input-prefix">$</span>
+        <input type="number" id="sacrifice" value="10000" min="0" step="500" oninput="calc()">
+        <span class="input-suffix">/ yr</span>
+      </div>
+      <div class="hint" id="sacrifice-hint"></div>
+    </div>
+
+    <div class="mtr-display">
+      <span class="mtr-label">Marginal Tax Rate (incl. Medicare)</span>
+      <span class="mtr-value" id="mtr-display">32%</span>
+    </div>
+
+    <div class="divider"></div>
+    <div class="section-label">Employer SG</div>
+
+    <div class="input-group">
+      <label>Employer SG Rate <span class="auto-badge" id="sg-auto-badge">AUTO</span></label>
+      <div class="input-row">
+        <input type="number" id="sg_rate" value="11.5" min="0" max="25" step="0.5" oninput="calc()">
+        <span class="input-suffix">%</span>
+      </div>
+      <div class="hint" id="sg-hint">11.5% for FY2024–25 (rises to 12% in FY2025–26)</div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="section-label">Retirement Settings</div>
+
+    <div class="input-group">
+      <label>Current Age</label>
+      <div class="input-row">
+        <input type="number" id="current_age" value="35" min="18" max="74" oninput="calc()">
+        <span class="input-suffix">yrs</span>
+      </div>
+    </div>
+
+    <div class="input-group">
+      <label>Target Retirement Age</label>
+      <div class="input-row">
+        <input type="number" id="retire_age" value="67" min="55" max="75" oninput="calc()">
+        <span class="input-suffix">yrs</span>
+      </div>
+    </div>
+
+    <div class="input-group">
+      <label>Super Investment Return</label>
+      <div class="input-row">
+        <input type="number" id="return_rate" value="7" min="1" max="15" step="0.5" oninput="calc()">
+        <span class="input-suffix">% p.a.</span>
+      </div>
+      <div class="hint">Long-run balanced fund average ~7%. Adjust for your fund.</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- OPTIONAL: CURRENT SUPER -->
+    <div class="toggle-row" onclick="toggleCurrentSuper()">
+      <span>Include Current Super Balance</span>
+      <div class="toggle" id="super-toggle"></div>
+    </div>
+
+    <div class="collapsible-body" id="current-super-body" style="max-height:0;">
+      <div style="padding-top:12px;">
+        <div class="input-group">
+          <label>Current Super Balance</label>
+          <div class="input-row">
+            <span class="input-prefix">$</span>
+            <input type="number" id="current_super" value="50000" min="0" step="1000" oninput="calc()">
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT: OUTPUT -->
+  <div class="output-panel">
+    <div class="output-grid">
+
+      <!-- SECTION 1: TAX BREAKDOWN -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon icon-blue">📊</div>
+          <div>
+            <div class="card-title">Section 1 — Tax Breakdown</div>
+            <div class="card-subtitle">Your income tax position with and without salary sacrifice</div>
+          </div>
+        </div>
+        <div class="card-body">
+
+          <div class="tax-compare-grid">
+            <!-- WITHOUT SACRIFICE -->
+            <div class="tax-column">
+              <div class="tax-col-label baseline">Without Sacrifice</div>
+
+              <div class="tax-line">
+                <span class="tax-line-label">Taxable income</span>
+                <span class="tax-line-value" id="b-taxable">$100,000</span>
+              </div>
+              <div class="tax-line">
+                <span class="tax-line-label">Income tax</span>
+                <span class="tax-line-value negative" id="b-income-tax">−$20,788</span>
+              </div>
+              <div class="tax-line">
+                <span class="tax-line-label">Medicare levy (2%)</span>
+                <span class="tax-line-value negative" id="b-medicare">−$2,000</span>
+              </div>
+              <div class="tax-line">
+                <span class="tax-line-label">LITO offset</span>
+                <span class="tax-line-value positive" id="b-lito">+$0</span>
+              </div>
+
+              <hr class="tax-separator">
+              <div class="tax-total-line">
+                <span class="tax-total-label">Take-home pay</span>
+                <span class="tax-total-value" id="b-takehome">$77,212</span>
+              </div>
+            </div>
+
+            <!-- WITH SACRIFICE -->
+            <div class="tax-column" style="border-color: rgba(52,211,153,0.3);">
+              <div class="tax-col-label sacrifice">With Sacrifice</div>
+
+              <div class="tax-line">
+                <span class="tax-line-label">Taxable income</span>
+                <span class="tax-line-value" id="s-taxable">$90,000</span>
+              </div>
+              <div class="tax-line">
+                <span class="tax-line-label">Income tax</span>
+                <span class="tax-line-value negative" id="s-income-tax">−$17,788</span>
+              </div>
+              <div class="tax-line">
+                <span class="tax-line-label">Medicare levy (2%)</span>
+                <span class="tax-line-value negative" id="s-medicare">−$1,800</span>
+              </div>
+              <div class="tax-line">
+                <span class="tax-line-label">LITO offset</span>
+                <span class="tax-line-value positive" id="s-lito">+$0</span>
+              </div>
+
+              <hr class="tax-separator">
+              <div class="tax-total-line">
+                <span class="tax-total-label">Take-home pay</span>
+                <span class="tax-total-value" id="s-takehome" style="color:var(--green)">$70,412</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- BRACKET BREAKDOWN -->
+          <div class="tax-bracket-table" id="bracket-table">
+            <div class="tbr header">
+              <span class="tbr-label header-label">Income bracket (with sacrifice)</span>
+              <span class="tbr-rate header-label">Rate</span>
+              <span class="tbr-amount header-label">Tax</span>
+            </div>
+          </div>
+
+          <div class="explain-box">
+            <p>Salary sacrifice reduces your <strong>assessable income</strong> before tax is calculated. The ATO taxes the sacrificed portion at <strong>15%</strong> inside super — not at your marginal rate. LITO (Low Income Tax Offset) of up to <strong>$700</strong> phases out above $37,500 and disappears at $66,667. Tax rates sourced from the ATO for <span id="fy-label-1">FY2024–25</span>.</p>
+          </div>
+
+          <div class="warning-box" id="cap-warning">
+            <p>⚠️ <strong>Concessional cap alert:</strong> Your total concessional contributions (employer SG + sacrifice) exceed the <strong>$30,000</strong> cap for <span id="fy-cap-label">FY2024–25</span>. Amounts above the cap are taxed at your marginal rate (less a 15% offset). Consider reducing your sacrifice.</p>
+          </div>
+
+          <div class="div293-box" id="div293-warning">
+            <p>⚠️ <strong>Division 293 tax:</strong> Your income + concessional contributions exceeds <strong>$250,000</strong>. An additional 15% tax applies to your concessional contributions (total 30%), reducing the super tax advantage.</p>
+          </div>
+
+          <details class="calc-explainer">
+            <summary><i class="arrow">▶</i> How is this calculated?</summary>
+            <div class="expl-body" id="s1-explainer">
+              <!-- populated by JS -->
+            </div>
+          </details>
+
+        </div>
+      </div>
+
+      <!-- SECTION 2: SALARY SACRIFICE VALUE -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon icon-green">💡</div>
+          <div>
+            <div class="card-title">Section 2 — The Salary Sacrifice Advantage</div>
+            <div class="card-subtitle">Annual savings and per-$1,000 comparison</div>
+          </div>
+        </div>
+        <div class="card-body">
+
+          <div class="stats-row">
+            <div class="stat-box">
+              <div class="stat-label">Income Tax Saved</div>
+              <div class="stat-value green" id="stat-tax-saved">$3,000</div>
+              <div class="stat-sub">vs. leaving as salary</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Take-home Reduction</div>
+              <div class="stat-value amber" id="stat-takehome-reduction">$6,800</div>
+              <div class="stat-sub">actual pocket cost</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Net Tax Advantage</div>
+              <div class="stat-value accent" id="stat-net-advantage">$1,500</div>
+              <div class="stat-sub">tax saved vs. after-tax</div>
+            </div>
+          </div>
+
+          <!-- PER $1,000 TABLE -->
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th>Scenario</th>
+                <th style="text-align:right">Tax on $1,000</th>
+                <th style="text-align:right">Net to super</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="td-scenario">Leave as salary <span id="mtr-inline" style="color:var(--text-muted);font-size:11px;">(30% + 2% Medicare)</span></td>
+                <td class="td-value red" id="per1k-salary">$320</td>
+                <td class="td-value" id="per1k-salary-net" style="color:var(--text-muted)">$680</td>
+              </tr>
+              <tr>
+                <td class="td-scenario">Sacrifice to super (15% concessional)</td>
+                <td class="td-value" id="per1k-sacrifice" style="color:var(--amber)">$150</td>
+                <td class="td-value green" id="per1k-sacrifice-net">$850</td>
+              </tr>
+              <tr class="highlight-row">
+                <td>Net saving per $1,000 sacrificed</td>
+                <td colspan="2" style="text-align:right" id="per1k-saving">$170</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="explain-box">
+            <p>Every $1,000 you sacrifice costs you <strong id="explain-cost">$680</strong> in take-home pay (because it avoids income tax + Medicare). Inside super it becomes <strong>$850</strong> after the 15% contributions tax. The net difference — <strong id="explain-saving">$170</strong> — is money that stays working for you instead of going to the ATO. Total annual tax saving = sacrifice × (MTR + Medicare − 15%).</p>
+          </div>
+
+          <details class="calc-explainer">
+            <summary><i class="arrow">▶</i> How is this calculated?</summary>
+            <div class="expl-body" id="s2-explainer">
+              <!-- populated by JS -->
+            </div>
+          </details>
+
+        </div>
+      </div>
+
+      <!-- SECTION 3: SUPER AT RETIREMENT -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon icon-amber">📈</div>
+          <div>
+            <div class="card-title">Section 3 — Super at Retirement</div>
+            <div class="card-subtitle">Projected balance: salary sacrifice vs. after-tax contribution equivalent</div>
+          </div>
+        </div>
+        <div class="card-body">
+
+          <div class="projection-compare">
+            <div class="proj-card featured">
+              <div class="proj-scenario green">With Sacrifice</div>
+              <div class="proj-balance green" id="proj-sacrifice-balance">$1,240,000</div>
+              <div class="proj-sub" id="proj-sacrifice-sub">at age 67 · 32 years</div>
+            </div>
+            <div class="proj-card">
+              <div class="proj-scenario">After-Tax Equivalent</div>
+              <div class="proj-balance muted" id="proj-aftertax-balance">$1,140,000</div>
+              <div class="proj-sub" id="proj-aftertax-sub">same gross sacrifice, after-tax to super</div>
+            </div>
+          </div>
+
+          <div class="proj-advantage">
+            <div class="proj-advantage-label">Sacrifice advantage at retirement</div>
+            <div class="proj-advantage-value" id="proj-advantage-value">+$100,000</div>
+          </div>
+
+          <!-- MILESTONE TABLE -->
+          <div style="overflow-x:auto;">
+            <table class="proj-table">
+              <thead>
+                <tr>
+                  <th>Age</th>
+                  <th>Years to go</th>
+                  <th>With Sacrifice</th>
+                  <th>After-Tax</th>
+                  <th>Advantage</th>
+                </tr>
+              </thead>
+              <tbody id="proj-table-body">
+              </tbody>
+            </table>
+          </div>
+
+          <div class="explain-box">
+            <p><strong>Sacrifice scenario:</strong> employer SG + sacrifice both enter super as concessional contributions and are taxed at <strong>15%</strong> inside the fund. <strong>After-tax scenario:</strong> the same gross sacrifice amount is paid to you as salary, taxed at your marginal rate + Medicare (<span id="explain-mtr">32%</span>), then the net is contributed to super as non-concessional (no entry tax). Both scenarios grow at the same assumed return. The sacrifice advantage widens every year due to compounding on the initial tax saving. After-tax balance includes employer SG in both scenarios.</p>
+          </div>
+
+          <details class="calc-explainer">
+            <summary><i class="arrow">▶</i> How is this calculated?</summary>
+            <div class="expl-body" id="s3-explainer">
+              <!-- populated by JS -->
+            </div>
+          </details>
+
+        </div>
+      </div>
+
+      <!-- DISCLAIMER -->
+      <div class="disclaimer">
+        <strong>Disclaimer:</strong> This calculator is for illustrative purposes only and does not constitute financial advice. Tax rates are sourced from the ATO for FY2024–25 and FY2025–26 (identical brackets). Projections assume constant salary, sacrifice amount, and investment return over the period. Actual outcomes depend on fund performance, fees, insurance premiums, and legislative changes. LITO is calculated per ATO schedules. Division 293 and concessional cap warnings are indicative only. Consult a licensed financial adviser before making superannuation decisions.
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────────────────────────
+let fy = '2425';
+let showCurrentSuper = false;
+
+// ── TAX TABLES (ATO) ───────────────────────────────────────────────────────
+// FY2024-25 and FY2025-26 have identical income tax brackets
+const BRACKETS = [
+  { from: 0,      to: 18200,   base: 0,     rate: 0    },
+  { from: 18201,  to: 45000,   base: 0,     rate: 0.16 },
+  { from: 45001,  to: 135000,  base: 4288,  rate: 0.30 },
+  { from: 135001, to: 190000,  base: 31288, rate: 0.37 },
+  { from: 190001, to: Infinity,base: 51638, rate: 0.45 }
+];
+
+// SG rate by FY
+const SG = { '2425': 11.5, '2526': 12.0 };
+
+// ── HELPERS ────────────────────────────────────────────────────────────────
+function calcIncomeTax(income) {
+  if (income <= 0) return 0;
+  for (const b of BRACKETS) {
+    if (income <= b.to) {
+      return b.base + Math.max(0, income - b.from + 1) * b.rate;
+    }
+  }
+  return 0;
+}
+
+// Simplified: from boundary amounts
+function calcIncomeTaxSimple(income) {
+  if (income <= 18200) return 0;
+  if (income <= 45000) return (income - 18200) * 0.16;
+  if (income <= 135000) return 4288 + (income - 45000) * 0.30;
+  if (income <= 190000) return 31288 + (income - 135000) * 0.37;
+  return 51638 + (income - 190000) * 0.45;
+}
+
+function calcLITO(income) {
+  if (income <= 37500) return 700;
+  if (income <= 45000) return 700 - (income - 37500) * 0.05;
+  if (income <= 66667) return Math.max(0, 325 - (income - 45000) * 0.015);
+  return 0;
+}
+
+function calcMedicare(income) {
+  // Low-income threshold ~$26,000; phase-in at 10c per $1 above threshold
+  const threshold = 26000;
+  const shadeIn = threshold / 0.1 * 0.02; // ~$32,500
+  if (income <= threshold) return 0;
+  if (income <= shadeIn) return (income - threshold) * 0.10;
+  return income * 0.02;
+}
+
+function getMTR(income) {
+  if (income <= 18200) return 0;
+  if (income <= 45000) return 0.16;
+  if (income <= 135000) return 0.30;
+  if (income <= 190000) return 0.37;
+  return 0.45;
+}
+
+function fmt(n, decimals = 0) {
+  if (n < 0) return '−' + fmt(-n, decimals);
+  return '$' + Math.round(n).toLocaleString('en-AU');
+}
+
+function fmtSign(n) {
+  if (n >= 0) return '+' + fmt(n);
+  return '−' + fmt(-n);
+}
+
+function pct(n) { return (n * 100).toFixed(0) + '%'; }
+
+// ── FY SELECTOR ────────────────────────────────────────────────────────────
+function setFY(f) {
+  fy = f;
+  document.getElementById('fy2425').classList.toggle('active', f === '2425');
+  document.getElementById('fy2526').classList.toggle('active', f === '2526');
+  // Auto-set SG
+  document.getElementById('sg_rate').value = SG[fy];
+  document.getElementById('sg-hint').textContent =
+    f === '2425'
+      ? '11.5% for FY2024–25 (set by law)'
+      : '12.0% for FY2025–26 (set by law)';
+  const fyLabel = f === '2425' ? 'FY2024–25' : 'FY2025–26';
+  document.getElementById('fy-label-1').textContent = fyLabel;
+  document.getElementById('fy-cap-label').textContent = fyLabel;
+  calc();
+}
+
+// ── TOGGLE CURRENT SUPER ───────────────────────────────────────────────────
+function toggleCurrentSuper() {
+  showCurrentSuper = !showCurrentSuper;
+  const toggle = document.getElementById('super-toggle');
+  toggle.classList.toggle('on', showCurrentSuper);
+  const body = document.getElementById('current-super-body');
+  body.style.maxHeight = showCurrentSuper ? '200px' : '0';
+  calc();
+}
+
+// ── BRACKET TABLE ──────────────────────────────────────────────────────────
+function renderBracketTable(income) {
+  const container = document.getElementById('bracket-table');
+  const rows = [
+    { label: '$0 – $18,200', rate: '0%', from: 0, to: 18200, bracketRate: 0, base: 0 },
+    { label: '$18,201 – $45,000', rate: '16%', from: 18201, to: 45000, bracketRate: 0.16, base: 0 },
+    { label: '$45,001 – $135,000', rate: '30%', from: 45001, to: 135000, bracketRate: 0.30, base: 4288 },
+    { label: '$135,001 – $190,000', rate: '37%', from: 135001, to: 190000, bracketRate: 0.37, base: 31288 },
+    { label: '$190,001+', rate: '45%', from: 190001, to: Infinity, bracketRate: 0.45, base: 51638 },
+  ];
+
+  let html = `<div class="tbr header">
+    <span class="tbr-label header-label">Income bracket (sacrifice scenario)</span>
+    <span class="tbr-rate header-label">Rate</span>
+    <span class="tbr-amount header-label">Tax</span>
+  </div>`;
+
+  for (const row of rows) {
+    if (income < row.from) break;
+    const taxable = Math.min(income, row.to) - row.from + 1;
+    const tax = Math.max(0, taxable * row.bracketRate);
+    const isActive = income >= row.from;
+    const zeroCls = tax === 0 ? 'zero' : '';
+    html += `<div class="tbr">
+      <span class="tbr-label" style="${isActive ? '' : 'opacity:0.35'}">${row.label}</span>
+      <span class="tbr-rate">${row.rate}</span>
+      <span class="tbr-amount ${zeroCls}">${tax === 0 ? 'Nil' : fmt(tax)}</span>
+    </div>`;
+  }
+
+  container.innerHTML = html;
+}
+
+// ── PROJECTION TABLE ───────────────────────────────────────────────────────
+function renderProjection(currentAge, retireAge, returnRate, currentSuperBal, sacrificeNet, afterTaxNet, sgNet) {
+  const years = retireAge - currentAge;
+  const r = returnRate / 100;
+
+  // Both start with currentSuperBal, employer SG same both scenarios
+  // Sacrifice scenario: adds sacrificeNet to super each year (post-15% tax)
+  // After-tax scenario: adds afterTaxNet to super each year (no entry tax)
+  // Both: employer SG net of 15% added each year too (same in both)
+
+  let balA = currentSuperBal; // sacrifice
+  let balB = currentSuperBal; // after-tax
+
+  const milestones = [];
+  const ages = [currentAge + Math.round(years * 0.25), currentAge + Math.round(years * 0.5), currentAge + Math.round(years * 0.75), retireAge];
+  const ageSet = new Set(ages);
+
+  for (let i = 1; i <= years; i++) {
+    const age = currentAge + i;
+    balA = balA * (1 + r) + sgNet + sacrificeNet;
+    balB = balB * (1 + r) + sgNet + afterTaxNet;
+    if (ageSet.has(age) || i === years) {
+      milestones.push({ age, yearsLeft: years - i, balA, balB });
+    }
+  }
+
+  let tbody = '';
+  for (const m of milestones) {
+    const diff = m.balA - m.balB;
+    const isLast = m.age === retireAge;
+    tbody += `<tr${isLast ? ' style="font-weight:700"' : ''}>
+      <td>${m.age}</td>
+      <td>${years - (m.age - currentAge)} yrs left</td>
+      <td class="green">${fmt(m.balA)}</td>
+      <td class="muted">${fmt(m.balB)}</td>
+      <td class="green">${fmtSign(diff)}</td>
+    </tr>`;
+  }
+
+  document.getElementById('proj-table-body').innerHTML = tbody;
+
+  const finalA = milestones[milestones.length - 1]?.balA || 0;
+  const finalB = milestones[milestones.length - 1]?.balB || 0;
+  const advantage = finalA - finalB;
+
+  document.getElementById('proj-sacrifice-balance').textContent = fmt(finalA);
+  document.getElementById('proj-aftertax-balance').textContent = fmt(finalB);
+  document.getElementById('proj-advantage-value').textContent = fmtSign(advantage);
+
+  const subText = `at age ${retireAge} · ${years} year${years !== 1 ? 's' : ''}`;
+  document.getElementById('proj-sacrifice-sub').textContent = subText;
+  document.getElementById('proj-aftertax-sub').textContent = 'same gross, after-tax contribution';
+}
+
+// ── MAIN CALC ──────────────────────────────────────────────────────────────
+function calc() {
+  const salary      = parseFloat(document.getElementById('salary').value)       || 0;
+  const sacrifice   = parseFloat(document.getElementById('sacrifice').value)     || 0;
+  const sgRate      = parseFloat(document.getElementById('sg_rate').value)       / 100 || 0;
+  const currentAge  = parseInt(document.getElementById('current_age').value)     || 35;
+  const retireAge   = parseInt(document.getElementById('retire_age').value)      || 67;
+  const returnRate  = parseFloat(document.getElementById('return_rate').value)   || 7;
+  const currentSuperBal = showCurrentSuper
+    ? (parseFloat(document.getElementById('current_super').value) || 0)
+    : 0;
+
+  // ── BASELINE (no sacrifice) ──
+  const bTaxable    = salary;
+  const bIncomeTax  = calcIncomeTaxSimple(bTaxable);
+  const bLITO       = calcLITO(bTaxable);
+  const bMedicare   = calcMedicare(bTaxable);
+  const bTaxNet     = Math.max(0, bIncomeTax - bLITO);
+  const bTakehome   = bTaxable - bTaxNet - bMedicare;
+
+  // ── SACRIFICE ──
+  const sTaxable    = Math.max(0, salary - sacrifice);
+  const sIncomeTax  = calcIncomeTaxSimple(sTaxable);
+  const sLITO       = calcLITO(sTaxable);
+  const sMedicare   = calcMedicare(sTaxable);
+  const sTaxNet     = Math.max(0, sIncomeTax - sLITO);
+  const sTakehome   = sTaxable - sTaxNet - sMedicare;
+
+  // ── MTR (on the full salary, determines tax on sacrifice) ──
+  const mtr         = getMTR(salary);
+  const mtrTotal    = mtr + 0.02; // incl. Medicare (simplified: Medicare = 2% at most incomes)
+  // More accurate: use the marginal Medicare too
+  const medicareMargin = (salary > 26000) ? 0.02 : 0; // simplified
+
+  // ── DISPLAY: SECTION 1 ──
+  document.getElementById('b-taxable').textContent     = fmt(bTaxable);
+  document.getElementById('b-income-tax').textContent  = '−' + fmt(bIncomeTax);
+  document.getElementById('b-medicare').textContent    = '−' + fmt(bMedicare);
+  document.getElementById('b-lito').textContent        = bLITO > 0 ? '+' + fmt(bLITO) : '$0';
+  document.getElementById('b-takehome').textContent    = fmt(bTakehome);
+
+  document.getElementById('s-taxable').textContent     = fmt(sTaxable);
+  document.getElementById('s-income-tax').textContent  = '−' + fmt(sIncomeTax);
+  document.getElementById('s-medicare').textContent    = '−' + fmt(sMedicare);
+  document.getElementById('s-lito').textContent        = sLITO > 0 ? '+' + fmt(sLITO) : '$0';
+  document.getElementById('s-takehome').textContent    = fmt(sTakehome);
+
+  // MTR display
+  const mtrDisplay = Math.round(mtrTotal * 100);
+  document.getElementById('mtr-display').textContent   = mtrDisplay + '%';
+  document.getElementById('mtr-inline').textContent    = `(${Math.round(mtr*100)}% + 2% Medicare)`;
+  document.getElementById('explain-mtr').textContent   = mtrDisplay + '%';
+
+  renderBracketTable(sTaxable);
+
+  // ── CONCESSIONAL CAP WARNING ──
+  const employerSG     = salary * sgRate;
+  const totalConcess   = employerSG + sacrifice;
+  const CAP            = 30000;
+  document.getElementById('cap-warning').classList.toggle('visible', totalConcess > CAP);
+  if (sacrifice > 0) {
+    document.getElementById('sacrifice-hint').textContent =
+      `Total concessional: ${fmt(totalConcess)} (${totalConcess > CAP ? '⚠️ exceeds' : '✓ within'} $30k cap)`;
+  }
+
+  // ── DIVISION 293 WARNING ──
+  const div293Income = salary + totalConcess;
+  document.getElementById('div293-warning').classList.toggle('visible', div293Income > 250000);
+
+  // ── SECTION 2: SAVINGS ──
+  const taxSaved          = bTaxNet - sTaxNet + (bMedicare - sMedicare);
+  const takehomeReduction = bTakehome - sTakehome;
+  // Net advantage: what you save on tax vs what you give up in pocket
+  // income tax saved vs the concessional tax (15%) paid in super
+  const superTaxOnSacrifice = sacrifice * 0.15;
+  const netTaxAdvantage   = taxSaved - superTaxOnSacrifice;
+
+  document.getElementById('stat-tax-saved').textContent        = fmt(taxSaved);
+  document.getElementById('stat-takehome-reduction').textContent = fmt(takehomeReduction);
+  document.getElementById('stat-net-advantage').textContent    = fmt(netTaxAdvantage);
+
+  // Per $1,000 table
+  const per1kSalaryTax    = mtrTotal * 1000;
+  const per1kSacTax       = 150; // 15% always
+  const per1kSaving       = per1kSalaryTax - per1kSacTax;
+
+  document.getElementById('per1k-salary').textContent         = fmt(per1kSalaryTax);
+  document.getElementById('per1k-salary-net').textContent     = fmt(1000 - per1kSalaryTax);
+  document.getElementById('per1k-sacrifice').textContent      = '$150';
+  document.getElementById('per1k-sacrifice-net').textContent  = '$850';
+  document.getElementById('per1k-saving').textContent         = fmt(per1kSaving);
+
+  document.getElementById('explain-cost').textContent  = fmt(1000 - per1kSalaryTax);
+  document.getElementById('explain-saving').textContent = fmt(per1kSaving);
+
+  // ── SECTION 3: PROJECTION ──
+  // Sacrifice scenario: sacrifice net of 15% super tax added to super
+  const sacrificeNetOfTax = sacrifice * 0.85; // after 15% contributions tax
+  const sgNetOfTax        = employerSG * 0.85; // employer SG also taxed at 15%
+
+  // After-tax scenario: same gross sacrifice taxed at MTR + Medicare, then contributed non-concessionally
+  // Effective income tax rate on the sacrifice amount (marginal rate on that slice)
+  const afterTaxSacrifice = sacrifice * (1 - mtr - medicareMargin);
+
+  // Division 293: reduce super net if applicable
+  const div293Rate = div293Income > 250000 ? 0.15 : 0; // extra 15% on concessional
+  const sacrificeNetDiv293 = sacrifice * (0.85 - div293Rate);
+  const sgNetDiv293        = employerSG * (0.85 - div293Rate);
+
+  renderProjection(
+    currentAge,
+    retireAge,
+    returnRate,
+    currentSuperBal,
+    sacrificeNetDiv293,
+    afterTaxSacrifice,
+    sgNetDiv293
+  );
+
+  // ── EXPLAINERS ──
+  renderS1Explainer(salary, sacrifice, sTaxable, sIncomeTax, sLITO, sMedicare, sTakehome, bIncomeTax, bLITO, bMedicare, bTakehome);
+  renderS2Explainer(salary, sacrifice, mtr, taxSaved, takehomeReduction, netTaxAdvantage, sgNetOfTax, employerSG);
+  renderS3Explainer(salary, sacrifice, currentAge, retireAge, returnRate, currentSuperBal, sacrificeNetDiv293, afterTaxSacrifice, sgNetDiv293, employerSG, mtr);
+}
+
+// ── EXPLAINER RENDERERS ────────────────────────────────────────────────────
+
+function renderS1Explainer(salary, sacrifice, sTaxable, sIncomeTax, sLITO, sMedicare, sTakehome, bIncomeTax, bLITO, bMedicare, bTakehome) {
+  const mtr = getMTR(salary);
+  const mtrPct = Math.round(mtr * 100);
+  const litoNote = sLITO > 0
+    ? `Because your taxable income after sacrifice is <strong>${fmt(sTaxable)}</strong>, you qualify for a Low Income Tax Offset (LITO) of <strong>${fmt(sLITO)}</strong>. This is subtracted directly from your tax bill — it's not a refund of money, it just reduces what you owe.`
+    : `Your income is above $66,667, so the Low Income Tax Offset (LITO) phases out completely and doesn't apply.`;
+
+  document.getElementById('s1-explainer').innerHTML = `
+    <h4>How income tax is calculated</h4>
+    <p>Australia uses a <strong>progressive tax system</strong> — different portions of your income are taxed at different rates. The ATO applies each rate only to the slice of income that falls within that bracket.</p>
+
+    <p>With sacrifice, your taxable income drops from <strong>${fmt(salary)}</strong> to <strong>${fmt(sTaxable)}</strong>. Here's how the tax is calculated on that reduced income:</p>
+
+    <table class="expl-mini-table">
+      <thead><tr><th>Income bracket</th><th>Rate</th><th>Tax on that slice</th></tr></thead>
+      <tbody>
+        <tr><td>$0 – $18,200</td><td>0%</td><td class="amber">Nil</td></tr>
+        ${sTaxable > 18200 ? `<tr><td>$18,201 – ${fmt(Math.min(sTaxable,45000))}</td><td>16%</td><td class="amber">${fmt(Math.min(sTaxable,45000) > 18200 ? (Math.min(sTaxable,45000)-18200)*0.16 : 0)}</td></tr>` : ''}
+        ${sTaxable > 45000 ? `<tr><td>$45,001 – ${fmt(Math.min(sTaxable,135000))}</td><td>30%</td><td class="amber">${fmt((Math.min(sTaxable,135000)-45000)*0.30)}</td></tr>` : ''}
+        ${sTaxable > 135000 ? `<tr><td>$135,001 – ${fmt(Math.min(sTaxable,190000))}</td><td>37%</td><td class="amber">${fmt((Math.min(sTaxable,190000)-135000)*0.37)}</td></tr>` : ''}
+        ${sTaxable > 190000 ? `<tr><td>$190,001 – ${fmt(sTaxable)}</td><td>45%</td><td class="amber">${fmt((sTaxable-190000)*0.45)}</td></tr>` : ''}
+        <tr><td><strong>Total income tax</strong></td><td></td><td class="accent">${fmt(sIncomeTax)}</td></tr>
+      </tbody>
+    </table>
+
+    <h4>LITO — Low Income Tax Offset</h4>
+    <p>${litoNote}</p>
+
+    <h4>Medicare Levy</h4>
+    <p>A flat <strong>2%</strong> of your taxable income goes to Medicare. On <strong>${fmt(sTaxable)}</strong>, that's <strong>${fmt(sMedicare)}</strong>. It's calculated separately from income tax — it cannot be reduced by LITO.</p>
+
+    <h4>Take-home pay</h4>
+    <p>Taxable income <strong>${fmt(sTaxable)}</strong> − income tax <strong>${fmt(Math.max(0,sIncomeTax-sLITO))}</strong> (after LITO) − Medicare <strong>${fmt(sMedicare)}</strong> = take-home of <strong>${fmt(sTakehome)}</strong>.<br>
+    Without sacrifice your take-home would be <strong>${fmt(bTakehome)}</strong> — a difference of <strong>${fmt(bTakehome - sTakehome)}</strong>. This is what sacrifice actually costs your pocket.</p>
+  `;
+}
+
+function renderS2Explainer(salary, sacrifice, mtr, taxSaved, takehomeReduction, netTaxAdvantage, sgNet, employerSG) {
+  const mtrPct = Math.round(mtr * 100);
+  const totalRate = mtrPct + 2;
+  const per1kTax = (mtr + 0.02) * 1000;
+  const per1kNet = 1000 - per1kTax;
+
+  document.getElementById('s2-explainer').innerHTML = `
+    <h4>Income tax saved</h4>
+    <p>Salary sacrifice reduces your taxable income by <strong>${fmt(sacrifice)}</strong>. That slice of income would have been taxed at your marginal rate of <strong>${mtrPct}%</strong> plus 2% Medicare. So the ATO no longer collects <strong>${fmt(taxSaved)}</strong> from you — that's your income tax saving for the year.</p>
+
+    <h4>Take-home reduction</h4>
+    <p>Even though you save <strong>${fmt(taxSaved)}</strong> in tax, your actual pocket is lighter by <strong>${fmt(takehomeReduction)}</strong> — because the sacrifice also removes that income from your pay. Think of it this way: of every $1,000 sacrificed, you only give up <strong>${fmt(per1kNet)}</strong> in real take-home (the tax on it was going to the ATO anyway).</p>
+
+    <h4>Net tax advantage</h4>
+    <p>The sacrifice doesn't escape tax entirely — the super fund pays <strong>15%</strong> contributions tax on it (<strong>${fmt(sacrifice * 0.15)}</strong>). Your net advantage is the difference between what the ATO would have taken at your rate versus what the fund pays: <strong>${fmt(taxSaved)}</strong> − <strong>${fmt(sacrifice * 0.15)}</strong> = <strong>${fmt(netTaxAdvantage)}</strong> per year.</p>
+
+    <h4>The per-$1,000 table</h4>
+    <p>For every <strong>$1,000</strong> sacrificed, the tax comparison is:</p>
+    <table class="expl-mini-table">
+      <thead><tr><th>Path</th><th>Tax collected</th><th>Lands in super</th></tr></thead>
+      <tbody>
+        <tr><td>Leave as salary (${mtrPct}% + 2% Medicare)</td><td class="amber">${fmt(per1kTax)}</td><td>${fmt(per1kNet)} (after-tax, then to super)</td></tr>
+        <tr><td>Sacrifice to super (15% concessional)</td><td class="amber">$150</td><td class="green">$850 (direct, no income tax)</td></tr>
+        <tr><td><strong>Net saving per $1,000</strong></td><td></td><td class="green">${fmt(850 - per1kNet)}</td></tr>
+      </tbody>
+    </table>
+    <p>Multiply that saving by your full sacrifice of <strong>${fmt(sacrifice)}</strong> and you get the total net annual tax advantage of <strong>${fmt(netTaxAdvantage)}</strong>.</p>
+  `;
+}
+
+function renderS3Explainer(salary, sacrifice, currentAge, retireAge, returnRate, currentSuperBal, sacrificeNet, afterTaxNet, sgNet, employerSG, mtr) {
+  const years = retireAge - currentAge;
+  const r = returnRate / 100;
+  const growthFactor = Math.pow(1 + r, years);
+  const annuityFactor = (growthFactor - 1) / r;
+  const totalSacrificeAnnual = sgNet + sacrificeNet;
+  const totalAfterTaxAnnual = sgNet + afterTaxNet;
+  const annualGap = totalSacrificeAnnual - totalAfterTaxAnnual;
+  const mtrPct = Math.round(mtr * 100);
+  const afterTaxRate = mtrPct + 2;
+
+  const fvSacrificeContribs = totalSacrificeAnnual * annuityFactor;
+  const fvAfterTaxContribs  = totalAfterTaxAnnual  * annuityFactor;
+  const fvStartingBal       = currentSuperBal * growthFactor;
+
+  const hasCurrentBal = currentSuperBal > 0;
+
+  document.getElementById('s3-explainer').innerHTML = `
+    <h4>Step 1 — Annual contributions after tax</h4>
+    <p>Both scenarios start with the same employer SG contribution: <strong>${fmt(salary)} × ${(employerSG/salary*100).toFixed(1)}% = ${fmt(employerSG)}</strong>. The fund pays 15% contributions tax on it, leaving <strong>${fmt(sgNet)}</strong>/yr going to work inside your super. This is <em>identical in both scenarios</em> — salary sacrifice doesn't change your employer's SG obligation.</p>
+
+    <table class="expl-mini-table">
+      <thead><tr><th>Item</th><th>Sacrifice scenario</th><th>After-tax scenario</th></tr></thead>
+      <tbody>
+        <tr><td>Employer SG (after 15% tax)</td><td>${fmt(sgNet)}</td><td>${fmt(sgNet)}</td></tr>
+        <tr><td>Your extra contribution</td><td>${fmt(sacrifice)} × 85% = <span style="color:var(--green)">${fmt(sacrificeNet)}</span></td><td>${fmt(sacrifice)} × (1−${afterTaxRate}%) = <span style="color:var(--text-muted)">${fmt(afterTaxNet)}</span></td></tr>
+        <tr><td><strong>Total into super / yr</strong></td><td class="green">${fmt(totalSacrificeAnnual)}</td><td class="amber">${fmt(totalAfterTaxAnnual)}</td></tr>
+      </tbody>
+    </table>
+
+    <p>The gap is <strong>${fmt(annualGap)}/yr</strong> — purely because 15% concessional tax is less than your ${afterTaxRate}% marginal total rate.</p>
+
+    <h4>Step 2 — Compounding over ${years} years</h4>
+    <p>Both balances grow at <strong>${returnRate}%/yr</strong>. Adding contributions at the end of each year, the formula is:</p>
+    <p style="text-align:center; color:var(--accent); font-weight:600; font-size:13px;">FV = Annual contribution × ((1.${String(returnRate).replace('.','')}<sup>${years}</sup> − 1) / ${(r).toFixed(2)})</p>
+    <p>1.${String(returnRate).replace('.','')}<sup>${years}</sup> = <strong>${growthFactor.toFixed(5)}</strong>, so the annuity factor = <strong>${annuityFactor.toFixed(3)}</strong>.</p>
+
+    <table class="expl-mini-table">
+      <thead><tr><th>Scenario</th><th>Annual PMT</th><th>× Factor</th><th>= Balance from contributions</th></tr></thead>
+      <tbody>
+        <tr><td>Sacrifice</td><td>${fmt(totalSacrificeAnnual)}</td><td>${annuityFactor.toFixed(3)}</td><td class="green">${fmt(fvSacrificeContribs)}</td></tr>
+        <tr><td>After-tax</td><td>${fmt(totalAfterTaxAnnual)}</td><td>${annuityFactor.toFixed(3)}</td><td class="amber">${fmt(fvAfterTaxContribs)}</td></tr>
+        <tr><td><strong>Advantage from contributions</strong></td><td>${fmt(annualGap)}</td><td>${annuityFactor.toFixed(3)}</td><td class="accent">${fmt(fvSacrificeContribs - fvAfterTaxContribs)}</td></tr>
+      </tbody>
+    </table>
+
+    ${hasCurrentBal ? `
+    <h4>Step 3 — Current super balance</h4>
+    <p>Your existing <strong>${fmt(currentSuperBal)}</strong> compounds at ${returnRate}%/yr for ${years} years: <strong>${fmt(currentSuperBal)} × ${growthFactor.toFixed(5)} = ${fmt(fvStartingBal)}</strong>. This amount is added to <em>both</em> scenarios equally, so it lifts both final balances but has <strong>zero effect on the advantage</strong> — it cancels out of the difference.</p>
+    ` : `
+    <h4>Step 3 — Current super balance</h4>
+    <p>No current super balance entered. If you toggle it on, any starting balance compounds at ${returnRate}%/yr and is added to both final figures equally — it raises both columns by the same amount, so the advantage stays unchanged.</p>
+    `}
+
+    <h4>The advantage in plain terms</h4>
+    <p>The ${fmt(fvSacrificeContribs - fvAfterTaxContribs)} retirement advantage is simply <strong>${fmt(annualGap)}/yr × ${annuityFactor.toFixed(0)}</strong> (the compounding factor). Every extra dollar you contribute through sacrifice instead of after-tax earns ${returnRate}% returns on top of returns for ${years} years. The gap starts small and accelerates — that's compounding working in your favour.</p>
+  `;
+}
+
+// ── INIT ───────────────────────────────────────────────────────────────────
+calc();
+</script>
+</body>
+</html>
