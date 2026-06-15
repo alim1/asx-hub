@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Solar & Battery Calculator</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f0f4f8;
+      color: #1a202c;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    h1 { text-align: center; font-size: 1.75rem; font-weight: 700; color: #1a365d; margin-bottom: 0.25rem; }
+    .subtitle { text-align: center; font-size: 0.9rem; color: #4a5568; margin-bottom: 2rem; }
+
+    /* ── Grid ── */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .card-tariff  { grid-column: 1; grid-row: 1; }
+    .card-supply  { grid-column: 1; grid-row: 2; }
+    .card-usage   { grid-column: 2; grid-row: 1 / 3; }
+    .card-solar   { grid-column: 1; grid-row: 3; }
+    .card-battery { grid-column: 2; grid-row: 3; }
+    .chart-card   { grid-column: 1 / -1; }
+    .results-card { grid-column: 1 / -1; }
+
+    @media (max-width: 700px) {
+      .grid { grid-template-columns: 1fr; }
+      .card-tariff, .card-supply, .card-usage, .card-solar,
+      .card-battery, .chart-card, .results-card { grid-column: 1; grid-row: auto; }
+      .chart-wrap { height: 260px; }
+      .results-grid { grid-template-columns: 1fr 1fr; }
+      .result-value { font-size: 1.15rem; }
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04);
+    }
+
+    .card h2 {
+      font-size: 1rem; font-weight: 600; color: #2d3748;
+      margin-bottom: 1rem; padding-bottom: 0.5rem;
+      border-bottom: 2px solid #e2e8f0;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+
+    /* ── Form ── */
+    .field-group { margin-bottom: 0.9rem; }
+
+    label { display: block; font-size: 0.78rem; font-weight: 600; color: #4a5568; margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 0.04em; }
+
+    .input-row { display: flex; align-items: center; gap: 0.4rem; }
+
+    .prefix { font-size: 0.9rem; color: #718096; font-weight: 600; width: 1.2rem; text-align: right; flex-shrink: 0; }
+
+    input[type="number"] {
+      width: 100%; padding: 0.45rem 0.6rem;
+      border: 1.5px solid #e2e8f0; border-radius: 7px;
+      font-size: 0.92rem; color: #2d3748;
+      transition: border-color 0.15s; background: #f7fafc;
+    }
+    input[type="number"]:focus { outline: none; border-color: #4299e1; background: #fff; }
+
+    .suffix { font-size: 0.78rem; color: #a0aec0; white-space: nowrap; flex-shrink: 0; }
+
+    /* ── Sliders ── */
+    .slider-row { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.4rem; }
+
+    input[type="range"] {
+      flex: 1; -webkit-appearance: none; appearance: none;
+      height: 6px; border-radius: 3px; background: #e2e8f0; outline: none; cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%;
+      background: #f6ad55; border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.2); cursor: pointer;
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 18px; height: 18px; border-radius: 50%;
+      background: #f6ad55; border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.2); cursor: pointer;
+    }
+
+    .slider-pct { font-size: 0.85rem; font-weight: 700; color: #d69e2e; width: 3rem; text-align: right; flex-shrink: 0; }
+
+    /* ── Split bar ── */
+    .split-bar-wrap { margin-top: 0.5rem; }
+    .split-bar { display: flex; height: 22px; border-radius: 6px; overflow: hidden; font-size: 0.72rem; font-weight: 700; }
+    .split-solar { background: #f6e05e; color: #744210; display: flex; align-items: center; justify-content: center; white-space: nowrap; overflow: hidden; transition: width 0.15s; min-width: 0; }
+    .split-grid  { background: #bee3f8; color: #2c5282; display: flex; align-items: center; justify-content: center; white-space: nowrap; overflow: hidden; transition: width 0.15s; min-width: 0; }
+    .split-labels { display: flex; justify-content: space-between; font-size: 0.75rem; color: #718096; margin-top: 0.25rem; }
+    .split-labels .solar-lbl { color: #b7791f; font-weight: 600; }
+    .split-labels .grid-lbl  { color: #2b6cb0; font-weight: 600; }
+
+    .period-divider { height: 1px; background: #edf2f7; margin: 1rem 0; }
+
+    /* ── Derived fields ── */
+    .derived-field {
+      background: #f0fff4; border: 1.5px solid #c6f6d5; border-radius: 7px;
+      padding: 0.5rem 0.75rem; display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+    .derived-field .derived-label { font-size: 0.78rem; color: #276749; font-weight: 600; }
+    .derived-field .derived-value { font-size: 0.95rem; font-weight: 700; color: #276749; font-family: "SF Mono","Fira Code",monospace; }
+
+    .derived-field-batt { background: #ebf8ff; border-color: #90cdf4; }
+    .derived-field-batt .derived-label, .derived-field-batt .derived-value { color: #2b6cb0; }
+
+    /* ── Chart ── */
+    .chart-wrap { position: relative; height: 360px; }
+
+    /* ── Scenario badge strip ── */
+    .badge-strip { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem; }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      border-radius: 8px; padding: 0.4rem 0.85rem;
+      font-size: 0.82rem; font-weight: 600;
+    }
+    .badge-solar  { background: #f0fff4; border: 1.5px solid #9ae6b4; color: #276749; }
+    .badge-combo  { background: #ebf8ff; border: 1.5px solid #90cdf4; color: #2b6cb0; }
+    .badge-warn   { background: #fff5f5; border: 1.5px solid #feb2b2; color: #c53030; }
+
+    /* ── Results ── */
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 1rem; margin-bottom: 1.5rem;
+    }
+
+    .result-block { background: #f7fafc; border-radius: 10px; padding: 1rem 1.1rem; border-left: 4px solid #4299e1; }
+    .result-block.green  { border-left-color: #48bb78; }
+    .result-block.orange { border-left-color: #ed8936; }
+    .result-block.teal   { border-left-color: #38b2ac; }
+    .result-block.purple { border-left-color: #9f7aea; }
+    .result-block.red    { border-left-color: #fc8181; }
+    .result-block.yellow { border-left-color: #ecc94b; }
+    .result-block.blue   { border-left-color: #63b3ed; }
+    .result-block.indigo { border-left-color: #7f9cf5; }
+
+    .result-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #718096; margin-bottom: 0.3rem; }
+    .result-value { font-size: 1.4rem; font-weight: 700; color: #1a202c; line-height: 1.1; }
+    .result-value.saving { color: #276749; }
+    .result-value.cost   { color: #742a2a; }
+    .result-value.blue-v { color: #2b6cb0; }
+    .result-caption { font-size: 0.74rem; color: #718096; margin-top: 0.35rem; line-height: 1.4; }
+
+    .section-title { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #718096; margin: 1.25rem 0 0.5rem; }
+
+    /* ── Table ── */
+    .breakdown { width: 100%; border-collapse: collapse; font-size: 0.84rem; margin-top: 0.5rem; }
+    .breakdown th { text-align: left; padding: 0.5rem 0.75rem; background: #edf2f7; color: #4a5568; font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.03em; }
+    .breakdown td { padding: 0.45rem 0.75rem; border-bottom: 1px solid #edf2f7; color: #2d3748; }
+    .breakdown tr:last-child td { border-bottom: none; }
+    .breakdown .total   td { font-weight: 700; background: #f7fafc; border-top: 2px solid #e2e8f0; }
+    .breakdown .total-b td { font-weight: 700; background: #ebf8ff; border-top: 2px solid #bee3f8; color: #2b6cb0; }
+    .breakdown .credit  td { color: #276749; }
+    .breakdown .batt-row td { color: #2b6cb0; background: #f0f8ff; }
+    .breakdown .solar-row td { color: #b7791f; background: #fffff0; }
+    .breakdown .nosolar td { color: #718096; }
+
+    .formula { font-size: 0.77rem; color: #718096; background: #f7fafc; border-radius: 6px; padding: 0.5rem 0.75rem; margin-top: 0.75rem; font-family: "SF Mono","Fira Code",monospace; line-height: 1.6; border-left: 3px solid #bee3f8; white-space: pre-wrap; }
+
+    .caption-box { background: #fffbeb; border-left: 3px solid #f6ad55; border-radius: 0 8px 8px 0; padding: 0.6rem 0.9rem; font-size: 0.8rem; color: #744210; margin-top: 0.75rem; line-height: 1.5; }
+
+    .divider { height: 1px; background: #e2e8f0; margin: 1rem 0; }
+  </style>
+</head>
+<body>
+
+<h1>☀️🔋 Solar & Battery Calculator</h1>
+<p class="subtitle">Compare solar-only vs solar + battery — adjust any value and results update instantly.</p>
+
+<div class="grid">
+
+  <!-- TARIFF RATES -->
+  <div class="card card-tariff">
+    <h2>⚡ Tariff Rates</h2>
+    <div class="field-group">
+      <label>Peak Tariff</label>
+      <div class="input-row"><span class="prefix">$</span><input type="number" id="peakRate" value="0.31713" step="0.00001" min="0" /><span class="suffix">/ kWh</span></div>
+    </div>
+    <div class="field-group">
+      <label>Off-Peak Tariff</label>
+      <div class="input-row"><span class="prefix">$</span><input type="number" id="offPeakRate" value="0.15983" step="0.00001" min="0" /><span class="suffix">/ kWh</span></div>
+    </div>
+    <div class="field-group">
+      <label>Solar Feed-In Rate</label>
+      <div class="input-row"><span class="prefix">$</span><input type="number" id="feedInRate" value="0.04" step="0.001" min="0" /><span class="suffix">/ kWh exported</span></div>
+    </div>
+    <div class="caption-box">Per-kWh rates charged or credited by your retailer. Feed-in is what you earn per kWh exported. Battery stores excess solar instead of exporting it — worth far more than the feed-in rate.</div>
+  </div>
+
+  <!-- SUPPLY CHARGES -->
+  <div class="card card-supply">
+    <h2>🔌 Daily Supply Charges</h2>
+    <div class="field-group">
+      <label>Peak Supply Charge</label>
+      <div class="input-row"><span class="prefix">$</span><input type="number" id="peakSupply" value="1.28579" step="0.00001" min="0" /><span class="suffix">/ day</span></div>
+    </div>
+    <div class="field-group">
+      <label>Off-Peak Supply Charge</label>
+      <div class="input-row"><span class="prefix">$</span><input type="number" id="offPeakSupply" value="0.03575" step="0.00001" min="0" /><span class="suffix">/ day</span></div>
+    </div>
+    <div class="field-group">
+      <label>Solar Supply Charge</label>
+      <div class="input-row"><span class="prefix">$</span><input type="number" id="solarSupply" value="0.01" step="0.001" min="0" /><span class="suffix">/ day</span></div>
+    </div>
+    <div class="caption-box">Fixed daily network access fees paid regardless of usage. Supply charges apply equally to both the solar-only and solar+battery scenarios.</div>
+  </div>
+
+  <!-- DAILY ENERGY USAGE -->
+  <div class="card card-usage">
+    <h2>📊 Daily Energy Usage</h2>
+
+    <div class="field-group">
+      <label>Peak Total Usage</label>
+      <div class="input-row"><input type="number" id="peakUsage" value="2" step="0.1" min="0" /><span class="suffix">kWh / day</span></div>
+    </div>
+    <div class="field-group">
+      <label>Peak — Solar Offset</label>
+      <div class="slider-row">
+        <input type="range" id="peakOffset" min="0" max="100" value="0" step="1" />
+        <span class="slider-pct" id="peakOffsetPct">0%</span>
+      </div>
+      <div class="split-bar-wrap">
+        <div class="split-bar">
+          <div class="split-solar" id="peakSolarBar" style="width:0%"></div>
+          <div class="split-grid"  id="peakGridBar"  style="width:100%"></div>
+        </div>
+        <div class="split-labels">
+          <span class="solar-lbl">☀️ <span id="peakSolarKwh">0.00</span> kWh solar</span>
+          <span class="grid-lbl">🔌 <span id="peakGridKwh">2.00</span> kWh grid</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="period-divider"></div>
+
+    <div class="field-group">
+      <label>Off-Peak Total Usage</label>
+      <div class="input-row"><input type="number" id="offPeakUsage" value="1" step="0.1" min="0" /><span class="suffix">kWh / day</span></div>
+    </div>
+    <div class="field-group">
+      <label>Off-Peak — Solar Offset</label>
+      <div class="slider-row">
+        <input type="range" id="offPeakOffset" min="0" max="100" value="0" step="1" />
+        <span class="slider-pct" id="offPeakOffsetPct">0%</span>
+      </div>
+      <div class="split-bar-wrap">
+        <div class="split-bar">
+          <div class="split-solar" id="offPeakSolarBar" style="width:0%"></div>
+          <div class="split-grid"  id="offPeakGridBar"  style="width:100%"></div>
+        </div>
+        <div class="split-labels">
+          <span class="solar-lbl">☀️ <span id="offPeakSolarKwh">0.00</span> kWh solar</span>
+          <span class="grid-lbl">🔌 <span id="offPeakGridKwh">1.00</span> kWh grid</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="caption-box">
+      Sliders set how much of each period's usage is covered by direct solar self-consumption.
+      The <strong>battery</strong> handles what's left — it charges from excess solar during the day and discharges to cover remaining grid usage at night, off-peak first then peak.
+    </div>
+  </div>
+
+  <!-- SOLAR SYSTEM -->
+  <div class="card card-solar">
+    <h2>🌞 Solar System</h2>
+    <div class="field-group">
+      <label>System Size</label>
+      <div class="input-row"><input type="number" id="systemSize" value="1.5" step="0.1" min="0" /><span class="suffix">kW</span></div>
+    </div>
+    <div class="field-group">
+      <label>Peak Sun Hours (PSH)</label>
+      <div class="input-row"><input type="number" id="psh" value="4.5" step="0.1" min="0" max="12" /><span class="suffix">hrs / day</span></div>
+    </div>
+    <div class="field-group">
+      <label>System Cost</label>
+      <div class="input-row"><span class="prefix">$</span><input type="number" id="systemCost" value="2500" step="100" min="0" /></div>
+    </div>
+    <div class="derived-field">
+      <span class="derived-label">☀️ Daily Generation</span>
+      <span class="derived-value" id="derived-gen">— kWh</span>
+    </div>
+    <div class="derived-field">
+      <span class="derived-label">🏠 Direct Self-Consumption</span>
+      <span class="derived-value" id="derived-self">— kWh</span>
+    </div>
+    <div class="derived-field">
+      <span class="derived-label">⚡ Excess Solar</span>
+      <span class="derived-value" id="derived-excess">— kWh</span>
+    </div>
+    <div class="caption-box" style="margin-top:0.25rem">Brisbane/SEQ PSH ≈ 4.5, Sydney ≈ 4.2, Melbourne ≈ 3.6. Excess solar charges the battery first; the remainder is exported.</div>
+  </div>
+
+  <!-- BATTERY STORAGE -->
+  <div class="card card-battery">
+    <h2>🔋 Battery Storage</h2>
+    <div class="field-group">
+      <label>Battery Capacity</label>
+      <div class="input-row"><input type="number" id="battCapacity" value="10" step="0.5" min="0" /><span class="suffix">kWh</span></div>
+    </div>
+    <div class="field-group">
+      <label>Battery Cost</label>
+      <div class="input-row"><span class="prefix">$</span><input type="number" id="battCost" value="8000" step="100" min="0" /></div>
+    </div>
+    <div class="field-group">
+      <label>Round-Trip Efficiency</label>
+      <div class="input-row"><input type="number" id="battEff" value="90" step="1" min="50" max="100" /><span class="suffix">%</span></div>
+    </div>
+    <div class="derived-field derived-field-batt">
+      <span class="derived-label">🔋 Battery Charged (daily)</span>
+      <span class="derived-value" id="derived-batt-charged">— kWh</span>
+    </div>
+    <div class="derived-field derived-field-batt">
+      <span class="derived-label">⚡ Usable Discharge</span>
+      <span class="derived-value" id="derived-batt-usable">— kWh</span>
+    </div>
+    <div class="derived-field derived-field-batt">
+      <span class="derived-label">📤 Feed-In After Battery</span>
+      <span class="derived-value" id="derived-feedin">— kWh</span>
+    </div>
+    <div class="caption-box" style="margin-top:0.25rem">
+      Battery charges from excess solar up to its capacity. Round-trip efficiency is the energy recovered per kWh stored (typically 90–95% for lithium). Discharge covers off-peak grid draw first, then peak.
+    </div>
+  </div>
+
+  <!-- BREAK-EVEN CHART -->
+  <div class="card chart-card">
+    <h2>📉 Break-Even Chart</h2>
+    <div class="badge-strip">
+      <div class="badge badge-solar" id="badge-solar">⏳ Solar only…</div>
+      <div class="badge badge-combo" id="badge-combo">⏳ Solar + Battery…</div>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="breakevenChart"></canvas>
+    </div>
+    <div class="caption-box" style="margin-top:1rem">
+      <strong>No Solar</strong> — cumulative electricity bills growing at full grid rates.
+      <strong>Solar Only</strong> — upfront solar cost + reduced annual bills. Crosses No Solar at solar break-even.
+      <strong>Solar + Battery</strong> — higher upfront cost but further reduced annual bills. Lowest long-run cost if break-even is acceptable.
+      All three lines start from Year 0.
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="card results-card">
+    <h2>📈 Results</h2>
+
+    <div class="results-grid">
+      <div class="result-block orange">
+        <div class="result-label">Daily Bill — No Solar</div>
+        <div class="result-value cost" id="res-nosolar"></div>
+        <div class="result-caption">Full grid usage, no feed-in</div>
+      </div>
+      <div class="result-block">
+        <div class="result-label">Daily Bill — Solar Only</div>
+        <div class="result-value" id="res-solar"></div>
+        <div class="result-caption">Grid reduced by self-consumption + feed-in</div>
+      </div>
+      <div class="result-block blue">
+        <div class="result-label">Daily Bill — Solar + Battery</div>
+        <div class="result-value blue-v" id="res-combo"></div>
+        <div class="result-caption">Grid further reduced by battery discharge</div>
+      </div>
+      <div class="result-block green">
+        <div class="result-label">Daily Saving — Solar Only</div>
+        <div class="result-value saving" id="res-saving-solar"></div>
+        <div class="result-caption">vs no-solar bill</div>
+      </div>
+      <div class="result-block teal">
+        <div class="result-label">Daily Saving — Solar + Battery</div>
+        <div class="result-value saving" id="res-saving-combo"></div>
+        <div class="result-caption">vs no-solar bill</div>
+      </div>
+      <div class="result-block yellow">
+        <div class="result-label">Extra Saving from Battery</div>
+        <div class="result-value saving" id="res-batt-extra"></div>
+        <div class="result-caption">Additional saving vs solar only</div>
+      </div>
+      <div class="result-block purple">
+        <div class="result-label">Quarterly Bill — Solar + Battery</div>
+        <div class="result-value" id="res-quarterly"></div>
+        <div class="result-caption">Daily × 91 days</div>
+      </div>
+      <div class="result-block red">
+        <div class="result-label">Break-Even — Solar Only</div>
+        <div class="result-value" id="res-be-solar"></div>
+        <div class="result-caption">$<span id="res-cost-solar">—</span> ÷ annual saving</div>
+      </div>
+      <div class="result-block indigo">
+        <div class="result-label">Break-Even — Solar + Battery</div>
+        <div class="result-value" id="res-be-combo"></div>
+        <div class="result-caption">$<span id="res-cost-combo">—</span> ÷ annual saving</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="section-title">Daily Cost Breakdown — All Scenarios</div>
+    <table class="breakdown">
+      <thead>
+        <tr>
+          <th>Line Item</th>
+          <th>Calculation</th>
+          <th style="text-align:right">Solar Only</th>
+          <th style="text-align:right">Solar + Battery</th>
+        </tr>
+      </thead>
+      <tbody id="breakdown-body"></tbody>
+    </table>
+
+    <div class="formula" id="formula-box"></div>
+
+    <div class="caption-box" style="margin-top:1rem">
+      <strong>Battery model:</strong> Battery charges from excess solar (generation minus direct self-consumption) up to its capacity.
+      Discharge = charged × round-trip efficiency. Battery covers off-peak grid draw first, then peak.
+      The battery's value comes from replacing imported energy at the tariff rate ($0.317 peak / $0.160 off-peak) rather than exporting at the feed-in rate ($0.04).
+      Break-even = total system cost ÷ annual saving vs no-solar baseline.
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ── Chart ──────────────────────────────────────────────────────────────
+  let breakevenChart = null;
+
+  function initChart() {
+    const ctx = document.getElementById('breakevenChart').getContext('2d');
+    breakevenChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [
+          {
+            label: 'No Solar',
+            data: [],
+            borderColor: '#e53e3e',
+            backgroundColor: 'rgba(229,62,62,0.06)',
+            borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 4, fill: false, tension: 0,
+          },
+          {
+            label: 'Solar Only',
+            data: [],
+            borderColor: '#38a169',
+            backgroundColor: 'rgba(56,161,105,0.07)',
+            borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 4, fill: false, tension: 0,
+          },
+          {
+            label: 'Solar + Battery',
+            data: [],
+            borderColor: '#3182ce',
+            backgroundColor: 'rgba(49,130,206,0.07)',
+            borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 4, fill: false, tension: 0,
+          },
+          {
+            label: 'Solar Break-Even',
+            data: [], borderColor: '#38a169', backgroundColor: '#38a169',
+            borderWidth: 0, pointRadius: 8, pointHoverRadius: 10, showLine: false, spanGaps: false,
+          },
+          {
+            label: 'Battery Break-Even',
+            data: [], borderColor: '#3182ce', backgroundColor: '#3182ce',
+            borderWidth: 0, pointRadius: 8, pointHoverRadius: 10, showLine: false, spanGaps: false,
+          }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { position: 'top', labels: { font: { size: 12 }, padding: 14, usePointStyle: true } },
+          tooltip: {
+            filter: item => item.raw !== null,
+            callbacks: {
+              title: items => 'Year ' + items[0].label,
+              label: item => ' ' + item.dataset.label + ': $' + Number(item.raw).toFixed(0)
+            }
+          }
+        },
+        scales: {
+          x: {
+            title: { display: true, text: 'Years', font: { size: 12 }, color: '#718096' },
+            ticks: { color: '#4a5568', maxTicksLimit: 15, callback: (val, i, ticks) => ticks[i].label + 'y' },
+            grid: { color: '#edf2f7' }
+          },
+          y: {
+            title: { display: true, text: 'Cumulative $ Spent', font: { size: 12 }, color: '#718096' },
+            ticks: { color: '#4a5568', callback: val => '$' + val.toLocaleString() },
+            grid: { color: '#edf2f7' }
+          }
+        }
+      }
+    });
+  }
+
+  function updateChart(annualNoSolar, annualSolarOnly, annualCombo, solarCost, comboCost, beSolar, beCombo) {
+    try {
+      if (typeof Chart === 'undefined') return;
+      if (!breakevenChart) initChart();
+
+      const maxYears = Math.ceil(Math.max(
+        isFinite(beSolar)  ? beSolar  * 1.5 : 0,
+        isFinite(beCombo)  ? beCombo  * 1.5 : 0,
+        12
+      ));
+
+      const labels       = [];
+      const noSolarData  = [];
+      const solarData    = [];
+      const comboData    = [];
+      const beSolarData  = [];
+      const beComboData  = [];
+
+      const beSolarYr = isFinite(beSolar) && beSolar > 0 ? Math.round(beSolar) : -1;
+      const beComboYr = isFinite(beCombo) && beCombo > 0 ? Math.round(beCombo) : -1;
+
+      for (let y = 0; y <= maxYears; y++) {
+        labels.push(y);
+        noSolarData.push(+(y * annualNoSolar).toFixed(2));
+        solarData.push(+(solarCost + y * annualSolarOnly).toFixed(2));
+        comboData.push(+(comboCost + y * annualCombo).toFixed(2));
+        beSolarData.push(y === beSolarYr ? +(solarCost + beSolar * annualSolarOnly).toFixed(2) : null);
+        beComboData.push(y === beComboYr ? +(comboCost + beCombo * annualCombo).toFixed(2) : null);
+      }
+
+      breakevenChart.data.labels           = labels;
+      breakevenChart.data.datasets[0].data = noSolarData;
+      breakevenChart.data.datasets[1].data = solarData;
+      breakevenChart.data.datasets[2].data = comboData;
+      breakevenChart.data.datasets[3].data = beSolarData;
+      breakevenChart.data.datasets[4].data = beComboData;
+      breakevenChart.update();
+    } catch(e) {
+      console.warn('Chart update failed:', e);
+    }
+  }
+
+  function updateBadges(beSolar, beCombo, solarCost, annualSolarOnly, comboCost, annualCombo) {
+    const bs = document.getElementById('badge-solar');
+    const bc = document.getElementById('badge-combo');
+
+    if (isFinite(beSolar) && beSolar > 0) {
+      bs.className = 'badge badge-solar';
+      bs.textContent = `☀️ Solar break-even: ${beSolar.toFixed(1)} yrs — $${(solarCost + beSolar * annualSolarOnly).toFixed(0)} total`;
+    } else {
+      bs.className = 'badge badge-warn';
+      bs.textContent = '⚠️ Solar only: no break-even with current settings';
+    }
+
+    if (isFinite(beCombo) && beCombo > 0) {
+      bc.className = 'badge badge-combo';
+      bc.textContent = `🔋 Solar + Battery: ${beCombo.toFixed(1)} yrs — $${(comboCost + beCombo * annualCombo).toFixed(0)} total`;
+    } else {
+      bc.className = 'badge badge-warn';
+      bc.textContent = '⚠️ Solar + Battery: no break-even with current settings';
+    }
+  }
+
+  // ── Calculator ─────────────────────────────────────────────────────────
+  const numIds = [
+    'peakRate','offPeakRate','feedInRate',
+    'peakSupply','offPeakSupply','solarSupply',
+    'peakUsage','offPeakUsage',
+    'systemSize','psh','systemCost',
+    'battCapacity','battCost','battEff'
+  ];
+  const sliderIds = ['peakOffset','offPeakOffset'];
+
+  function v(id) { return parseFloat(document.getElementById(id).value) || 0; }
+  function fmt(n) { return '$' + Math.abs(n).toFixed(2); }
+  function n3(n)  { return n.toFixed(3); }
+  function fmtC(n) { return n < 0 ? `<span style="color:#276749">−$${Math.abs(n).toFixed(4)}</span>` : `$${n.toFixed(4)}`; }
+
+  function calculate() {
+    // Inputs
+    const peakRate      = v('peakRate');
+    const offPeakRate   = v('offPeakRate');
+    const feedInRate    = v('feedInRate');
+    const peakSupply    = v('peakSupply');
+    const offPeakSupply = v('offPeakSupply');
+    const solarSupply   = v('solarSupply');
+    const peakUsage     = v('peakUsage');
+    const offPeakUsage  = v('offPeakUsage');
+    const systemSize    = v('systemSize');
+    const psh           = v('psh');
+    const systemCost    = v('systemCost');
+    const battCapacity  = v('battCapacity');
+    const battCost      = v('battCost');
+    const battEff       = v('battEff') / 100;
+
+    const peakOffsetPct    = parseInt(document.getElementById('peakOffset').value) || 0;
+    const offPeakOffsetPct = parseInt(document.getElementById('offPeakOffset').value) || 0;
+
+    // ── Solar generation ──
+    const dailyGen = systemSize * psh;
+
+    // ── Direct self-consumption (peak-first, capped by generation) ──
+    const peakSolarUsed      = Math.min(peakUsage * (peakOffsetPct / 100), dailyGen);
+    const remainingAfterPeak = Math.max(0, dailyGen - peakSolarUsed);
+    const offPeakSolarUsed   = Math.min(offPeakUsage * (offPeakOffsetPct / 100), remainingAfterPeak);
+    const totalSelf          = peakSolarUsed + offPeakSolarUsed;
+    const excessSolar        = Math.max(0, dailyGen - totalSelf);
+
+    // ── Update sliders & bars ──
+    document.getElementById('peakOffsetPct').textContent    = peakOffsetPct + '%';
+    document.getElementById('offPeakOffsetPct').textContent = offPeakOffsetPct + '%';
+
+    const peakActualPct = peakUsage > 0 ? (peakSolarUsed / peakUsage) * 100 : 0;
+    document.getElementById('peakSolarBar').style.width = peakActualPct + '%';
+    document.getElementById('peakGridBar').style.width  = (100 - peakActualPct) + '%';
+    document.getElementById('peakSolarKwh').textContent = peakSolarUsed.toFixed(2);
+    document.getElementById('peakGridKwh').textContent  = (peakUsage - peakSolarUsed).toFixed(2);
+
+    const opActualPct = offPeakUsage > 0 ? (offPeakSolarUsed / offPeakUsage) * 100 : 0;
+    document.getElementById('offPeakSolarBar').style.width = opActualPct + '%';
+    document.getElementById('offPeakGridBar').style.width  = (100 - opActualPct) + '%';
+    document.getElementById('offPeakSolarKwh').textContent = offPeakSolarUsed.toFixed(2);
+    document.getElementById('offPeakGridKwh').textContent  = (offPeakUsage - offPeakSolarUsed).toFixed(2);
+
+    // ── Battery ──
+    const battCharged  = Math.min(excessSolar, battCapacity);       // kWh stored
+    const battUsable   = battCharged * battEff;                      // kWh available to discharge
+    const feedInExport = excessSolar - battCharged;                  // kWh exported (after battery)
+
+    // Grid draws WITHOUT battery (solar only)
+    const peakGridSolar    = peakUsage - peakSolarUsed;
+    const offPeakGridSolar = offPeakUsage - offPeakSolarUsed;
+    const feedInSolar      = excessSolar;                           // all excess exported
+
+    // Battery discharge: cover off-peak first, then peak
+    const battCoversOffpeak = Math.min(battUsable, offPeakGridSolar);
+    const battCoversPeak    = Math.min(battUsable - battCoversOffpeak, peakGridSolar);
+
+    // Grid draws WITH battery
+    const peakGridCombo    = peakGridSolar - battCoversPeak;
+    const offPeakGridCombo = offPeakGridSolar - battCoversOffpeak;
+
+    // Update solar card derived
+    document.getElementById('derived-gen').textContent    = n3(dailyGen) + ' kWh';
+    document.getElementById('derived-self').textContent   = n3(totalSelf) + ' kWh';
+    document.getElementById('derived-excess').textContent = n3(excessSolar) + ' kWh';
+
+    // Update battery card derived
+    document.getElementById('derived-batt-charged').textContent = n3(battCharged) + ' kWh';
+    document.getElementById('derived-batt-usable').textContent  = n3(battUsable) + ' kWh';
+    document.getElementById('derived-feedin').textContent       = n3(feedInExport) + ' kWh';
+
+    // ── Costs ──
+    const totalSupply = peakSupply + offPeakSupply + solarSupply;
+
+    // No solar
+    const dailyNoSolar = (peakSupply + offPeakSupply)
+      + peakUsage * peakRate + offPeakUsage * offPeakRate;
+
+    // Solar only
+    const feedInCreditSolar = feedInSolar * feedInRate;
+    const dailySolarOnly = totalSupply
+      + peakGridSolar * peakRate
+      + offPeakGridSolar * offPeakRate
+      - feedInCreditSolar;
+
+    // Solar + battery
+    const feedInCreditCombo = feedInExport * feedInRate;
+    const dailyCombo = totalSupply
+      + peakGridCombo * peakRate
+      + offPeakGridCombo * offPeakRate
+      - feedInCreditCombo;
+
+    // Savings & break-evens
+    const annualNoSolar   = dailyNoSolar * 365;
+    const annualSolarOnly = dailySolarOnly * 365;
+    const annualCombo     = dailyCombo * 365;
+
+    const savingSolar = dailyNoSolar - dailySolarOnly;
+    const savingCombo = dailyNoSolar - dailyCombo;
+    const battExtra   = savingCombo - savingSolar;
+
+    const annualSavingSolar = savingSolar * 365;
+    const annualSavingCombo = savingCombo * 365;
+
+    const comboCostTotal = systemCost + battCost;
+
+    const beSolar = annualSavingSolar > 0 ? systemCost / annualSavingSolar : Infinity;
+    const beCombo = annualSavingCombo > 0 ? comboCostTotal / annualSavingCombo : Infinity;
+
+    // ── Update result blocks ──
+    document.getElementById('res-nosolar').textContent      = fmt(dailyNoSolar);
+    document.getElementById('res-solar').textContent        = fmt(dailySolarOnly);
+    document.getElementById('res-combo').textContent        = fmt(dailyCombo);
+    document.getElementById('res-saving-solar').textContent = fmt(savingSolar);
+    document.getElementById('res-saving-combo').textContent = fmt(savingCombo);
+    document.getElementById('res-batt-extra').textContent   = fmt(battExtra);
+    document.getElementById('res-quarterly').textContent    = fmt(dailyCombo * 91);
+    document.getElementById('res-be-solar').textContent     = isFinite(beSolar) ? beSolar.toFixed(1) + ' yrs' : '—';
+    document.getElementById('res-be-combo').textContent     = isFinite(beCombo) ? beCombo.toFixed(1) + ' yrs' : '—';
+    document.getElementById('res-cost-solar').textContent   = systemCost.toLocaleString();
+    document.getElementById('res-cost-combo').textContent   = comboCostTotal.toLocaleString();
+
+    // ── Breakdown table ──
+    const rows = [
+      { label: 'Peak supply charge',            calc: `$${peakSupply.toFixed(5)}/day`,          s: peakSupply,              c: peakSupply,              cls: '' },
+      { label: 'Off-peak supply charge',         calc: `$${offPeakSupply.toFixed(5)}/day`,        s: offPeakSupply,           c: offPeakSupply,           cls: '' },
+      { label: 'Solar supply charge',            calc: `$${solarSupply.toFixed(3)}/day`,          s: solarSupply,             c: solarSupply,             cls: '' },
+      { label: `Peak grid (${peakGridSolar.toFixed(2)} / ${peakGridCombo.toFixed(2)} kWh)`,
+                                                 calc: `× $${peakRate.toFixed(5)}`,               s: peakGridSolar*peakRate,  c: peakGridCombo*peakRate,  cls: '' },
+      { label: `Off-peak grid (${offPeakGridSolar.toFixed(2)} / ${offPeakGridCombo.toFixed(2)} kWh)`,
+                                                 calc: `× $${offPeakRate.toFixed(5)}`,            s: offPeakGridSolar*offPeakRate, c: offPeakGridCombo*offPeakRate, cls: '' },
+      { label: `Direct solar self-consumption (${totalSelf.toFixed(2)} kWh)`,
+                                                 calc: `${n3(peakSolarUsed)} peak + ${n3(offPeakSolarUsed)} OP avoided`, s: -(peakSolarUsed*peakRate+offPeakSolarUsed*offPeakRate), c: -(peakSolarUsed*peakRate+offPeakSolarUsed*offPeakRate), cls: 'solar-row' },
+      { label: `Battery discharge — off-peak (${battCoversOffpeak.toFixed(2)} kWh)`,
+                                                 calc: `× $${offPeakRate.toFixed(5)} avoided`,    s: 0,                       c: -(battCoversOffpeak*offPeakRate), cls: 'batt-row' },
+      { label: `Battery discharge — peak (${battCoversPeak.toFixed(2)} kWh)`,
+                                                 calc: `× $${peakRate.toFixed(5)} avoided`,       s: 0,                       c: -(battCoversPeak*peakRate), cls: 'batt-row' },
+      { label: `Feed-in credit (${feedInSolar.toFixed(2)} / ${feedInExport.toFixed(2)} kWh exported)`,
+                                                 calc: `× $${feedInRate.toFixed(3)}`,             s: -feedInCreditSolar,      c: -feedInCreditCombo,      cls: 'credit' },
+      { label: 'DAILY TOTAL',                    calc: 'Supply + Grid − Credits',                 s: dailySolarOnly,          c: dailyCombo,              cls: 'total' },
+      { label: 'DAILY TOTAL — No Solar (baseline)', calc: 'Supply + Full usage',                  s: dailyNoSolar,            c: dailyNoSolar,            cls: 'nosolar' },
+    ];
+
+    document.getElementById('breakdown-body').innerHTML = rows.map(r => `
+      <tr class="${r.cls}">
+        <td>${r.label}</td>
+        <td style="color:#718096;font-size:0.78rem">${r.calc}</td>
+        <td style="text-align:right;font-family:'SF Mono','Fira Code',monospace">${fmtC(r.s)}</td>
+        <td style="text-align:right;font-family:'SF Mono','Fira Code',monospace">${fmtC(r.c)}</td>
+      </tr>`).join('');
+
+    // ── Formula box ──
+    document.getElementById('formula-box').textContent =
+`Generation = ${systemSize} kW × ${psh} PSH = ${n3(dailyGen)} kWh
+Direct self-consumed = ${n3(peakSolarUsed)} kWh peak + ${n3(offPeakSolarUsed)} kWh off-peak = ${n3(totalSelf)} kWh
+Excess solar = ${n3(dailyGen)} − ${n3(totalSelf)} = ${n3(excessSolar)} kWh
+
+Battery charged = min(${n3(excessSolar)}, ${battCapacity}) = ${n3(battCharged)} kWh
+Battery usable = ${n3(battCharged)} × ${(battEff*100).toFixed(0)}% = ${n3(battUsable)} kWh
+Feed-in after battery = ${n3(excessSolar)} − ${n3(battCharged)} = ${n3(feedInExport)} kWh
+
+Daily bill (Solar only)    = ${fmt(totalSupply)} supply + ${fmt(peakGridSolar*peakRate+offPeakGridSolar*offPeakRate)} grid − ${fmt(feedInCreditSolar)} feed-in = ${fmt(dailySolarOnly)}
+Daily bill (Solar+Battery) = ${fmt(totalSupply)} supply + ${fmt(peakGridCombo*peakRate+offPeakGridCombo*offPeakRate)} grid − ${fmt(feedInCreditCombo)} feed-in = ${fmt(dailyCombo)}
+Daily bill (No solar)      = ${fmt(dailyNoSolar)}
+
+Annual saving (Solar only)    = ${fmt(savingSolar)} × 365 = ${fmt(annualSavingSolar)}
+Annual saving (Solar+Battery) = ${fmt(savingCombo)} × 365 = ${fmt(annualSavingCombo)}
+
+Break-even Solar only    = $${systemCost.toLocaleString()} ÷ ${fmt(annualSavingSolar)}/yr = ${isFinite(beSolar) ? beSolar.toFixed(1)+' yrs' : 'N/A'}
+Break-even Solar+Battery = $${comboCostTotal.toLocaleString()} ÷ ${fmt(annualSavingCombo)}/yr = ${isFinite(beCombo) ? beCombo.toFixed(1)+' yrs' : 'N/A'}`;
+
+    // ── Chart & badges ──
+    updateBadges(beSolar, beCombo, systemCost, annualSolarOnly, comboCostTotal, annualCombo);
+    updateChart(annualNoSolar, annualSolarOnly, annualCombo, systemCost, comboCostTotal, beSolar, beCombo);
+  }
+
+  numIds.forEach(id => document.getElementById(id).addEventListener('input', calculate));
+  sliderIds.forEach(id => document.getElementById(id).addEventListener('input', calculate));
+
+  if (document.readyState === 'complete') {
+    calculate();
+  } else {
+    window.addEventListener('load', calculate);
+  }
+</script>
+</body>
+</html>
