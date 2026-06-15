@@ -498,7 +498,7 @@
         scales: {
           x: {
             title: { display: true, text: 'Years', font: { size: 12 }, color: '#718096' },
-            ticks: { color: '#4a5568', maxTicksLimit: 15, callback: (val, i, ticks) => ticks[i].label + 'y' },
+            ticks: { color: '#4a5568', maxTicksLimit: 15, callback: val => val + 'y' },
             grid: { color: '#edf2f7' }
           },
           y: {
