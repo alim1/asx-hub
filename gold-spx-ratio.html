@@ -19,14 +19,14 @@
     .events-toggle {
       font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 500;
       letter-spacing: 1px; padding: 4px 10px; cursor: pointer;
-      background: transparent; color: #555555; border: 1px solid #333333;
+      background: transparent; color: #94a3b8; border: 1px solid #374151;
       transition: all 0.2s;
     }
-    .events-toggle:hover { border-color: #555555; color: #888888; }
+    .events-toggle:hover { border-color: #94a3b8; color: #cbd5e1; }
     .events-toggle.active { border-color: #F0B429; color: #F0B429; }
     .refresh-status {
       display: none; align-items: center; gap: 8px;
-      font-size: 10px; color: #555555; letter-spacing: 0.5px;
+      font-size: 10px; color: #94a3b8; letter-spacing: 0.5px;
     }
     .refresh-dot {
       width: 6px; height: 6px; border-radius: 50%; background: #00FF88;
@@ -34,33 +34,33 @@
     }
     .refresh-dot.stale { background: #F0B429; }
     .refresh-dot.error { background: #FF4444; }
-    #loading { text-align: center; padding: 80px 0; font-size: 12px; letter-spacing: 2px; color: #555555; }
+    #loading { text-align: center; padding: 80px 0; font-size: 12px; letter-spacing: 2px; color: #94a3b8; }
     #error { display: none; text-align: center; padding: 80px 0; font-size: 12px; color: #FF4444; }
     #dashboard { display: none; }
     .tab-bar { display: flex; gap: 2px; margin-bottom: 16px; }
     .tab-btn {
       font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 500;
       letter-spacing: 1px; padding: 8px 16px; cursor: pointer;
-      background: #111111; color: #555555; border: 1px solid #222222;
+      background: #0f172a; color: #94a3b8; border: 1px solid #2d3748;
       transition: all 0.2s;
     }
-    .tab-btn:hover { color: #888888; border-color: #333333; }
+    .tab-btn:hover { color: #cbd5e1; border-color: #374151; }
     .tab-btn.active { color: #F0B429; border-color: #F0B429; background: #1a1a0a; }
     .stats-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; margin-bottom: 12px; }
     .stat-card {
-      background: #111111; border: 1px solid #222222; padding: 12px;
+      background: #0f172a; border: 1px solid #2d3748; padding: 12px;
       transition: border-color 0.2s;
     }
-    .stat-card:hover { border-color: #333333; }
-    .stat-label { font-size: 9px; letter-spacing: 1px; color: #555555; margin-bottom: 4px; }
+    .stat-card:hover { border-color: #374151; }
+    .stat-label { font-size: 9px; letter-spacing: 1px; color: #94a3b8; margin-bottom: 4px; }
     .stat-value { font-size: 18px; font-weight: 600; color: #E5E5E5; }
-    .stat-sub { font-size: 10px; color: #555555; margin-top: 2px; }
+    .stat-sub { font-size: 10px; color: #94a3b8; margin-top: 2px; }
     .stat-change-pos { color: #00FF88; }
     .stat-change-neg { color: #FF4444; }
-    .signal-card { border-color: #333333; }
+    .signal-card { border-color: #374151; }
     .regime-bar {
-      background: #111111; border: 1px solid #222222; padding: 12px 16px;
-      font-size: 11px; line-height: 1.6; color: #888888; margin-bottom: 12px;
+      background: #0f172a; border: 1px solid #2d3748; padding: 12px 16px;
+      font-size: 11px; line-height: 1.6; color: #cbd5e1; margin-bottom: 12px;
     }
     .cross-signal {
       display: none; background: rgba(240,180,41,0.1); border-left: 4px solid #F0B429;
@@ -70,56 +70,56 @@
     .tf-btn {
       font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 500;
       letter-spacing: 1px; padding: 6px 12px; cursor: pointer;
-      background: #111111; color: #555555; border: 1px solid #222222;
+      background: #0f172a; color: #94a3b8; border: 1px solid #2d3748;
       transition: all 0.2s;
     }
-    .tf-btn:hover { color: #888888; border-color: #333333; }
-    .tf-btn.active { color: #E5E5E5; border-color: #444444; }
+    .tf-btn:hover { color: #cbd5e1; border-color: #374151; }
+    .tf-btn.active { color: #E5E5E5; border-color: #64748b; }
     .chart-panel {
-      background: #111111; border: 1px solid #222222; padding: 16px;
+      background: #0f172a; border: 1px solid #2d3748; padding: 16px;
       margin-bottom: 16px; height: 500px;
     }
     .chart-panel canvas { width: 100% !important; height: 100% !important; }
     .disclaimer {
-      display: none; font-size: 10px; color: #444444; padding: 8px 0;
+      display: none; font-size: 10px; color: #64748b; padding: 8px 0;
       letter-spacing: 0.5px; line-height: 1.5;
     }
     .sparkline-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
     .sparkline-card {
-      background: #111111; border: 1px solid #222222; padding: 12px;
+      background: #0f172a; border: 1px solid #2d3748; padding: 12px;
     }
-    .sparkline-title { font-size: 9px; letter-spacing: 1px; color: #555555; margin-bottom: 8px; }
+    .sparkline-title { font-size: 9px; letter-spacing: 1px; color: #94a3b8; margin-bottom: 8px; }
     .sparkline-canvas { height: 120px; }
     .sparkline-canvas canvas { width: 100% !important; height: 100% !important; }
 
     /* Macro Pulse styles */
     #macro-section { display: none; }
     .macro-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
-    .macro-chart-card { background: #111111; border: 1px solid #222222; padding: 12px; height: 280px; }
+    .macro-chart-card { background: #0f172a; border: 1px solid #2d3748; padding: 12px; height: 280px; }
     .macro-chart-card canvas { width: 100% !important; height: 100% !important; }
-    .macro-chart-title { font-size: 10px; letter-spacing: 1px; color: #555555; margin-bottom: 8px; }
+    .macro-chart-title { font-size: 10px; letter-spacing: 1px; color: #94a3b8; margin-bottom: 8px; }
     .macro-tf-bar { display: flex; gap: 2px; margin-bottom: 12px; }
     .macro-tf-btn {
       font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 500;
       letter-spacing: 1px; padding: 6px 12px; cursor: pointer;
-      background: #111111; color: #555555; border: 1px solid #222222;
+      background: #0f172a; color: #94a3b8; border: 1px solid #2d3748;
       transition: all 0.2s;
     }
-    .macro-tf-btn:hover { color: #888888; border-color: #333333; }
-    .macro-tf-btn.active { color: #E5E5E5; border-color: #444444; }
+    .macro-tf-btn:hover { color: #cbd5e1; border-color: #374151; }
+    .macro-tf-btn.active { color: #E5E5E5; border-color: #64748b; }
     .warsh-table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 11px; }
-    .warsh-table th { text-align: left; padding: 8px 12px; border-bottom: 1px solid #333333; color: #888888; font-weight: 500; font-size: 10px; letter-spacing: 0.5px; }
-    .warsh-table td { padding: 8px 12px; border-bottom: 1px solid #1a1a1a; color: #E5E5E5; }
+    .warsh-table th { text-align: left; padding: 8px 12px; border-bottom: 1px solid #374151; color: #cbd5e1; font-weight: 500; font-size: 10px; letter-spacing: 0.5px; }
+    .warsh-table td { padding: 8px 12px; border-bottom: 1px solid #1e293b; color: #E5E5E5; }
     .warsh-summary { font-size: 11px; margin-top: 8px; }
     .macro-cross-signal {
       display: none; padding: 12px 16px; font-size: 11px; line-height: 1.5; margin-bottom: 12px;
     }
     .macro-conditions {
-      background: #111111; border: 1px solid #222222; padding: 12px 16px;
-      font-size: 11px; line-height: 1.6; color: #888888; margin-bottom: 12px;
+      background: #0f172a; border: 1px solid #2d3748; padding: 12px 16px;
+      font-size: 11px; line-height: 1.6; color: #cbd5e1; margin-bottom: 12px;
     }
     .macro-static-notes {
-      font-size: 10px; color: #444444; line-height: 1.5; padding: 8px 0;
+      font-size: 10px; color: #64748b; line-height: 1.5; padding: 8px 0;
     }
   </style>
 </head>
@@ -226,7 +226,7 @@
         <div class="macro-conditions" id="macro-conditions"></div>
 
         <div class="regime-bar" style="margin-bottom: 12px;">
-          <div style="font-size: 10px; letter-spacing: 1px; color: #555555; margin-bottom: 8px;">WARSH PLAYBOOK TRACKER</div>
+          <div style="font-size: 10px; letter-spacing: 1px; color: #94a3b8; margin-bottom: 8px;">WARSH PLAYBOOK TRACKER</div>
           <table class="warsh-table">
             <thead>
               <tr><th>Step</th><th>Needs</th><th>Current</th><th>Status</th></tr>
@@ -525,7 +525,7 @@ function renderSilverStats(data) {
     sigValue = 'FAVOUR SILVER'; sigColor = '#F0B429';
     sigSub = 'Gold expensive vs silver';
   } else if (now >= 55) {
-    sigValue = 'NEUTRAL'; sigColor = '#666666';
+    sigValue = 'NEUTRAL'; sigColor = '#94a3b8';
     sigSub = 'Within normal range';
   } else if (now >= 40) {
     sigValue = 'FAVOUR GOLD'; sigColor = '#C0C0C0';
@@ -578,7 +578,7 @@ function renderBuffettStats(data) {
     sigValue = 'OVERVALUED'; sigColor = '#F0B429'; sigBorder = '#F0B429';
     sigSub = 'Above fair value range';
   } else if (now >= 90) {
-    sigValue = 'FAIR VALUE'; sigColor = '#888888'; sigBorder = '#444444';
+    sigValue = 'FAIR VALUE'; sigColor = '#cbd5e1'; sigBorder = '#64748b';
     sigSub = 'Within normal range';
   } else if (now >= 75) {
     sigValue = 'UNDERVALUED'; sigColor = '#00FF88'; sigBorder = '#00FF88';
@@ -635,7 +635,7 @@ function renderMacroStats(data) {
   } else if (sp > 0 && dxySlope > 0 && computeSlopeField(macroData, 20, 'y10') > 0) {
     warshValue = 'HAWKISH PRESSURE'; warshColor = '#FF8C00'; warshSub = 'Dollar and long rates rising \u2014 tightening bias'; warshBorder = '#FF8C00';
   } else {
-    warshValue = 'MIXED'; warshColor = '#888888'; warshSub = 'No clear signal'; warshBorder = '#444444';
+    warshValue = 'MIXED'; warshColor = '#cbd5e1'; warshSub = 'No clear signal'; warshBorder = '#64748b';
   }
 
   var cards = [
@@ -770,26 +770,26 @@ function createDxyChart(data) {
               borderColor: '#FF4444', borderWidth: 1, borderDash: [6, 4],
               label: { display: true, content: '2022 Peak', position: 'start',
                 font: { size: 10, family: 'IBM Plex Mono' }, color: '#FF4444',
-                backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 }
+                backgroundColor: 'rgba(15,23,42,0.9)', padding: 3 }
             },
             parity: {
               type: 'line', yMin: 100, yMax: 100,
-              borderColor: '#888888', borderWidth: 1, borderDash: [6, 4],
+              borderColor: '#cbd5e1', borderWidth: 1, borderDash: [6, 4],
               label: { display: true, content: 'Parity / Key Level', position: 'start',
-                font: { size: 10, family: 'IBM Plex Mono' }, color: '#888888',
-                backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 }
+                font: { size: 10, family: 'IBM Plex Mono' }, color: '#cbd5e1',
+                backgroundColor: 'rgba(15,23,42,0.9)', padding: 3 }
             },
             low2021: {
               type: 'line', yMin: 89, yMax: 89,
               borderColor: '#00FF88', borderWidth: 1, borderDash: [6, 4],
               label: { display: true, content: '2021 Low', position: 'start',
                 font: { size: 10, family: 'IBM Plex Mono' }, color: '#00FF88',
-                backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 }
+                backgroundColor: 'rgba(15,23,42,0.9)', padding: 3 }
             }
           }
         },
         tooltip: {
-          backgroundColor: '#1a1a1a', borderColor: '#333333', borderWidth: 1,
+          backgroundColor: '#1e293b', borderColor: '#374151', borderWidth: 1,
           titleFont: { family: 'IBM Plex Mono', size: 11 },
           bodyFont: { family: 'IBM Plex Mono', size: 11 },
           titleColor: '#E5E5E5', bodyColor: '#E5E5E5', displayColors: false,
@@ -802,14 +802,14 @@ function createDxyChart(data) {
       scales: {
         x: {
           type: 'time', time: { parser: 'yyyy-MM-dd' },
-          grid: { color: '#1a1a1a' },
-          ticks: { color: '#666666', font: { family: 'IBM Plex Mono', size: 10 }, maxRotation: 0 },
-          border: { color: '#222222' }
+          grid: { color: '#1e293b' },
+          ticks: { color: '#94a3b8', font: { family: 'IBM Plex Mono', size: 10 }, maxRotation: 0 },
+          border: { color: '#2d3748' }
         },
         y: {
-          position: 'right', grid: { color: '#1a1a1a' },
-          ticks: { color: '#666666', font: { family: 'IBM Plex Mono', size: 10 }, callback: function(v) { return v.toFixed(2); } },
-          border: { color: '#222222' }
+          position: 'right', grid: { color: '#1e293b' },
+          ticks: { color: '#94a3b8', font: { family: 'IBM Plex Mono', size: 10 }, callback: function(v) { return v.toFixed(2); } },
+          border: { color: '#2d3748' }
         }
       }
     }
@@ -827,28 +827,28 @@ function createSpreadChart(data) {
       borderColor: '#FF4444', borderWidth: 2, borderDash: [],
       label: { display: true, content: 'Inversion Line', position: 'start',
         font: { size: 10, family: 'IBM Plex Mono' }, color: '#FF4444',
-        backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 }
+        backgroundColor: 'rgba(15,23,42,0.9)', padding: 3 }
     },
     healthyRange: {
       type: 'line', yMin: 1.0, yMax: 1.0,
       borderColor: '#00FF88', borderWidth: 1, borderDash: [6, 4],
       label: { display: true, content: 'Healthy Range', position: 'start',
         font: { size: 10, family: 'IBM Plex Mono' }, color: '#00FF88',
-        backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 }
+        backgroundColor: 'rgba(15,23,42,0.9)', padding: 3 }
     },
     steepIdeal: {
       type: 'line', yMin: 1.5, yMax: 1.5,
       borderColor: '#F0B429', borderWidth: 1, borderDash: [6, 4],
       label: { display: true, content: 'Steep / Ideal for Banks', position: 'start',
         font: { size: 10, family: 'IBM Plex Mono' }, color: '#F0B429',
-        backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 }
+        backgroundColor: 'rgba(15,23,42,0.9)', padding: 3 }
     },
     deepInversion: {
       type: 'line', yMin: -0.5, yMax: -0.5,
       borderColor: '#FF4444', borderWidth: 1, borderDash: [6, 4],
       label: { display: true, content: 'Deep Inversion', position: 'start',
         font: { size: 10, family: 'IBM Plex Mono' }, color: '#FF4444',
-        backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 }
+        backgroundColor: 'rgba(15,23,42,0.9)', padding: 3 }
     },
     zoneGreen: { type: 'box', yMin: 1.0, yMax: 2.5, backgroundColor: 'rgba(0,255,136,0.04)', borderWidth: 0 },
     zoneAmber: { type: 'box', yMin: 0, yMax: 1.0, backgroundColor: 'rgba(240,180,41,0.04)', borderWidth: 0 },
@@ -886,7 +886,7 @@ function createSpreadChart(data) {
         legend: { display: false },
         annotation: { annotations: annotations },
         tooltip: {
-          backgroundColor: '#1a1a1a', borderColor: '#333333', borderWidth: 1,
+          backgroundColor: '#1e293b', borderColor: '#374151', borderWidth: 1,
           titleFont: { family: 'IBM Plex Mono', size: 11 }, bodyFont: { family: 'IBM Plex Mono', size: 11 },
           titleColor: '#E5E5E5', bodyColor: '#E5E5E5', displayColors: false,
           callbacks: {
@@ -899,8 +899,8 @@ function createSpreadChart(data) {
         }
       },
       scales: {
-        x: { type: 'time', time: { parser: 'yyyy-MM-dd' }, grid: { color: '#1a1a1a' }, ticks: { color: '#666666', font: { family: 'IBM Plex Mono', size: 10 }, maxRotation: 0 }, border: { color: '#222222' } },
-        y: { position: 'right', grid: { color: '#1a1a1a' }, ticks: { color: '#666666', font: { family: 'IBM Plex Mono', size: 10 }, callback: function(v) { return v.toFixed(2); } }, border: { color: '#222222' } }
+        x: { type: 'time', time: { parser: 'yyyy-MM-dd' }, grid: { color: '#1e293b' }, ticks: { color: '#94a3b8', font: { family: 'IBM Plex Mono', size: 10 }, maxRotation: 0 }, border: { color: '#2d3748' } },
+        y: { position: 'right', grid: { color: '#1e293b' }, ticks: { color: '#94a3b8', font: { family: 'IBM Plex Mono', size: 10 }, callback: function(v) { return v.toFixed(2); } }, border: { color: '#2d3748' } }
       }
     }
   });
@@ -926,21 +926,21 @@ function createYield2yChart(data) {
         legend: { display: false },
         annotation: {
           annotations: {
-            peak2023: { type: 'line', yMin: 5.25, yMax: 5.25, borderColor: '#FF4444', borderWidth: 1, borderDash: [6, 4], label: { display: true, content: '2023 Peak', position: 'start', font: { size: 10, family: 'IBM Plex Mono' }, color: '#FF4444', backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 } },
-            neutral: { type: 'line', yMin: 4.0, yMax: 4.0, borderColor: '#888888', borderWidth: 1, borderDash: [6, 4], label: { display: true, content: 'Neutral Rate Est.', position: 'start', font: { size: 10, family: 'IBM Plex Mono' }, color: '#888888', backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 } },
-            preHike: { type: 'line', yMin: 2.0, yMax: 2.0, borderColor: '#00FF88', borderWidth: 1, borderDash: [6, 4], label: { display: true, content: 'Pre-hike Level', position: 'start', font: { size: 10, family: 'IBM Plex Mono' }, color: '#00FF88', backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 } }
+            peak2023: { type: 'line', yMin: 5.25, yMax: 5.25, borderColor: '#FF4444', borderWidth: 1, borderDash: [6, 4], label: { display: true, content: '2023 Peak', position: 'start', font: { size: 10, family: 'IBM Plex Mono' }, color: '#FF4444', backgroundColor: 'rgba(15,23,42,0.9)', padding: 3 } },
+            neutral: { type: 'line', yMin: 4.0, yMax: 4.0, borderColor: '#cbd5e1', borderWidth: 1, borderDash: [6, 4], label: { display: true, content: 'Neutral Rate Est.', position: 'start', font: { size: 10, family: 'IBM Plex Mono' }, color: '#cbd5e1', backgroundColor: 'rgba(15,23,42,0.9)', padding: 3 } },
+            preHike: { type: 'line', yMin: 2.0, yMax: 2.0, borderColor: '#00FF88', borderWidth: 1, borderDash: [6, 4], label: { display: true, content: 'Pre-hike Level', position: 'start', font: { size: 10, family: 'IBM Plex Mono' }, color: '#00FF88', backgroundColor: 'rgba(15,23,42,0.9)', padding: 3 } }
           }
         },
         tooltip: {
-          backgroundColor: '#1a1a1a', borderColor: '#333333', borderWidth: 1,
+          backgroundColor: '#1e293b', borderColor: '#374151', borderWidth: 1,
           titleFont: { family: 'IBM Plex Mono', size: 11 }, bodyFont: { family: 'IBM Plex Mono', size: 11 },
           titleColor: '#E5E5E5', bodyColor: '#E5E5E5', displayColors: false,
           callbacks: { title: function(items) { return items[0].label; }, label: function(item) { var d = data[item.dataIndex]; return '2Y Yield: ' + d.y2.toFixed(2) + '%'; } }
         }
       },
       scales: {
-        x: { type: 'time', time: { parser: 'yyyy-MM-dd' }, grid: { color: '#1a1a1a' }, ticks: { color: '#666666', font: { family: 'IBM Plex Mono', size: 10 }, maxRotation: 0 }, border: { color: '#222222' } },
-        y: { position: 'right', grid: { color: '#1a1a1a' }, ticks: { color: '#666666', font: { family: 'IBM Plex Mono', size: 10 }, callback: function(v) { return v.toFixed(2) + '%'; } }, border: { color: '#222222' } }
+        x: { type: 'time', time: { parser: 'yyyy-MM-dd' }, grid: { color: '#1e293b' }, ticks: { color: '#94a3b8', font: { family: 'IBM Plex Mono', size: 10 }, maxRotation: 0 }, border: { color: '#2d3748' } },
+        y: { position: 'right', grid: { color: '#1e293b' }, ticks: { color: '#94a3b8', font: { family: 'IBM Plex Mono', size: 10 }, callback: function(v) { return v.toFixed(2) + '%'; } }, border: { color: '#2d3748' } }
       }
     }
   });
@@ -966,22 +966,22 @@ function createYield10yChart(data) {
         legend: { display: false },
         annotation: {
           annotations: {
-            peak2023: { type: 'line', yMin: 5.0, yMax: 5.0, borderColor: '#FF4444', borderWidth: 1, borderDash: [6, 4], label: { display: true, content: '2023 Peak / Danger Zone', position: 'start', font: { size: 10, family: 'IBM Plex Mono' }, color: '#FF4444', backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 } },
-            resistance: { type: 'line', yMin: 4.5, yMax: 4.5, borderColor: '#FF8C00', borderWidth: 1, borderDash: [6, 4], label: { display: true, content: 'Current Resistance', position: 'start', font: { size: 10, family: 'IBM Plex Mono' }, color: '#FF8C00', backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 } },
-            support: { type: 'line', yMin: 3.5, yMax: 3.5, borderColor: '#888888', borderWidth: 1, borderDash: [6, 4], label: { display: true, content: 'Support', position: 'start', font: { size: 10, family: 'IBM Plex Mono' }, color: '#888888', backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 } },
-            preHike: { type: 'line', yMin: 2.0, yMax: 2.0, borderColor: '#00FF88', borderWidth: 1, borderDash: [6, 4], label: { display: true, content: 'Pre-hike Level', position: 'start', font: { size: 10, family: 'IBM Plex Mono' }, color: '#00FF88', backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 } }
+            peak2023: { type: 'line', yMin: 5.0, yMax: 5.0, borderColor: '#FF4444', borderWidth: 1, borderDash: [6, 4], label: { display: true, content: '2023 Peak / Danger Zone', position: 'start', font: { size: 10, family: 'IBM Plex Mono' }, color: '#FF4444', backgroundColor: 'rgba(15,23,42,0.9)', padding: 3 } },
+            resistance: { type: 'line', yMin: 4.5, yMax: 4.5, borderColor: '#FF8C00', borderWidth: 1, borderDash: [6, 4], label: { display: true, content: 'Current Resistance', position: 'start', font: { size: 10, family: 'IBM Plex Mono' }, color: '#FF8C00', backgroundColor: 'rgba(15,23,42,0.9)', padding: 3 } },
+            support: { type: 'line', yMin: 3.5, yMax: 3.5, borderColor: '#cbd5e1', borderWidth: 1, borderDash: [6, 4], label: { display: true, content: 'Support', position: 'start', font: { size: 10, family: 'IBM Plex Mono' }, color: '#cbd5e1', backgroundColor: 'rgba(15,23,42,0.9)', padding: 3 } },
+            preHike: { type: 'line', yMin: 2.0, yMax: 2.0, borderColor: '#00FF88', borderWidth: 1, borderDash: [6, 4], label: { display: true, content: 'Pre-hike Level', position: 'start', font: { size: 10, family: 'IBM Plex Mono' }, color: '#00FF88', backgroundColor: 'rgba(15,23,42,0.9)', padding: 3 } }
           }
         },
         tooltip: {
-          backgroundColor: '#1a1a1a', borderColor: '#333333', borderWidth: 1,
+          backgroundColor: '#1e293b', borderColor: '#374151', borderWidth: 1,
           titleFont: { family: 'IBM Plex Mono', size: 11 }, bodyFont: { family: 'IBM Plex Mono', size: 11 },
           titleColor: '#E5E5E5', bodyColor: '#E5E5E5', displayColors: false,
           callbacks: { title: function(items) { return items[0].label; }, label: function(item) { var d = data[item.dataIndex]; return '10Y Yield: ' + d.y10.toFixed(2) + '%'; } }
         }
       },
       scales: {
-        x: { type: 'time', time: { parser: 'yyyy-MM-dd' }, grid: { color: '#1a1a1a' }, ticks: { color: '#666666', font: { family: 'IBM Plex Mono', size: 10 }, maxRotation: 0 }, border: { color: '#222222' } },
-        y: { position: 'right', grid: { color: '#1a1a1a' }, ticks: { color: '#666666', font: { family: 'IBM Plex Mono', size: 10 }, callback: function(v) { return v.toFixed(2) + '%'; } }, border: { color: '#222222' } }
+        x: { type: 'time', time: { parser: 'yyyy-MM-dd' }, grid: { color: '#1e293b' }, ticks: { color: '#94a3b8', font: { family: 'IBM Plex Mono', size: 10 }, maxRotation: 0 }, border: { color: '#2d3748' } },
+        y: { position: 'right', grid: { color: '#1e293b' }, ticks: { color: '#94a3b8', font: { family: 'IBM Plex Mono', size: 10 }, callback: function(v) { return v.toFixed(2) + '%'; } }, border: { color: '#2d3748' } }
       }
     }
   });
@@ -1085,19 +1085,19 @@ function makeEquityAnnotations() {
       type: 'box', xMin: '2000-01-01', xMax: '2011-12-31',
       backgroundColor: 'rgba(240,180,41,0.08)', borderWidth: 0,
       label: { display: true, content: 'Commodity Cycle', position: { x: 'start', y: 'start' },
-        font: { size: 10, family: 'IBM Plex Mono' }, color: '#555555', padding: 4 }
+        font: { size: 10, family: 'IBM Plex Mono' }, color: '#94a3b8', padding: 4 }
     },
     box2: {
       type: 'box', xMin: '2012-01-01', xMax: '2019-12-31',
       backgroundColor: 'rgba(107,138,255,0.08)', borderWidth: 0,
       label: { display: true, content: 'Financial Asset Cycle', position: { x: 'start', y: 'start' },
-        font: { size: 10, family: 'IBM Plex Mono' }, color: '#555555', padding: 4 }
+        font: { size: 10, family: 'IBM Plex Mono' }, color: '#94a3b8', padding: 4 }
     },
     box3: {
       type: 'box', xMin: '2020-01-01', xMax: today,
       backgroundColor: 'rgba(240,180,41,0.08)', borderWidth: 0,
       label: { display: true, content: 'Current Cycle', position: { x: 'start', y: 'start' },
-        font: { size: 10, family: 'IBM Plex Mono' }, color: '#555555', padding: 4 }
+        font: { size: 10, family: 'IBM Plex Mono' }, color: '#94a3b8', padding: 4 }
     }
   };
 
@@ -1105,9 +1105,9 @@ function makeEquityAnnotations() {
     MACRO_EVENTS.forEach(function(evt, i) {
       annotations['evt_' + i] = {
         type: 'line', xMin: evt.date, xMax: evt.date,
-        borderColor: '#444444', borderWidth: 1, borderDash: [4, 3],
+        borderColor: '#64748b', borderWidth: 1, borderDash: [4, 3],
         label: { display: true, content: evt.label, position: 'start', rotation: -90,
-          font: { size: 10, family: 'IBM Plex Mono' }, color: '#555555',
+          font: { size: 10, family: 'IBM Plex Mono' }, color: '#94a3b8',
           backgroundColor: 'transparent', padding: { bottom: 4 } }
       };
     });
@@ -1124,21 +1124,21 @@ function makeSilverAnnotations() {
   a.zoneAbove90 = { type: 'box', yMin: 90, yMax: 130, backgroundColor: 'rgba(255,68,68,0.08)', borderWidth: 0 };
 
   a.line30 = { type: 'line', yMin: 30, yMax: 30, borderColor: '#6B8AFF', borderWidth: 1, borderDash: [6, 4],
-    label: { display: true, content: 'Silver Expensive / Buy Gold', position: 'start', font: { size: 10, family: 'IBM Plex Mono' }, color: '#6B8AFF', backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 } };
-  a.line60 = { type: 'line', yMin: 60, yMax: 60, borderColor: '#444444', borderWidth: 1, borderDash: [6, 4],
-    label: { display: true, content: 'Historical Mean', position: 'start', font: { size: 10, family: 'IBM Plex Mono' }, color: '#444444', backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 } };
+    label: { display: true, content: 'Silver Expensive / Buy Gold', position: 'start', font: { size: 10, family: 'IBM Plex Mono' }, color: '#6B8AFF', backgroundColor: 'rgba(15,23,42,0.9)', padding: 3 } };
+  a.line60 = { type: 'line', yMin: 60, yMax: 60, borderColor: '#64748b', borderWidth: 1, borderDash: [6, 4],
+    label: { display: true, content: 'Historical Mean', position: 'start', font: { size: 10, family: 'IBM Plex Mono' }, color: '#64748b', backgroundColor: 'rgba(15,23,42,0.9)', padding: 3 } };
   a.line80 = { type: 'line', yMin: 80, yMax: 80, borderColor: '#F0B429', borderWidth: 1, borderDash: [6, 4],
-    label: { display: true, content: 'Gold Expensive / Buy Silver', position: 'start', font: { size: 10, family: 'IBM Plex Mono' }, color: '#F0B429', backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 } };
+    label: { display: true, content: 'Gold Expensive / Buy Silver', position: 'start', font: { size: 10, family: 'IBM Plex Mono' }, color: '#F0B429', backgroundColor: 'rgba(15,23,42,0.9)', padding: 3 } };
   a.line90 = { type: 'line', yMin: 90, yMax: 90, borderColor: '#FF4444', borderWidth: 1, borderDash: [6, 4],
-    label: { display: true, content: 'Extreme \u2014 Rotate to Silver', position: 'start', font: { size: 10, family: 'IBM Plex Mono' }, color: '#FF4444', backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 } };
+    label: { display: true, content: 'Extreme \u2014 Rotate to Silver', position: 'start', font: { size: 10, family: 'IBM Plex Mono' }, color: '#FF4444', backgroundColor: 'rgba(15,23,42,0.9)', padding: 3 } };
 
   if (eventsVisible) {
     MACRO_EVENTS.forEach(function(evt, i) {
       a['evt_' + i] = {
         type: 'line', xMin: evt.date, xMax: evt.date,
-        borderColor: '#444444', borderWidth: 1, borderDash: [4, 3],
+        borderColor: '#64748b', borderWidth: 1, borderDash: [4, 3],
         label: { display: true, content: evt.label, position: 'start', rotation: -90,
-          font: { size: 10, family: 'IBM Plex Mono' }, color: '#555555',
+          font: { size: 10, family: 'IBM Plex Mono' }, color: '#94a3b8',
           backgroundColor: 'transparent', padding: { bottom: 4 } }
       };
     });
@@ -1156,15 +1156,15 @@ function makeBuffettAnnotations() {
   a.zoneAbove200 = { type: 'box', yMin: 200, yMax: 300, backgroundColor: 'rgba(255,68,68,0.15)', borderWidth: 0 };
 
   a.line75 = { type: 'line', yMin: 75, yMax: 75, borderColor: '#00FF88', borderWidth: 1, borderDash: [6, 4],
-    label: { display: true, content: 'Undervalued', position: 'start', font: { size: 10, family: 'IBM Plex Mono' }, color: '#00FF88', backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 } };
-  a.line90 = { type: 'line', yMin: 90, yMax: 90, borderColor: '#888888', borderWidth: 1, borderDash: [6, 4],
-    label: { display: true, content: 'Fair Value', position: 'start', font: { size: 10, family: 'IBM Plex Mono' }, color: '#888888', backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 } };
+    label: { display: true, content: 'Undervalued', position: 'start', font: { size: 10, family: 'IBM Plex Mono' }, color: '#00FF88', backgroundColor: 'rgba(15,23,42,0.9)', padding: 3 } };
+  a.line90 = { type: 'line', yMin: 90, yMax: 90, borderColor: '#cbd5e1', borderWidth: 1, borderDash: [6, 4],
+    label: { display: true, content: 'Fair Value', position: 'start', font: { size: 10, family: 'IBM Plex Mono' }, color: '#cbd5e1', backgroundColor: 'rgba(15,23,42,0.9)', padding: 3 } };
   a.line115 = { type: 'line', yMin: 115, yMax: 115, borderColor: '#F0B429', borderWidth: 1, borderDash: [6, 4],
-    label: { display: true, content: 'Overvalued', position: 'start', font: { size: 10, family: 'IBM Plex Mono' }, color: '#F0B429', backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 } };
+    label: { display: true, content: 'Overvalued', position: 'start', font: { size: 10, family: 'IBM Plex Mono' }, color: '#F0B429', backgroundColor: 'rgba(15,23,42,0.9)', padding: 3 } };
   a.line135 = { type: 'line', yMin: 135, yMax: 135, borderColor: '#FF8C00', borderWidth: 1, borderDash: [6, 4],
-    label: { display: true, content: 'Strongly Overvalued', position: 'start', font: { size: 10, family: 'IBM Plex Mono' }, color: '#FF8C00', backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 } };
+    label: { display: true, content: 'Strongly Overvalued', position: 'start', font: { size: 10, family: 'IBM Plex Mono' }, color: '#FF8C00', backgroundColor: 'rgba(15,23,42,0.9)', padding: 3 } };
   a.line200 = { type: 'line', yMin: 200, yMax: 200, borderColor: '#FF4444', borderWidth: 1, borderDash: [6, 4],
-    label: { display: true, content: 'Extreme / Unprecedented', position: 'start', font: { size: 10, family: 'IBM Plex Mono' }, color: '#FF4444', backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 } };
+    label: { display: true, content: 'Extreme / Unprecedented', position: 'start', font: { size: 10, family: 'IBM Plex Mono' }, color: '#FF4444', backgroundColor: 'rgba(15,23,42,0.9)', padding: 3 } };
 
   if (eventsVisible) {
     var buffettEvents = [
@@ -1177,9 +1177,9 @@ function makeBuffettAnnotations() {
     buffettEvents.forEach(function(evt, i) {
       a['evt_' + i] = {
         type: 'line', xMin: evt.date, xMax: evt.date,
-        borderColor: '#444444', borderWidth: 1, borderDash: [4, 3],
+        borderColor: '#64748b', borderWidth: 1, borderDash: [4, 3],
         label: { display: true, content: evt.label, position: 'start', rotation: -90,
-          font: { size: 10, family: 'IBM Plex Mono' }, color: '#555555',
+          font: { size: 10, family: 'IBM Plex Mono' }, color: '#94a3b8',
           backgroundColor: 'transparent', padding: { bottom: 4 } }
       };
     });
@@ -1219,7 +1219,7 @@ function createRatioChart(data) {
         legend: { display: false },
         annotation: { annotations: makeAnnotations() },
         tooltip: {
-          backgroundColor: '#1a1a1a', borderColor: '#333333', borderWidth: 1,
+          backgroundColor: '#1e293b', borderColor: '#374151', borderWidth: 1,
           titleFont: { family: 'IBM Plex Mono', size: 11 }, bodyFont: { family: 'IBM Plex Mono', size: 11 },
           titleColor: '#E5E5E5', bodyColor: '#E5E5E5', displayColors: false,
           callbacks: {
@@ -1242,17 +1242,17 @@ function createRatioChart(data) {
         }
       },
       scales: {
-        x: { type: 'time', time: { parser: 'yyyy-MM-dd' }, grid: { color: '#1a1a1a' }, ticks: { color: '#666666', font: { family: 'IBM Plex Mono', size: 10 }, maxRotation: 0 }, border: { color: '#222222' } },
+        x: { type: 'time', time: { parser: 'yyyy-MM-dd' }, grid: { color: '#1e293b' }, ticks: { color: '#94a3b8', font: { family: 'IBM Plex Mono', size: 10 }, maxRotation: 0 }, border: { color: '#2d3748' } },
         y: {
-          position: 'right', grid: { color: '#1a1a1a' },
+          position: 'right', grid: { color: '#1e293b' },
           ticks: {
-            color: '#666666', font: { family: 'IBM Plex Mono', size: 10 },
+            color: '#94a3b8', font: { family: 'IBM Plex Mono', size: 10 },
             callback: function(v) {
               if (isBuffett) return v.toFixed(0) + '%';
               return isSilver ? v.toFixed(0) : v.toFixed(4);
             }
           },
-          border: { color: '#222222' }
+          border: { color: '#2d3748' }
         }
       }
     }
@@ -1281,7 +1281,7 @@ function createSparkline(canvasId, data, key, color, prefix, suffix) {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: '#1a1a1a', borderColor: '#333333', borderWidth: 1,
+          backgroundColor: '#1e293b', borderColor: '#374151', borderWidth: 1,
           titleFont: { family: 'IBM Plex Mono', size: 10 }, bodyFont: { family: 'IBM Plex Mono', size: 10 },
           titleColor: '#E5E5E5', bodyColor: '#E5E5E5', displayColors: false,
           callbacks: { label: function(item) { var v = data[item.dataIndex][key]; return (prefix || '') + v.toFixed(2) + sfx; } }
@@ -1290,9 +1290,9 @@ function createSparkline(canvasId, data, key, color, prefix, suffix) {
       scales: {
         x: { type: 'time', time: { parser: 'yyyy-MM-dd' }, display: false },
         y: {
-          grid: { color: '#1a1a1a' },
-          ticks: { color: '#666666', font: { family: 'IBM Plex Mono', size: 9 }, maxTicksLimit: 4, callback: function(v) { return (prefix || '') + v.toFixed(0) + sfx; } },
-          border: { color: '#222222' }
+          grid: { color: '#1e293b' },
+          ticks: { color: '#94a3b8', font: { family: 'IBM Plex Mono', size: 9 }, maxTicksLimit: 4, callback: function(v) { return (prefix || '') + v.toFixed(0) + sfx; } },
+          border: { color: '#2d3748' }
         }
       }
     }
