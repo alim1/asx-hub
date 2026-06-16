@@ -382,7 +382,7 @@ a:hover{text-decoration:underline}
 // ═══════════════════════════════════════════════════════
 
 const GROUPS = {
-  A:['Mexico','South Africa','South Korea','Czech Republic'],
+  A:['Mexico','South Africa','South Korea','Czechia'],
   B:['Canada','Bosnia-Herzegovina','Qatar','Switzerland'],
   C:['Brazil','Morocco','Haiti','Scotland'],
   D:['United States','Paraguay','Australia','Turkey'],
@@ -400,7 +400,7 @@ const TEAMS = {
   'Mexico':            {flag:'🇲🇽',conf:'CONCACAF',rank:15, best:'Quarter-finals (1970, 1986)',host:true},
   'South Africa':      {flag:'🇿🇦',conf:'CAF',     rank:61, best:'Group stage (2010 hosts)'},
   'South Korea':       {flag:'🇰🇷',conf:'AFC',     rank:22, best:'4th place (2002)'},
-  'Czech Republic':    {flag:'🇨🇿',conf:'UEFA',    rank:44, best:'Runner-up (1934, 1962*)'},
+  'Czechia':    {flag:'🇨🇿',conf:'UEFA',    rank:44, best:'Runner-up (1934, 1962*)'},
   'Canada':            {flag:'🇨🇦',conf:'CONCACAF',rank:27, best:'Group stage (1986)',host:true},
   'Bosnia-Herzegovina':{flag:'🇧🇦',conf:'UEFA',    rank:null,best:'Group stage (2014)'},
   'Qatar':             {flag:'🇶🇦',conf:'AFC',     rank:null,best:'Group stage (2022)'},
@@ -452,7 +452,7 @@ const TEAMS = {
 const MATCHES = [
   // ── MD1 ──────────────────────────────────────────────
   {id:1, gr:'A',md:1,kickoff:'2026-06-11T17:00:00Z',home:'Mexico',         away:'South Africa',      venue:'Mexico City',  note:'Opening Match'},
-  {id:2, gr:'A',md:1,kickoff:'2026-06-12T00:00:00Z',home:'South Korea',    away:'Czech Republic',    venue:''},
+  {id:2, gr:'A',md:1,kickoff:'2026-06-12T00:00:00Z',home:'South Korea',    away:'Czechia',    venue:''},
   {id:3, gr:'B',md:1,kickoff:'2026-06-12T19:00:00Z',home:'Canada',         away:'Bosnia-Herzegovina',venue:'Toronto',       note:'Canada opener'},
   {id:4, gr:'D',md:1,kickoff:'2026-06-12T22:00:00Z',home:'United States',  away:'Paraguay',          venue:'Los Angeles',   note:'USA opener'},
   {id:5, gr:'B',md:1,kickoff:'2026-06-13T16:00:00Z',home:'Qatar',          away:'Switzerland',       venue:''},
@@ -477,7 +477,7 @@ const MATCHES = [
   {id:24,gr:'L',md:1,kickoff:'2026-06-18T01:00:00Z',home:'Ghana',          away:'Panama',            venue:''},
   // ── MD2 ──────────────────────────────────────────────
   {id:25,gr:'A',md:2,kickoff:'2026-06-18T17:00:00Z',home:'Mexico',         away:'South Korea',       venue:''},
-  {id:26,gr:'A',md:2,kickoff:'2026-06-18T22:00:00Z',home:'Czech Republic', away:'South Africa',      venue:''},
+  {id:26,gr:'A',md:2,kickoff:'2026-06-18T22:00:00Z',home:'Czechia', away:'South Africa',      venue:''},
   {id:27,gr:'B',md:2,kickoff:'2026-06-18T19:00:00Z',home:'Canada',         away:'Qatar',             venue:'Toronto'},
   {id:28,gr:'B',md:2,kickoff:'2026-06-18T16:00:00Z',home:'Switzerland',    away:'Bosnia-Herzegovina',venue:''},
   {id:29,gr:'C',md:2,kickoff:'2026-06-20T01:00:00Z',home:'Brazil',         away:'Haiti',             venue:''},
@@ -501,7 +501,7 @@ const MATCHES = [
   {id:47,gr:'L',md:2,kickoff:'2026-06-24T01:00:00Z',home:'England',        away:'Ghana',             venue:''},
   {id:48,gr:'L',md:2,kickoff:'2026-06-23T23:00:00Z',home:'Croatia',        away:'Panama',            venue:''},
   // ── MD3 (pairs simultaneous within each group) ────────
-  {id:49,gr:'A',md:3,kickoff:'2026-06-24T23:00:00Z',home:'Czech Republic', away:'Mexico',            venue:''},
+  {id:49,gr:'A',md:3,kickoff:'2026-06-24T23:00:00Z',home:'Czechia', away:'Mexico',            venue:''},
   {id:50,gr:'A',md:3,kickoff:'2026-06-24T18:00:00Z',home:'South Africa',   away:'South Korea',       venue:''},
   {id:51,gr:'B',md:3,kickoff:'2026-06-25T22:00:00Z',home:'Bosnia-Herzegovina',away:'Canada',            venue:''},
   {id:52,gr:'B',md:3,kickoff:'2026-06-25T22:00:00Z',home:'Qatar',             away:'Switzerland',          venue:''},
@@ -653,7 +653,8 @@ const ESPN_NAME_MAP = {
   'Türkiye':           'Turkey',
   'Bosnia Herzegovina':'Bosnia-Herzegovina',
   "Côte d'Ivoire":     'Ivory Coast',
-  'Korea Republic':    'South Korea',
+  'DR Congo':          'DR Congo',   // ESPN may say 'DR Congo' or 'Congo DR'
+  'Congo DR':          'DR Congo',
 };
 function espnToLocal(n) { return ESPN_NAME_MAP[n] || n; }
 
@@ -723,6 +724,8 @@ async function syncAll() {
     if (isNaN(hs) || isNaN(as_)) continue;
 
     matchPhases[match.id] = { phase: done ? 'FT' : (state === 'in' ? 'live' : null), elapsed: detail };
+    // Correct kickoff time from ESPN (fixes venue-timezone errors in static data)
+    if (ev.date) match.kickoff = ev.date;
 
     if (done || state === 'in') {
       scores[match.id] = { home: hs, away: as_ };
