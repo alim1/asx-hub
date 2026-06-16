@@ -339,21 +339,23 @@ a:hover{text-decoration:underline}
 <!-- API Settings Modal -->
 <div class="modal-bg" id="apiModalBg" onclick="closeApiModal(event)">
   <div class="modal">
-    <h3>🔑 API Settings</h3>
-    <p>Enter your free API key from <a href="https://wc2026api.com" target="_blank">wc2026api.com</a>. 100 free requests/day — the dashboard polls automatically only when a match is live (every 5 min), and you can sync manually anytime.</p>
+    <h3>🔑 Live Scores API</h3>
+    <p>Free live scores from <a href="https://github.com/rezarahiminia/worldcup2026" target="_blank">github.com/rezarahiminia/worldcup2026</a>.<br>
+    <strong>Step 1:</strong> Register at <a href="http://worldcup26.ir:3050/api-docs/" target="_blank">worldcup26.ir:3050/api-docs</a> → POST /auth/register<br>
+    <strong>Step 2:</strong> Login → POST /auth/authenticate to get your JWT token<br>
+    <strong>Step 3:</strong> Paste the token below. It lasts 84 days.</p>
     <div class="form-row">
-      <label class="form-label">API Key</label>
-      <input class="form-input" id="apiKeyInput" type="password" placeholder="wc2026_your_key_here">
+      <label class="form-label">JWT Token</label>
+      <input class="form-input" id="apiTokenInput" type="password" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
     </div>
     <div class="api-stats">
-      <div class="api-stat"><div class="api-stat-v" id="statReqToday">0</div><div class="api-stat-l">Requests today</div></div>
-      <div class="api-stat"><div class="api-stat-v" id="statReqLeft">100</div><div class="api-stat-l">Remaining</div></div>
       <div class="api-stat"><div class="api-stat-v" id="statLastSync">—</div><div class="api-stat-l">Last synced</div></div>
     </div>
+    <div style="font-size:11px;color:#64748b;margin-bottom:12px">Auto-polls every 5 min while a match is live. Token stored locally in your browser.</div>
     <div class="modal-btns">
       <button class="btn btn-cancel" onclick="closeApiModal()">Close</button>
       <button class="btn btn-sync" onclick="manualSync()">↻ Sync Now</button>
-      <button class="btn btn-save" onclick="saveApiKey()">Save Key</button>
+      <button class="btn btn-save" onclick="saveApiToken()">Save Token</button>
     </div>
   </div>
 </div>
@@ -453,83 +455,83 @@ const TEAMS = {
   'Panama':            {flag:'🇵🇦',conf:'CONCACAF',rank:30, best:'Group stage (2018, 2022)'},
 };
 
-// kickoff = UTC ISO string (estimated where not confirmed from API)
-// Confirmed: Netherlands vs Japan = 2026-06-14T21:00:00Z (from wc2026api.com)
+// kickoff = UTC ISO string from official schedule (local ET times + 4h)
+// Source: github.com/rezarahiminia/worldcup2026
 const MATCHES = [
   // ── MD1 ──────────────────────────────────────────────
-  {id:1, gr:'A',md:1,kickoff:'2026-06-11T22:00:00Z',home:'Mexico',         away:'South Africa',      venue:'Mexico City',  note:'Opening Match'},
-  {id:2, gr:'A',md:1,kickoff:'2026-06-11T17:00:00Z',home:'South Korea',    away:'Czech Republic',    venue:''},
-  {id:3, gr:'B',md:1,kickoff:'2026-06-12T20:00:00Z',home:'Canada',         away:'Bosnia-Herzegovina',venue:'Toronto',       note:'Canada opener'},
-  {id:4, gr:'D',md:1,kickoff:'2026-06-12T23:00:00Z',home:'United States',  away:'Paraguay',          venue:'Los Angeles',   note:'USA opener'},
+  {id:1, gr:'A',md:1,kickoff:'2026-06-11T17:00:00Z',home:'Mexico',         away:'South Africa',      venue:'Mexico City',  note:'Opening Match'},
+  {id:2, gr:'A',md:1,kickoff:'2026-06-12T00:00:00Z',home:'South Korea',    away:'Czech Republic',    venue:''},
+  {id:3, gr:'B',md:1,kickoff:'2026-06-12T19:00:00Z',home:'Canada',         away:'Bosnia-Herzegovina',venue:'Toronto',       note:'Canada opener'},
+  {id:4, gr:'D',md:1,kickoff:'2026-06-12T22:00:00Z',home:'United States',  away:'Paraguay',          venue:'Los Angeles',   note:'USA opener'},
   {id:5, gr:'B',md:1,kickoff:'2026-06-13T16:00:00Z',home:'Qatar',          away:'Switzerland',       venue:''},
-  {id:6, gr:'C',md:1,kickoff:'2026-06-13T19:00:00Z',home:'Brazil',         away:'Morocco',           venue:''},
-  {id:7, gr:'C',md:1,kickoff:'2026-06-13T22:00:00Z',home:'Haiti',          away:'Scotland',          venue:''},
-  {id:8, gr:'D',md:1,kickoff:'2026-06-14T01:00:00Z',home:'Australia',      away:'Turkey',            venue:''},
+  {id:6, gr:'C',md:1,kickoff:'2026-06-13T22:00:00Z',home:'Brazil',         away:'Morocco',           venue:''},
+  {id:7, gr:'C',md:1,kickoff:'2026-06-14T01:00:00Z',home:'Haiti',          away:'Scotland',          venue:''},
+  {id:8, gr:'D',md:1,kickoff:'2026-06-13T16:00:00Z',home:'Australia',      away:'Turkey',            venue:''},
   {id:9, gr:'E',md:1,kickoff:'2026-06-14T16:00:00Z',home:'Germany',        away:'Curaçao',           venue:''},
-  {id:10,gr:'E',md:1,kickoff:'2026-06-14T19:00:00Z',home:'Ivory Coast',    away:'Ecuador',           venue:''},
-  {id:11,gr:'F',md:1,kickoff:'2026-06-14T21:00:00Z',home:'Netherlands',    away:'Japan',             venue:'Dallas'},
-  {id:12,gr:'F',md:1,kickoff:'2026-06-15T00:00:00Z',home:'Sweden',         away:'Tunisia',           venue:''},
-  {id:13,gr:'G',md:1,kickoff:'2026-06-15T16:00:00Z',home:'Belgium',        away:'Egypt',             venue:''},
-  {id:14,gr:'G',md:1,kickoff:'2026-06-15T19:00:00Z',home:'Iran',           away:'New Zealand',       venue:''},
-  {id:15,gr:'H',md:1,kickoff:'2026-06-15T22:00:00Z',home:'Spain',          away:'Cape Verde',        venue:''},
+  {id:10,gr:'E',md:1,kickoff:'2026-06-14T22:00:00Z',home:'Ivory Coast',    away:'Ecuador',           venue:''},
+  {id:11,gr:'F',md:1,kickoff:'2026-06-14T19:00:00Z',home:'Netherlands',    away:'Japan',             venue:'Dallas'},
+  {id:12,gr:'F',md:1,kickoff:'2026-06-15T01:00:00Z',home:'Sweden',         away:'Tunisia',           venue:''},
+  {id:13,gr:'G',md:1,kickoff:'2026-06-15T19:00:00Z',home:'Belgium',        away:'Egypt',             venue:''},
+  {id:14,gr:'G',md:1,kickoff:'2026-06-15T22:00:00Z',home:'Iran',           away:'New Zealand',       venue:''},
+  {id:15,gr:'H',md:1,kickoff:'2026-06-15T16:00:00Z',home:'Spain',          away:'Cape Verde',        venue:''},
   {id:16,gr:'H',md:1,kickoff:'2026-06-16T01:00:00Z',home:'Saudi Arabia',   away:'Uruguay',           venue:''},
-  {id:17,gr:'I',md:1,kickoff:'2026-06-16T16:00:00Z',home:'France',         away:'Senegal',           venue:''},
+  {id:17,gr:'I',md:1,kickoff:'2026-06-16T19:00:00Z',home:'France',         away:'Senegal',           venue:''},
   {id:18,gr:'I',md:1,kickoff:'2026-06-16T19:00:00Z',home:'Iraq',           away:'Norway',            venue:''},
-  {id:19,gr:'J',md:1,kickoff:'2026-06-16T22:00:00Z',home:'Argentina',      away:'Algeria',           venue:''},
-  {id:20,gr:'J',md:1,kickoff:'2026-06-17T01:00:00Z',home:'Austria',        away:'Jordan',            venue:''},
+  {id:19,gr:'J',md:1,kickoff:'2026-06-17T00:00:00Z',home:'Argentina',      away:'Algeria',           venue:''},
+  {id:20,gr:'J',md:1,kickoff:'2026-06-16T16:00:00Z',home:'Austria',        away:'Jordan',            venue:''},
   {id:21,gr:'K',md:1,kickoff:'2026-06-17T16:00:00Z',home:'Portugal',       away:'DR Congo',          venue:''},
-  {id:22,gr:'K',md:1,kickoff:'2026-06-17T19:00:00Z',home:'Uzbekistan',     away:'Colombia',          venue:''},
-  {id:23,gr:'L',md:1,kickoff:'2026-06-17T22:00:00Z',home:'England',        away:'Croatia',           venue:''},
+  {id:22,gr:'K',md:1,kickoff:'2026-06-17T22:00:00Z',home:'Uzbekistan',     away:'Colombia',          venue:''},
+  {id:23,gr:'L',md:1,kickoff:'2026-06-17T19:00:00Z',home:'England',        away:'Croatia',           venue:''},
   {id:24,gr:'L',md:1,kickoff:'2026-06-18T01:00:00Z',home:'Ghana',          away:'Panama',            venue:''},
   // ── MD2 ──────────────────────────────────────────────
-  {id:25,gr:'A',md:2,kickoff:'2026-06-18T16:00:00Z',home:'Mexico',         away:'South Korea',       venue:''},
-  {id:26,gr:'A',md:2,kickoff:'2026-06-18T19:00:00Z',home:'Czech Republic', away:'South Africa',      venue:''},
-  {id:27,gr:'B',md:2,kickoff:'2026-06-18T22:00:00Z',home:'Canada',         away:'Qatar',             venue:'Toronto'},
-  {id:28,gr:'B',md:2,kickoff:'2026-06-19T01:00:00Z',home:'Switzerland',    away:'Bosnia-Herzegovina',venue:''},
-  {id:29,gr:'C',md:2,kickoff:'2026-06-19T16:00:00Z',home:'Brazil',         away:'Haiti',             venue:''},
-  {id:30,gr:'C',md:2,kickoff:'2026-06-19T19:00:00Z',home:'Morocco',        away:'Scotland',          venue:''},
-  {id:31,gr:'D',md:2,kickoff:'2026-06-19T22:00:00Z',home:'United States',  away:'Australia',         venue:''},
-  {id:32,gr:'D',md:2,kickoff:'2026-06-20T01:00:00Z',home:'Turkey',         away:'Paraguay',          venue:''},
-  {id:33,gr:'E',md:2,kickoff:'2026-06-20T16:00:00Z',home:'Germany',        away:'Ivory Coast',       venue:''},
-  {id:34,gr:'E',md:2,kickoff:'2026-06-20T19:00:00Z',home:'Ecuador',        away:'Curaçao',           venue:''},
-  {id:35,gr:'F',md:2,kickoff:'2026-06-20T22:00:00Z',home:'Netherlands',    away:'Sweden',            venue:''},
-  {id:36,gr:'F',md:2,kickoff:'2026-06-21T01:00:00Z',home:'Japan',          away:'Tunisia',           venue:''},
-  {id:37,gr:'G',md:2,kickoff:'2026-06-21T16:00:00Z',home:'Belgium',        away:'Iran',              venue:''},
-  {id:38,gr:'G',md:2,kickoff:'2026-06-21T19:00:00Z',home:'Egypt',          away:'New Zealand',       venue:''},
+  {id:25,gr:'A',md:2,kickoff:'2026-06-18T17:00:00Z',home:'Mexico',         away:'South Korea',       venue:''},
+  {id:26,gr:'A',md:2,kickoff:'2026-06-18T22:00:00Z',home:'Czech Republic', away:'South Africa',      venue:''},
+  {id:27,gr:'B',md:2,kickoff:'2026-06-18T19:00:00Z',home:'Canada',         away:'Qatar',             venue:'Toronto'},
+  {id:28,gr:'B',md:2,kickoff:'2026-06-18T16:00:00Z',home:'Switzerland',    away:'Bosnia-Herzegovina',venue:''},
+  {id:29,gr:'C',md:2,kickoff:'2026-06-20T01:00:00Z',home:'Brazil',         away:'Haiti',             venue:''},
+  {id:30,gr:'C',md:2,kickoff:'2026-06-19T22:00:00Z',home:'Morocco',        away:'Scotland',          venue:''},
+  {id:31,gr:'D',md:2,kickoff:'2026-06-19T16:00:00Z',home:'United States',  away:'Australia',         venue:''},
+  {id:32,gr:'D',md:2,kickoff:'2026-06-19T19:00:00Z',home:'Turkey',         away:'Paraguay',          venue:''},
+  {id:33,gr:'E',md:2,kickoff:'2026-06-20T23:00:00Z',home:'Germany',        away:'Ivory Coast',       venue:''},
+  {id:34,gr:'E',md:2,kickoff:'2026-06-20T23:00:00Z',home:'Ecuador',        away:'Curaçao',           venue:''},
+  {id:35,gr:'F',md:2,kickoff:'2026-06-20T16:00:00Z',home:'Netherlands',    away:'Sweden',            venue:''},
+  {id:36,gr:'F',md:2,kickoff:'2026-06-20T19:00:00Z',home:'Japan',          away:'Tunisia',           venue:''},
+  {id:37,gr:'G',md:2,kickoff:'2026-06-21T19:00:00Z',home:'Belgium',        away:'Iran',              venue:''},
+  {id:38,gr:'G',md:2,kickoff:'2026-06-21T16:00:00Z',home:'Egypt',          away:'New Zealand',       venue:''},
   {id:39,gr:'H',md:2,kickoff:'2026-06-21T22:00:00Z',home:'Spain',          away:'Saudi Arabia',      venue:''},
   {id:40,gr:'H',md:2,kickoff:'2026-06-22T01:00:00Z',home:'Cape Verde',     away:'Uruguay',           venue:''},
-  {id:41,gr:'I',md:2,kickoff:'2026-06-22T16:00:00Z',home:'France',         away:'Iraq',              venue:''},
-  {id:42,gr:'I',md:2,kickoff:'2026-06-22T19:00:00Z',home:'Senegal',        away:'Norway',            venue:''},
-  {id:43,gr:'J',md:2,kickoff:'2026-06-22T22:00:00Z',home:'Argentina',      away:'Austria',           venue:''},
-  {id:44,gr:'J',md:2,kickoff:'2026-06-23T01:00:00Z',home:'Algeria',        away:'Jordan',            venue:''},
-  {id:45,gr:'K',md:2,kickoff:'2026-06-23T16:00:00Z',home:'Portugal',       away:'Uzbekistan',        venue:''},
-  {id:46,gr:'K',md:2,kickoff:'2026-06-23T19:00:00Z',home:'DR Congo',       away:'Colombia',          venue:''},
-  {id:47,gr:'L',md:2,kickoff:'2026-06-23T22:00:00Z',home:'England',        away:'Ghana',             venue:''},
-  {id:48,gr:'L',md:2,kickoff:'2026-06-24T01:00:00Z',home:'Croatia',        away:'Panama',            venue:''},
+  {id:41,gr:'I',md:2,kickoff:'2026-06-22T21:00:00Z',home:'France',         away:'Iraq',              venue:''},
+  {id:42,gr:'I',md:2,kickoff:'2026-06-22T18:00:00Z',home:'Senegal',        away:'Norway',            venue:''},
+  {id:43,gr:'J',md:2,kickoff:'2026-06-23T00:00:00Z',home:'Argentina',      away:'Austria',           venue:''},
+  {id:44,gr:'J',md:2,kickoff:'2026-06-22T15:00:00Z',home:'Algeria',        away:'Jordan',            venue:''},
+  {id:45,gr:'K',md:2,kickoff:'2026-06-23T19:00:00Z',home:'Portugal',       away:'Uzbekistan',        venue:''},
+  {id:46,gr:'K',md:2,kickoff:'2026-06-23T16:00:00Z',home:'DR Congo',       away:'Colombia',          venue:''},
+  {id:47,gr:'L',md:2,kickoff:'2026-06-24T01:00:00Z',home:'England',        away:'Ghana',             venue:''},
+  {id:48,gr:'L',md:2,kickoff:'2026-06-23T23:00:00Z',home:'Croatia',        away:'Panama',            venue:''},
   // ── MD3 (pairs simultaneous within each group) ────────
-  {id:49,gr:'A',md:3,kickoff:'2026-06-24T18:00:00Z',home:'Czech Republic', away:'Mexico',            venue:''},
+  {id:49,gr:'A',md:3,kickoff:'2026-06-24T23:00:00Z',home:'Czech Republic', away:'Mexico',            venue:''},
   {id:50,gr:'A',md:3,kickoff:'2026-06-24T18:00:00Z',home:'South Africa',   away:'South Korea',       venue:''},
-  {id:51,gr:'B',md:3,kickoff:'2026-06-24T21:00:00Z',home:'Switzerland',    away:'Canada',            venue:''},
-  {id:52,gr:'B',md:3,kickoff:'2026-06-24T21:00:00Z',home:'Bosnia-Herzegovina',away:'Qatar',          venue:''},
-  {id:53,gr:'C',md:3,kickoff:'2026-06-25T00:00:00Z',home:'Scotland',       away:'Brazil',            venue:''},
+  {id:51,gr:'B',md:3,kickoff:'2026-06-25T22:00:00Z',home:'Bosnia-Herzegovina',away:'Canada',            venue:''},
+  {id:52,gr:'B',md:3,kickoff:'2026-06-25T22:00:00Z',home:'Qatar',             away:'Switzerland',          venue:''},
+  {id:53,gr:'C',md:3,kickoff:'2026-06-24T22:00:00Z',home:'Scotland',       away:'Brazil',            venue:''},
   {id:54,gr:'C',md:3,kickoff:'2026-06-25T00:00:00Z',home:'Morocco',        away:'Haiti',             venue:''},
-  {id:55,gr:'D',md:3,kickoff:'2026-06-25T18:00:00Z',home:'Turkey',         away:'United States',     venue:''},
+  {id:55,gr:'D',md:3,kickoff:'2026-06-25T23:00:00Z',home:'Turkey',         away:'United States',     venue:''},
   {id:56,gr:'D',md:3,kickoff:'2026-06-25T18:00:00Z',home:'Paraguay',       away:'Australia',         venue:''},
-  {id:57,gr:'E',md:3,kickoff:'2026-06-25T21:00:00Z',home:'Ecuador',        away:'Germany',           venue:''},
+  {id:57,gr:'E',md:3,kickoff:'2026-06-25T20:00:00Z',home:'Ecuador',        away:'Germany',           venue:''},
   {id:58,gr:'E',md:3,kickoff:'2026-06-25T21:00:00Z',home:'Curaçao',        away:'Ivory Coast',       venue:''},
-  {id:59,gr:'F',md:3,kickoff:'2026-06-26T00:00:00Z',home:'Tunisia',        away:'Netherlands',       venue:''},
+  {id:59,gr:'F',md:3,kickoff:'2026-06-26T22:00:00Z',home:'Tunisia',        away:'Netherlands',       venue:''},
   {id:60,gr:'F',md:3,kickoff:'2026-06-26T00:00:00Z',home:'Japan',          away:'Sweden',            venue:''},
-  {id:61,gr:'G',md:3,kickoff:'2026-06-26T18:00:00Z',home:'New Zealand',    away:'Belgium',           venue:''},
+  {id:61,gr:'G',md:3,kickoff:'2026-06-27T00:00:00Z',home:'New Zealand',    away:'Belgium',           venue:''},
   {id:62,gr:'G',md:3,kickoff:'2026-06-26T18:00:00Z',home:'Iran',           away:'Egypt',             venue:''},
-  {id:63,gr:'H',md:3,kickoff:'2026-06-26T21:00:00Z',home:'Uruguay',        away:'Spain',             venue:''},
+  {id:63,gr:'H',md:3,kickoff:'2026-06-27T21:00:00Z',home:'Uruguay',        away:'Spain',             venue:''},
   {id:64,gr:'H',md:3,kickoff:'2026-06-26T21:00:00Z',home:'Saudi Arabia',   away:'Cape Verde',        venue:''},
-  {id:65,gr:'I',md:3,kickoff:'2026-06-27T00:00:00Z',home:'Norway',         away:'France',            venue:''},
+  {id:65,gr:'I',md:3,kickoff:'2026-06-26T19:00:00Z',home:'Norway',         away:'France',            venue:''},
   {id:66,gr:'I',md:3,kickoff:'2026-06-27T00:00:00Z',home:'Iraq',           away:'Senegal',           venue:''},
-  {id:67,gr:'J',md:3,kickoff:'2026-06-27T18:00:00Z',home:'Jordan',         away:'Argentina',         venue:''},
+  {id:67,gr:'J',md:3,kickoff:'2026-06-28T00:00:00Z',home:'Jordan',         away:'Argentina',         venue:''},
   {id:68,gr:'J',md:3,kickoff:'2026-06-27T18:00:00Z',home:'Algeria',        away:'Austria',           venue:''},
-  {id:69,gr:'K',md:3,kickoff:'2026-06-27T21:00:00Z',home:'Colombia',       away:'Portugal',          venue:''},
+  {id:69,gr:'K',md:3,kickoff:'2026-06-27T23:30:00Z',home:'Colombia',       away:'Portugal',          venue:''},
   {id:70,gr:'K',md:3,kickoff:'2026-06-27T21:00:00Z',home:'Uzbekistan',     away:'DR Congo',          venue:''},
-  {id:71,gr:'L',md:3,kickoff:'2026-06-28T00:00:00Z',home:'Panama',         away:'England',           venue:''},
+  {id:71,gr:'L',md:3,kickoff:'2026-06-27T21:00:00Z',home:'Panama',         away:'England',           venue:''},
   {id:72,gr:'L',md:3,kickoff:'2026-06-28T00:00:00Z',home:'Ghana',          away:'Croatia',           venue:''},
   // ── Knockout (TBD) ────────────────────────────────────
   {id:101,gr:'-',md:'R32',kickoff:'2026-06-28T17:00:00Z',home:'TBD',away:'TBD',venue:''},
@@ -591,21 +593,17 @@ let currentTz   = 'America/New_York';
 let scheduleFilter = 'all';
 let confFilter  = 'all';
 let currentScoreMatchId = null;
-let apiKey      = '';
+let apiToken    = '';
 let lastSyncTime = null;
-let reqToday    = 0;
-let reqDate     = '';
-const DAILY_LIMIT = 100;
+const API_BASE  = 'http://worldcup26.ir:3050';
 let pollTimer   = null;
 
 // ── Persist / load ──
 function load() {
   try {
     scores       = JSON.parse(localStorage.getItem('wc2026_scores') || '{}');
-    apiKey       = localStorage.getItem('wc2026_apikey') || '';
+    apiToken     = localStorage.getItem('wc2026_token') || '';
     currentTz    = localStorage.getItem('wc2026_tz') || 'America/New_York';
-    reqToday     = parseInt(localStorage.getItem('wc2026_reqcount') || '0', 10);
-    reqDate      = localStorage.getItem('wc2026_reqdate') || '';
     const ls     = localStorage.getItem('wc2026_lastsync');
     lastSyncTime = ls ? new Date(ls) : null;
     // Convert any old integer keys
@@ -618,13 +616,12 @@ function load() {
   if (reqDate !== today) { reqToday = 0; reqDate = today; saveReqCount(); }
 }
 function saveScores()   { try { localStorage.setItem('wc2026_scores', JSON.stringify(scores)); } catch(e) {} }
-function saveReqCount() { try { localStorage.setItem('wc2026_reqcount', reqToday); localStorage.setItem('wc2026_reqdate', reqDate); } catch(e) {} }
 function saveTz()       { try { localStorage.setItem('wc2026_tz', currentTz); } catch(e) {} }
-function saveApiKey()   {
-  apiKey = document.getElementById('apiKeyInput').value.trim();
-  try { localStorage.setItem('wc2026_apikey', apiKey); } catch(e) {}
+function saveApiToken() {
+  apiToken = document.getElementById('apiTokenInput').value.trim();
+  try { localStorage.setItem('wc2026_token', apiToken); } catch(e) {}
   updateApiBtn();
-  if (apiKey) syncAll();
+  if (apiToken) syncAll();
   closeApiModal();
 }
 
@@ -672,16 +669,12 @@ function formatDateLabel(dateKey) {
 //  API INTEGRATION
 // ═══════════════════════════════════════════════════════
 async function apiFetch(endpoint) {
-  if (!apiKey) return null;
-  if (reqToday >= DAILY_LIMIT - 2) { console.warn('Near API limit, skipping'); return null; }
+  if (!apiToken) return null;
   try {
-    const res = await fetch(`https://api.wc2026api.com${endpoint}`, {
-      headers: { 'Authorization': `Bearer ${apiKey}` }
+    const res = await fetch(API_BASE + endpoint, {
+      headers: { 'Authorization': 'Bearer ' + apiToken }
     });
-    reqToday++;
-    reqDate = new Date().toISOString().slice(0,10);
-    saveReqCount();
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     return await res.json();
   } catch(e) {
     console.error('API error:', e);
@@ -690,33 +683,41 @@ async function apiFetch(endpoint) {
 }
 
 async function syncAll() {
-  if (!apiKey) return;
+  if (!apiToken) return;
   updateApiBtn('syncing');
   const [matchData, standData] = await Promise.all([
-    apiFetch('/matches'),
-    apiFetch('/standings')
+    apiFetch('/get/games'),
+    apiFetch('/get/groups')
   ]);
 
   let updated = false;
 
+  // worldcup26.ir API: match fields = id(numeric), home_team_id, away_team_id,
+  // home_score, away_score, finished('TRUE'/'FALSE'), time_elapsed, group, matchday
+  // Teams are numbered 1-48 matching GROUPS order A→L, 4 per group
+  const TEAM_ID_MAP = {};
+  let tid = 1;
+  'ABCDEFGHIJKL'.split('').forEach(g => {
+    GROUPS[g].forEach(t => { TEAM_ID_MAP[tid] = t; tid++; });
+  });
+
   if (Array.isArray(matchData)) {
     matchData.forEach(m => {
-      const local = MATCHES.find(lm =>
-        lm.home === m.home_team && lm.away === m.away_team
-      );
+      const homeTeam = TEAM_ID_MAP[parseInt(m.home_team_id)];
+      const awayTeam = TEAM_ID_MAP[parseInt(m.away_team_id)];
+      if (!homeTeam || !awayTeam) return;
+      const local = MATCHES.find(lm => lm.home === homeTeam && lm.away === awayTeam);
       if (!local) return;
-      if (m.kickoff_utc) local.kickoff = m.kickoff_utc;
-      apiMatches[local.id] = { phase: m.phase, status: m.status, apiId: m.id };
-      if (m.phase === 'FT' || m.phase === 'FT_PEN') {
-        if (m.home_score !== null && m.away_score !== null) {
-          scores[local.id] = { home: m.home_score, away: m.away_score };
-          updated = true;
-        }
-      }
-      // Live scores during match
-      if (['1H','HT','2H','ET1','ET2','PEN'].includes(m.phase)) {
-        if (m.home_score !== null && m.away_score !== null) {
-          scores[local.id] = { home: m.home_score, away: m.away_score };
+      const isLive = m.time_elapsed && m.time_elapsed !== 'notstarted';
+      const isDone = m.finished === 'TRUE' || m.finished === true;
+      apiMatches[local.id] = {
+        phase: isDone ? 'FT' : (isLive ? m.time_elapsed : 'PRE'),
+        apiId: m.id
+      };
+      if ((isDone || isLive) && m.home_score != null && m.away_score != null) {
+        const hs = parseInt(m.home_score), as_ = parseInt(m.away_score);
+        if (!isNaN(hs) && !isNaN(as_)) {
+          scores[local.id] = { home: hs, away: as_ };
           updated = true;
         }
       }
@@ -724,17 +725,22 @@ async function syncAll() {
     if (updated) saveScores();
   }
 
+  // worldcup26.ir /get/groups returns array of {group, teams:[{team_id, pts, gf, ga}]}
   if (Array.isArray(standData)) {
     apiStandings = {};
-    standData.forEach(s => {
-      const g = s.group_name || s.group;
-      if (!g) return;
-      if (!apiStandings[g]) apiStandings[g] = [];
-      apiStandings[g].push(s);
-    });
-    // Sort each group by position/points
-    Object.keys(apiStandings).forEach(g => {
-      apiStandings[g].sort((a,b) => (a.position||0)-(b.position||0) || b.points-a.points || (b.goal_diff||b.gd||0)-(a.goal_diff||a.gd||0));
+    standData.forEach(grp => {
+      const g = grp.group;
+      if (!g || !Array.isArray(grp.teams)) return;
+      const rows = grp.teams.map(t => {
+        const name = TEAM_ID_MAP[parseInt(t.team_id)];
+        if (!name) return null;
+        const gf = parseInt(t.gf)||0, ga = parseInt(t.ga)||0;
+        const pts = parseInt(t.pts)||0;
+        return { name, pts, gf, ga, gd: gf-ga, pld: 0, w: 0, d: 0, l: 0 };
+      }).filter(Boolean);
+      // Sort by pts desc then gd desc
+      rows.sort((a,b) => b.pts-a.pts || b.gd-a.gd || b.gf-a.gf);
+      apiStandings[g] = rows;
     });
   }
 
@@ -747,7 +753,7 @@ async function syncAll() {
 async function manualSync() { await syncAll(); updateApiModalStats(); }
 
 function shouldPoll() {
-  if (!apiKey || reqToday >= DAILY_LIMIT - 5) return false;
+  if (!apiToken) return false;
   const now = Date.now();
   return MATCHES.some(m => {
     if (!m.kickoff || m.home === 'TBD') return false;
@@ -1058,7 +1064,6 @@ function clearScore() {
 //  API MODAL
 // ═══════════════════════════════════════════════════════
 function openApiModal() {
-  document.getElementById('apiKeyInput').value = apiKey;
   updateApiModalStats();
   document.getElementById('apiModalBg').classList.add('open');
 }
@@ -1068,26 +1073,21 @@ function closeApiModal(e) {
   }
 }
 function updateApiModalStats() {
-  document.getElementById('statReqToday').textContent = reqToday;
-  document.getElementById('statReqLeft').textContent = Math.max(0, DAILY_LIMIT - reqToday);
   document.getElementById('statLastSync').textContent = lastSyncTime
     ? lastSyncTime.toLocaleTimeString('en-AU', {timeZone: currentTz, hour:'2-digit', minute:'2-digit', hour12:false})
     : '—';
+  document.getElementById('apiTokenInput').value = apiToken;
 }
 function updateApiBtn(state) {
   const btn = document.getElementById('apiBtn');
   const status = document.getElementById('apiStatus');
-  if (!apiKey) {
-    btn.className = 'api-btn'; status.textContent = 'Not set'; return;
-  }
+  if (!apiToken) { btn.className = 'api-btn'; status.textContent = 'Not set'; return; }
   if (state === 'syncing') { btn.className = 'api-btn'; status.textContent = '↻ syncing…'; return; }
   if (state === 'ok' || lastSyncTime) {
     btn.className = 'api-btn synced';
     const t = lastSyncTime ? lastSyncTime.toLocaleTimeString('en-AU',{timeZone:currentTz,hour:'2-digit',minute:'2-digit',hour12:false}) : '';
-    status.textContent = `✓ ${t} (${DAILY_LIMIT-reqToday} left)`;
-  } else {
-    btn.className = 'api-btn'; status.textContent = 'Key set';
-  }
+    status.textContent = '✓ ' + t;
+  } else { btn.className = 'api-btn'; status.textContent = 'Token set'; }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1159,7 +1159,7 @@ renderAll();
 setInterval(renderCountdown, 60000);
 startPolling();
 // Auto-sync on load if key exists
-if (apiKey) {
+if (apiToken) {
   setTimeout(syncAll, 500);
 }
 </script>
