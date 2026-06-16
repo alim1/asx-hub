@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gold / S&P 500 Ratio Dashboard</title>
+<title>Gold Ratio Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -34,9 +34,41 @@ header h1 {
   color: #F0B429;
   letter-spacing: 2px;
 }
+header .header-right {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+}
 header .updated {
   font-size: 11px;
   color: #666666;
+}
+/* Tab switcher */
+.tab-bar {
+  display: flex;
+  gap: 0;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #222222;
+}
+.tab-btn {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #444444;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 20px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: all 0.15s;
+}
+.tab-btn:hover {
+  color: #E5E5E5;
+}
+.tab-btn.active {
+  color: #F0B429;
+  border-bottom-color: #F0B429;
 }
 /* Loading / Error */
 #loading {
@@ -126,10 +158,24 @@ header .updated {
   background: #111111;
   border: 1px solid #222222;
   padding: 16px;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 }
 .chart-panel canvas {
   background: #0d0d0d;
+}
+.disclaimer {
+  font-size: 10px;
+  color: #555555;
+  padding: 0 2px;
+  margin-bottom: 16px;
+  display: none;
+}
+.cross-signal {
+  color: #FF4444;
+  font-size: 11px;
+  padding: 0 2px;
+  margin-bottom: 12px;
+  display: none;
 }
 .sparkline-row {
   display: grid;
@@ -152,9 +198,132 @@ header .updated {
 .sparkline-panel canvas {
   background: #0d0d0d;
 }
+/* Signal card (silver tab) */
+.stat-card.signal-card .stat-value {
+  font-size: 18px;
+}
+/* Auto-refresh indicator */
+.refresh-status {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  color: #666666;
+  letter-spacing: 1px;
+}
+.refresh-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #00FF88;
+  animation: pulse 2s ease-in-out infinite;
+}
+.refresh-dot.stale { background: #FFB020; }
+.refresh-dot.error { background: #FF4444; animation: none; }
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+/* Macro Pulse */
+.chart-grid-2x2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.chart-cell {
+  background: #111111;
+  border: 1px solid #222222;
+  padding: 12px 16px;
+}
+.chart-cell canvas { background: #0d0d0d; }
+.chart-cell-title {
+  font-size: 10px;
+  font-weight: 500;
+  color: #666666;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.chart-cell-subtitle {
+  font-size: 9px;
+  color: #555555;
+  font-style: italic;
+  margin-bottom: 8px;
+}
+.macro-tf-btn {
+  background: #111111;
+  border: 1px solid #222222;
+  color: #666666;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 16px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: all 0.15s;
+}
+.macro-tf-btn:hover {
+  border-color: #F0B429;
+  color: #E5E5E5;
+}
+.macro-tf-btn.active {
+  background: #F0B429;
+  color: #0a0a0a;
+  border-color: #F0B429;
+}
+.macro-interp-panel {
+  background: #111111;
+  border: 1px solid #222222;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.macro-interp-title {
+  font-size: 10px;
+  font-weight: 500;
+  color: #666666;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+}
+.macro-interp-text {
+  font-size: 12px;
+  color: #A07820;
+  font-style: italic;
+  line-height: 1.6;
+}
+.warsh-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+.warsh-table th {
+  text-align: left;
+  padding: 6px 10px;
+  background: #1a1a1a;
+  color: #666666;
+  font-weight: 500;
+  letter-spacing: 1px;
+  border-bottom: 1px solid #222222;
+}
+.warsh-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid #1a1a1a;
+  color: #E5E5E5;
+}
+.cross-signal-banner {
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-size: 12px;
+  font-weight: 500;
+}
+#macro-stats-bar {
+  grid-template-columns: repeat(8, 1fr);
+}
 /* Responsive */
 @media (max-width: 900px) {
   .stats-bar { grid-template-columns: repeat(3, 1fr); }
+  .chart-grid-2x2 { grid-template-columns: 1fr; }
+  #macro-stats-bar { grid-template-columns: repeat(4, 1fr) !important; }
 }
 @media (max-width: 600px) {
   .stats-bar { grid-template-columns: repeat(2, 1fr); }
@@ -165,14 +334,28 @@ header .updated {
 <body>
 <div class="container">
   <header>
-    <h1>GOLD / S&amp;P 500 RATIO</h1>
-    <span class="updated" id="last-updated"></span>
+    <h1 id="page-title">GOLD / S&amp;P 500 RATIO</h1>
+    <div class="header-right">
+      <button class="tf-btn" id="events-toggle">EVENTS ON</button>
+      <span class="refresh-status" id="refresh-status">
+        <span class="refresh-dot" id="refresh-dot"></span>
+        AUTO ∙ 15M
+      </span>
+      <span class="updated" id="last-updated"></span>
+    </div>
   </header>
 
   <div id="loading">FETCHING MARKET DATA...</div>
   <div id="error"></div>
 
   <div id="dashboard">
+    <div class="tab-bar" id="tab-bar">
+      <button class="tab-btn active" data-tab="spx">GOLD / SPX</button>
+      <button class="tab-btn" data-tab="asx">GOLD / ASX200</button>
+      <button class="tab-btn" data-tab="silver">GOLD / SILVER</button>
+      <button class="tab-btn" data-tab="buffett">BUFFETT</button>
+      <button class="tab-btn" data-tab="macro">MACRO PULSE</button>
+    </div>
     <div class="stats-bar" id="stats-bar"></div>
     <div class="regime-bar" id="regime-bar"></div>
     <div class="timeframe-bar" id="timeframe-bar">
@@ -185,15 +368,61 @@ header .updated {
     <div class="chart-panel">
       <canvas id="ratioChart" height="320"></canvas>
     </div>
+    <div class="disclaimer" id="disclaimer">Note: Gold in USD, ASX200 in AUD — ratio reflects cross-currency dynamics as well as real asset vs equity performance.</div>
+    <div class="disclaimer" id="silver-note">Ratio = oz of silver to buy 1 oz of gold. Historical mean ~60 (1970–present). Extremes above 80 or below 40 have historically marked tactical rotation points. Not investment advice.</div>
+    <div class="disclaimer" id="buffett-note">Wilshire 5000 / US GDP (annualised). Buffett: 'If the ratio approaches 200% — as it did in 1999 and 2000 — you are playing with fire.' GDP data interpolated from quarterly BEA releases. Not investment advice.</div>
+    <div class="cross-signal" id="cross-signal"></div>
     <div class="sparkline-row">
       <div class="sparkline-panel">
-        <div class="sparkline-title">GOLD (USD)</div>
+        <div class="sparkline-title" id="left-sparkline-title">GOLD (USD)</div>
         <canvas id="goldChart" height="140"></canvas>
       </div>
       <div class="sparkline-panel">
-        <div class="sparkline-title">S&amp;P 500</div>
-        <canvas id="spxChart" height="140"></canvas>
+        <div class="sparkline-title" id="index-sparkline-title">S&amp;P 500</div>
+        <canvas id="indexChart" height="140"></canvas>
       </div>
+    </div>
+    <div id="macro-section" style="display:none">
+      <div class="stats-bar" id="macro-stats-bar" style="grid-template-columns:repeat(8,1fr)"></div>
+      <div class="regime-bar" id="macro-regime-bar"></div>
+      <div id="macro-cross-signal" class="cross-signal-banner" style="display:none"></div>
+      <div class="timeframe-bar" id="macro-timeframe-bar">
+        <button class="macro-tf-btn" data-months="6">6M</button>
+        <button class="macro-tf-btn" data-months="12">1Y</button>
+        <button class="macro-tf-btn active" data-months="24">2Y</button>
+        <button class="macro-tf-btn" data-months="60">5Y</button>
+      </div>
+      <div class="chart-grid-2x2">
+        <div class="chart-cell">
+          <div class="chart-cell-title">DXY — US DOLLAR INDEX</div>
+          <canvas id="dxyChart" height="280"></canvas>
+        </div>
+        <div class="chart-cell">
+          <div class="chart-cell-title">YIELD CURVE — 10Y MINUS 2Y</div>
+          <canvas id="spreadChart" height="280"></canvas>
+        </div>
+        <div class="chart-cell">
+          <div class="chart-cell-title">2Y TREASURY YIELD (SHORT END)</div>
+          <div class="chart-cell-subtitle">Tracks Fed expectations — falls when markets price in cuts</div>
+          <canvas id="yield2yChart" height="280"></canvas>
+        </div>
+        <div class="chart-cell">
+          <div class="chart-cell-title">10Y TREASURY YIELD (LONG END)</div>
+          <div class="chart-cell-subtitle">Market-determined — rises when inflation or debt concerns grow</div>
+          <canvas id="yield10yChart" height="280"></canvas>
+        </div>
+      </div>
+      <div class="macro-interp-panel" id="macro-interp">
+        <div class="macro-interp-title">CURRENT CONDITIONS</div>
+        <div id="macro-conditions" class="macro-interp-text"></div>
+        <div class="macro-interp-title" style="margin-top:16px">WARSH PLAYBOOK TRACKER</div>
+        <table class="warsh-table" id="warsh-table">
+          <thead><tr><th>Step</th><th>What's Needed</th><th>Current Status</th><th>Signal</th></tr></thead>
+          <tbody id="warsh-tbody"></tbody>
+        </table>
+        <div id="warsh-summary" style="margin-top:8px;font-size:12px"></div>
+      </div>
+      <div class="disclaimer" style="display:block;margin-top:12px">2Y yield tracks Fed policy expectations. 10Y yield is market-determined and reflects growth and inflation outlook. The spread between them (yield curve) is the single most important indicator of banking system health and monetary transmission. Data via Yahoo Finance. Not investment advice.</div>
     </div>
   </div>
 </div>
@@ -202,41 +431,149 @@ header .updated {
 Chart.register(ChartAnnotation);
 
 const PROXY = 'https://market-data-proxy.alex-9d8.workers.dev/';
-let fullData = [];
+
+// State
+let spxData = [];
+let asxData = [];
+let silverData = [];
+let buffettData = [];
+let currentTab = 'spx';
 let currentYears = 5;
-let ratioChart, goldChart, spxChart;
+let eventsVisible = false;
+let ratioChart, goldChart, indexChart;
+let macroData = [];
+let macroMonths = 24;
+let dxyChart, spreadChart, yield2yChart, yield10yChart;
 
-async function fetchData() {
-  const [goldRes, spxRes] = await Promise.all([
-    fetch(PROXY + '?ticker=GC%3DF&range=20y&interval=1d').then(r => r.json()),
-    fetch(PROXY + '?ticker=%5EGSPC&range=20y&interval=1d').then(r => r.json())
-  ]);
+const MACRO_EVENTS = [
+  { date: '2000-03-10', label: 'Dot-com Peak' },
+  { date: '2003-03-12', label: 'Iraq War' },
+  { date: '2008-09-15', label: 'Lehman' },
+  { date: '2011-08-05', label: 'US Downgrade' },
+  { date: '2020-03-23', label: 'COVID Low' },
+  { date: '2022-01-03', label: 'Fed Pivot' },
+  { date: '2022-10-13', label: 'Rate Peak' },
+  { date: '2023-03-10', label: 'SVB Collapse' },
+  { date: '2025-04-01', label: 'Iran Strike' }
+];
 
-  const parse = (res) => {
-    const result = res.chart.result[0];
-    const ts = result.timestamp;
-    const closes = result.indicators.quote[0].close;
-    const map = new Map();
-    for (let i = 0; i < ts.length; i++) {
-      if (closes[i] == null) continue;
-      const d = luxon.DateTime.fromSeconds(ts[i]).toFormat('yyyy-MM-dd');
-      map.set(d, closes[i]);
-    }
-    return map;
-  };
+const SILVER_HIST_MEAN = 60;
 
-  const goldMap = parse(goldRes);
-  const spxMap = parse(spxRes);
+const GDP_QUARTERLY = [
+  {date:'2004-01-01',gdp:12.2},{date:'2005-01-01',gdp:13.0},{date:'2006-01-01',gdp:13.8},
+  {date:'2007-01-01',gdp:14.5},{date:'2008-01-01',gdp:14.7},{date:'2009-01-01',gdp:14.4},
+  {date:'2010-01-01',gdp:15.0},{date:'2011-01-01',gdp:15.5},{date:'2012-01-01',gdp:16.2},
+  {date:'2013-01-01',gdp:16.8},{date:'2014-01-01',gdp:17.5},{date:'2015-01-01',gdp:18.2},
+  {date:'2016-01-01',gdp:18.7},{date:'2017-01-01',gdp:19.5},{date:'2018-01-01',gdp:20.5},
+  {date:'2019-01-01',gdp:21.4},{date:'2020-01-01',gdp:20.9},{date:'2021-01-01',gdp:23.3},
+  {date:'2022-01-01',gdp:25.5},{date:'2023-01-01',gdp:27.4},{date:'2024-01-01',gdp:28.6},
+  {date:'2025-01-01',gdp:29.8},{date:'2026-01-01',gdp:30.5}
+];
+
+const WILSHIRE_MULTIPLIER = 1150000000;
+const BUFFETT_HIST_MEAN = 85;
+
+function interpolateGDP(dateStr) {
+  var dMs = luxon.DateTime.fromISO(dateStr).toMillis();
+  var before = null, after = null;
+  for (var i = 0; i < GDP_QUARTERLY.length; i++) {
+    var gMs = luxon.DateTime.fromISO(GDP_QUARTERLY[i].date).toMillis();
+    if (gMs <= dMs) before = { ms: gMs, gdp: GDP_QUARTERLY[i].gdp };
+    if (gMs >= dMs && !after) after = { ms: gMs, gdp: GDP_QUARTERLY[i].gdp };
+  }
+  if (!before || !after) return null;
+  if (before.ms === after.ms) return before.gdp;
+  var frac = (dMs - before.ms) / (after.ms - before.ms);
+  return before.gdp + frac * (after.gdp - before.gdp);
+}
+
+function getActiveData() {
+  if (currentTab === 'spx') return spxData;
+  if (currentTab === 'asx') return asxData;
+  if (currentTab === 'buffett') return buffettData;
+  return silverData;
+}
+
+function getIndexLabel() {
+  if (currentTab === 'spx') return 'SPX';
+  if (currentTab === 'asx') return 'ASX200';
+  if (currentTab === 'buffett') return 'Wilshire';
+  return 'Silver';
+}
+
+function parseYahoo(res) {
+  const result = res.chart.result[0];
+  const ts = result.timestamp;
+  const closes = result.indicators.quote[0].close;
+  const map = new Map();
+  for (let i = 0; i < ts.length; i++) {
+    if (closes[i] == null) continue;
+    const d = luxon.DateTime.fromSeconds(ts[i]).toFormat('yyyy-MM-dd');
+    map.set(d, closes[i]);
+  }
+  return map;
+}
+
+function alignSeries(goldMap, indexMap) {
   const aligned = [];
-
   for (const [date, gold] of goldMap) {
-    if (spxMap.has(date)) {
-      aligned.push({ date, gold, spx: spxMap.get(date), ratio: gold / spxMap.get(date) });
+    if (indexMap.has(date)) {
+      aligned.push({ date, gold, index: indexMap.get(date), ratio: gold / indexMap.get(date) });
     }
   }
-
   aligned.sort((a, b) => a.date.localeCompare(b.date));
   return aligned;
+}
+
+async function fetchAllData() {
+  const [goldRes, spxRes, asxRes, silverRes, wilshireRes, dxyRes, irxRes, tnxRes] = await Promise.all([
+    fetch(PROXY + '?ticker=GC%3DF&range=20y&interval=1d').then(r => r.json()),
+    fetch(PROXY + '?ticker=%5EGSPC&range=20y&interval=1d').then(r => r.json()),
+    fetch(PROXY + '?ticker=%5EAXJO&range=20y&interval=1d').then(r => r.json()),
+    fetch(PROXY + '?ticker=SI%3DF&range=20y&interval=1d').then(r => r.json()),
+    fetch(PROXY + '?ticker=%5EW5000&range=20y&interval=1d').then(r => r.json()),
+    fetch(PROXY + '?ticker=DX-Y.NYB&range=5y&interval=1d').then(r => r.json()),
+    fetch(PROXY + '?ticker=%5EIRX&range=5y&interval=1d').then(r => r.json()),
+    fetch(PROXY + '?ticker=%5ETNX&range=5y&interval=1d').then(r => r.json())
+  ]);
+
+  const goldMap = parseYahoo(goldRes);
+  const spxMap = parseYahoo(spxRes);
+  const asxMap = parseYahoo(asxRes);
+  const silverMap = parseYahoo(silverRes);
+
+  spxData = alignSeries(goldMap, spxMap);
+  asxData = alignSeries(goldMap, asxMap);
+  silverData = alignSeries(goldMap, silverMap);
+
+  // Build Buffett Indicator data
+  var wilshireMap = parseYahoo(wilshireRes);
+  var buffettAligned = [];
+  for (var [date, w5k] of wilshireMap) {
+    var gdp = interpolateGDP(date);
+    if (gdp) {
+      var marketCap = w5k * WILSHIRE_MULTIPLIER;
+      var indicator = (marketCap / (gdp * 1e12)) * 100;
+      buffettAligned.push({date: date, index: w5k, gold: gdp, ratio: indicator});
+    }
+  }
+  buffettAligned.sort((a,b) => a.date.localeCompare(b.date));
+  buffettData = buffettAligned;
+
+  // Build Macro Pulse data
+  var dxyMap = parseYahoo(dxyRes);
+  var irxMap = parseYahoo(irxRes);
+  var tnxMap = parseYahoo(tnxRes);
+  var macroAligned = [];
+  for (var [date, dxy] of dxyMap) {
+    if (irxMap.has(date) && tnxMap.has(date)) {
+      var y2 = irxMap.get(date) * 0.1;
+      var y10 = tnxMap.get(date) * 0.1;
+      macroAligned.push({ date: date, dxy: dxy, y2: y2, y10: y10, spread: y10 - y2 });
+    }
+  }
+  macroAligned.sort(function(a, b) { return a.date.localeCompare(b.date); });
+  macroData = macroAligned;
 }
 
 function filterByYears(data, years) {
@@ -244,12 +581,16 @@ function filterByYears(data, years) {
   return data.filter(d => d.date >= cutoff);
 }
 
+function filterByMonths(data, months) {
+  var cutoff = luxon.DateTime.now().minus({ months: months }).toFormat('yyyy-MM-dd');
+  return data.filter(function(d) { return d.date >= cutoff; });
+}
+
 function findClosest(data, targetDate) {
-  const t = targetDate;
   let best = null;
   let bestDiff = Infinity;
   for (const d of data) {
-    const diff = Math.abs(luxon.DateTime.fromISO(d.date).toMillis() - luxon.DateTime.fromISO(t).toMillis());
+    const diff = Math.abs(luxon.DateTime.fromISO(d.date).toMillis() - luxon.DateTime.fromISO(targetDate).toMillis());
     if (diff < bestDiff) { bestDiff = diff; best = d; }
   }
   return best;
@@ -267,27 +608,54 @@ function computeSlope(data, n) {
   return (nn * sumXY - sumX * sumY) / (nn * sumX2 - sumX * sumX);
 }
 
-function renderStats(data) {
+function computeSlopeField(data, n, field) {
+  var slice = data.slice(-n);
+  if (slice.length < 2) return 0;
+  var sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+  for (var i = 0; i < slice.length; i++) {
+    sumX += i; sumY += slice[i][field];
+    sumXY += i * slice[i][field]; sumX2 += i * i;
+  }
+  var nn = slice.length;
+  return (nn * sumXY - sumX * sumY) / (nn * sumX2 - sumX * sumX);
+}
+
+function consecutiveFalling(data, field, n) {
+  if (data.length < n + 1) return false;
+  var slice = data.slice(-(n + 1));
+  for (var i = 1; i < slice.length; i++) {
+    if (slice[i][field] >= slice[i - 1][field]) return false;
+  }
+  return true;
+}
+
+function findLastUninversion(data) {
+  for (var i = data.length - 1; i > 0; i--) {
+    if (data[i].spread >= 0 && data[i - 1].spread < 0) return data[i].date;
+  }
+  return null;
+}
+
+// ---------- Stats ----------
+
+function renderEquityStats(data) {
+  const fullData = getActiveData();
   const container = document.getElementById('stats-bar');
   const current = data[data.length - 1];
   const now = current.ratio;
 
-  // 1Y ago
   const oneYearAgo = findClosest(fullData, luxon.DateTime.now().minus({ years: 1 }).toFormat('yyyy-MM-dd'));
   const change1Y = oneYearAgo ? ((now - oneYearAgo.ratio) / oneYearAgo.ratio * 100) : null;
 
-  // Since 2020
   const since2020 = fullData.find(d => d.date >= '2020-01-01');
   const change2020 = since2020 ? ((now - since2020.ratio) / since2020.ratio * 100) : null;
 
-  // Cycle high/low (full dataset)
   let high = fullData[0], low = fullData[0];
   for (const d of fullData) {
     if (d.ratio > high.ratio) high = d;
     if (d.ratio < low.ratio) low = d;
   }
 
-  // Trend
   const slope = computeSlope(fullData, 20);
   const trendLabel = slope >= 0 ? 'Real Assets ↑' : 'Financial Assets ↑';
   const trendColor = slope >= 0 ? '#F0B429' : '#6B8AFF';
@@ -296,28 +664,697 @@ function renderStats(data) {
     if (v == null) return '—';
     const sign = v >= 0 ? '+' : '';
     const cls = v >= 0 ? 'stat-change-pos' : 'stat-change-neg';
-    return `<span class="${cls}">${sign}${v.toFixed(1)}%</span>`;
+    return '<span class="' + cls + '">' + sign + v.toFixed(1) + '%</span>';
   };
 
   const cards = [
     { label: 'RATIO NOW', value: now.toFixed(4), sub: '' },
     { label: '1Y AGO', value: oneYearAgo ? oneYearAgo.ratio.toFixed(4) : '—', sub: fmtPct(change1Y) },
     { label: 'SINCE 2020', value: since2020 ? since2020.ratio.toFixed(4) : '—', sub: fmtPct(change2020) },
-    { label: 'CYCLE HIGH', value: high.ratio.toFixed(4), sub: `<span class="stat-sub">${high.date}</span>` },
-    { label: 'CYCLE LOW', value: low.ratio.toFixed(4), sub: `<span class="stat-sub">${low.date}</span>` },
-    { label: 'TREND (20D)', value: `<span style="color:${trendColor}">${trendLabel}</span>`, sub: '' }
+    { label: 'CYCLE HIGH', value: high.ratio.toFixed(4), sub: '<span class="stat-sub">' + high.date + '</span>' },
+    { label: 'CYCLE LOW', value: low.ratio.toFixed(4), sub: '<span class="stat-sub">' + low.date + '</span>' },
+    { label: 'TREND (20D)', value: '<span style="color:' + trendColor + '">' + trendLabel + '</span>', sub: '' }
   ];
 
-  container.innerHTML = cards.map(c => `
-    <div class="stat-card">
-      <div class="stat-label">${c.label}</div>
-      <div class="stat-value">${c.value}</div>
-      ${c.sub ? `<div class="stat-sub">${c.sub}</div>` : ''}
-    </div>
-  `).join('');
+  renderStatCards(container, cards);
 }
 
-function renderRegime(data) {
+function renderSilverStats(data) {
+  const fullData = getActiveData();
+  const container = document.getElementById('stats-bar');
+  const current = data[data.length - 1];
+  const now = current.ratio;
+
+  // Distance from mean
+  const dist = now - SILVER_HIST_MEAN;
+  const distSign = dist >= 0 ? '+' : '';
+  const distColor = dist >= 0 ? '#F0B429' : '#6B8AFF';
+  const distText = distSign + dist.toFixed(1) + (dist >= 0 ? ' above mean' : ' below mean');
+
+  // High/low
+  let high = fullData[0], low = fullData[0];
+  for (const d of fullData) {
+    if (d.ratio > high.ratio) high = d;
+    if (d.ratio < low.ratio) low = d;
+  }
+
+  // Trend
+  const slope = computeSlope(fullData, 20);
+  const trendLabel = slope >= 0 ? 'Gold Strengthening ↑' : 'Silver Strengthening ↑';
+  const trendColor = slope >= 0 ? '#F0B429' : '#C0C0C0';
+
+  // Signal
+  let sigValue, sigColor, sigSub;
+  if (now > 90) {
+    sigValue = 'BUY SILVER'; sigColor = '#FF4444';
+    sigSub = 'Extreme — gold historically expensive';
+  } else if (now >= 80) {
+    sigValue = 'FAVOUR SILVER'; sigColor = '#F0B429';
+    sigSub = 'Gold expensive vs silver';
+  } else if (now >= 55) {
+    sigValue = 'NEUTRAL'; sigColor = '#666666';
+    sigSub = 'Within normal range';
+  } else if (now >= 40) {
+    sigValue = 'FAVOUR GOLD'; sigColor = '#C0C0C0';
+    sigSub = 'Silver expensive vs gold';
+  } else {
+    sigValue = 'BUY GOLD'; sigColor = '#6B8AFF';
+    sigSub = 'Extreme — silver historically expensive';
+  }
+
+  const cards = [
+    { label: 'RATIO NOW', value: now.toFixed(1), sub: '' },
+    { label: 'HIST MEAN', value: '60.0', sub: '<span style="color:' + distColor + '">' + distText + '</span>' },
+    { label: '20Y HIGH', value: high.ratio.toFixed(1), sub: '<span class="stat-sub">' + high.date + '</span>' },
+    { label: '20Y LOW', value: low.ratio.toFixed(1), sub: '<span class="stat-sub">' + low.date + '</span>' },
+    { label: 'TREND (20D)', value: '<span style="color:' + trendColor + '">' + trendLabel + '</span>', sub: '' },
+    { label: 'SIGNAL', value: '<span style="color:' + sigColor + '">' + sigValue + '</span>',
+      sub: '<span class="stat-sub">' + sigSub + '</span>', borderColor: sigColor, isSignal: true }
+  ];
+
+  renderStatCards(container, cards);
+}
+
+function renderBuffettStats(data) {
+  var fullData = getActiveData();
+  var container = document.getElementById('stats-bar');
+  var current = data[data.length - 1];
+  var now = current.ratio;
+
+  // Distance from historical mean
+  var dist = now - BUFFETT_HIST_MEAN;
+  var distPct = ((now - BUFFETT_HIST_MEAN) / BUFFETT_HIST_MEAN * 100).toFixed(1);
+  var distSign = dist >= 0 ? '+' : '';
+  var distColor;
+  if (now > 135) distColor = '#FF4444';
+  else if (now >= 90) distColor = '#F0B429';
+  else distColor = '#00FF88';
+  var distText = distSign + distPct + '% ' + (dist >= 0 ? 'above mean' : 'below mean');
+
+  // Trend
+  var slope = computeSlope(fullData, 20);
+  var trendLabel = slope >= 0 ? 'Expanding ↑' : 'Contracting ↓';
+  var trendColor = slope >= 0 ? '#FF8C00' : '#00FF88';
+
+  // Signal
+  var sigValue, sigColor, sigSub, sigBorder;
+  if (now > 200) {
+    sigValue = 'EXTREME CAUTION'; sigColor = '#FF4444'; sigBorder = '#FF4444';
+    sigSub = 'Unprecedented territory';
+  } else if (now >= 135) {
+    sigValue = 'SIGNIFICANTLY OVERVALUED'; sigColor = '#FF8C00'; sigBorder = '#FF8C00';
+    sigSub = 'Well above historical norms';
+  } else if (now >= 115) {
+    sigValue = 'OVERVALUED'; sigColor = '#F0B429'; sigBorder = '#F0B429';
+    sigSub = 'Above fair value range';
+  } else if (now >= 90) {
+    sigValue = 'FAIR VALUE'; sigColor = '#888888'; sigBorder = '#444444';
+    sigSub = 'Within normal range';
+  } else if (now >= 75) {
+    sigValue = 'UNDERVALUED'; sigColor = '#00FF88'; sigBorder = '#00FF88';
+    sigSub = 'Below historical mean';
+  } else {
+    sigValue = 'STRONG BUY SIGNAL'; sigColor = '#00FF88'; sigBorder = '#00FF88';
+    sigSub = 'Historically rare opportunity';
+  }
+
+  var cards = [
+    { label: 'NOW', value: now.toFixed(1) + '%', sub: '' },
+    { label: 'HIST MEAN', value: '85.0%', sub: '<span style="color:' + distColor + '">' + distText + '</span>' },
+    { label: 'DOT-COM PEAK', value: '~190%', sub: '<span class="stat-sub">Mar 2000</span>' },
+    { label: 'POST-COVID PEAK', value: '~210%', sub: '<span class="stat-sub">Nov 2021</span>' },
+    { label: 'TREND (20D)', value: '<span style="color:' + trendColor + '">' + trendLabel + '</span>', sub: '' },
+    { label: 'SIGNAL', value: '<span style="color:' + sigColor + '">' + sigValue + '</span>',
+      sub: '<span class="stat-sub">' + sigSub + '</span>', borderColor: sigBorder, isSignal: true }
+  ];
+
+  renderStatCards(container, cards);
+}
+
+function renderStatCards(container, cards) {
+  container.innerHTML = cards.map(function(c) {
+    const border = c.borderColor ? 'border-color:' + c.borderColor : '';
+    const cls = c.isSignal ? 'stat-card signal-card' : 'stat-card';
+    return '<div class="' + cls + '" style="' + border + '">' +
+      '<div class="stat-label">' + c.label + '</div>' +
+      '<div class="stat-value">' + c.value + '</div>' +
+      (c.sub ? '<div class="stat-sub">' + c.sub + '</div>' : '') +
+      '</div>';
+  }).join('');
+}
+
+// ---------- Macro Stats ----------
+
+function renderMacroStats(data) {
+  var container = document.getElementById('macro-stats-bar');
+  var current = data[data.length - 1];
+  var dxySlope = computeSlopeField(macroData, 20, 'dxy');
+  var spreadSlope = computeSlopeField(macroData, 20, 'spread');
+  var y2Slope = computeSlopeField(macroData, 20, 'y2');
+
+  // Warsh signal
+  var warshValue, warshColor, warshSub, warshBorder;
+  var sp = current.spread;
+  if (sp > 1.0 && dxySlope < 0 && y2Slope < 0) {
+    warshValue = 'SCISSOR WORKING'; warshColor = '#00FF88'; warshSub = 'Short end falling, curve steepening, dollar easing'; warshBorder = '#00FF88';
+  } else if (sp >= 0.5 && sp <= 1.0 && spreadSlope > 0 && y2Slope < 0) {
+    warshValue = 'SCISSOR STARTING'; warshColor = '#F0B429'; warshSub = 'Steepening underway, watch for acceleration'; warshBorder = '#F0B429';
+  } else if (sp >= 0 && sp < 0.5 && spreadSlope <= 0) {
+    warshValue = 'SCISSOR STALLED'; warshColor = '#FF8C00'; warshSub = 'Curve too flat — banks not incentivised'; warshBorder = '#FF8C00';
+  } else if (sp < 0) {
+    warshValue = 'CURVE INVERTED'; warshColor = '#FF4444'; warshSub = 'Recession signal — Warsh plan cannot proceed'; warshBorder = '#FF4444';
+  } else if (sp > 0 && dxySlope > 0 && computeSlopeField(macroData, 20, 'y10') > 0) {
+    warshValue = 'HAWKISH PRESSURE'; warshColor = '#FF8C00'; warshSub = 'Dollar and long rates rising — tightening bias'; warshBorder = '#FF8C00';
+  } else {
+    warshValue = 'MIXED'; warshColor = '#888888'; warshSub = 'No clear signal'; warshBorder = '#444444';
+  }
+
+  var cards = [
+    { label: 'DXY NOW', value: current.dxy.toFixed(2), sub: '' },
+    { label: 'DXY TREND', value: dxySlope >= 0 ? '<span style="color:#FF8C00">Strengthening ↑</span>' : '<span style="color:#00FF88">Weakening ↓</span>', sub: '' },
+    { label: '2Y YIELD', value: current.y2.toFixed(2) + '%', sub: '' },
+    { label: '10Y YIELD', value: current.y10.toFixed(2) + '%', sub: '' },
+    { label: 'SPREAD NOW', value: '<span style="color:' + (current.spread >= 0 ? '#00FF88' : '#FF4444') + '">' + (current.spread >= 0 ? '+' : '') + current.spread.toFixed(2) + 'pp</span>', sub: '' },
+    { label: 'SPREAD TREND', value: spreadSlope >= 0 ? '<span style="color:#00FF88">Steepening ↑</span>' : '<span style="color:#FF8C00">Flattening ↓</span>', sub: '' },
+    { label: 'CURVE STATUS', value: sp > 1.0 ? '<span style="color:#00FF88">STEEP</span>' : sp >= 0 ? '<span style="color:#F0B429">FLAT</span>' : '<span style="color:#FF4444">INVERTED</span>', sub: '' },
+    { label: 'WARSH SIGNAL', value: '<span style="color:' + warshColor + '">' + warshValue + '</span>', sub: '<span class="stat-sub">' + warshSub + '</span>', borderColor: warshBorder, isSignal: true }
+  ];
+
+  renderStatCards(container, cards);
+}
+
+// ---------- Macro Regime ----------
+
+function renderMacroRegime(data) {
+  var current = data[data.length - 1];
+  var sp = current.spread;
+  var dxySlope = computeSlopeField(macroData, 20, 'dxy');
+  var spreadSlope = computeSlopeField(macroData, 20, 'spread');
+  var y2Slope = computeSlopeField(macroData, 20, 'y2');
+
+  // Conditions text
+  var condEl = document.getElementById('macro-conditions');
+  var text;
+  if (sp < 0.5 && dxySlope > 0 && computeSlopeField(macroData, 20, 'y10') > 0) {
+    text = 'The yield curve remains dangerously flat with the dollar strengthening — a combination that historically signals tight financial conditions. The long end is rising faster than the short end can fall, which is the exact opposite of what Warsh needs. Banks have little incentive to absorb Treasury supply at these spreads. Watch for the Fed to signal a dovish pivot or for the bond market to come under visible stress.';
+  } else if (sp > 1.0 && dxySlope < 0) {
+    text = 'The yield curve is steepening and the dollar is weakening — the twin hallmarks of easing financial conditions. This is the environment Warsh\'s plan requires: banks can borrow cheap and lend long, making Treasury absorption profitable. Risk assets historically perform well in this configuration. The scissor trade is operational.';
+  } else if (sp > 0 && spreadSlope > 0 && dxySlope < 0) {
+    text = 'Early signs of the steepening trade emerging. The spread between short and long rates is widening, and dollar weakness suggests markets are beginning to price in future liquidity. Not yet at levels that fully incentivise bank Treasury buying, but the direction is constructive.';
+  } else if (current.y10 > 4.5 && sp < 0.5) {
+    text = 'Long-term rates above 4.5% with a flat curve is a stress signal for the Treasury market. At these levels the US government\'s interest expense is compounding rapidly, and the $8 trillion refinancing wall becomes increasingly costly. This is the scenario that forces Warsh\'s hand — either signal dovish intent or risk a bond market dislocation.';
+  } else {
+    text = 'Macro conditions are mixed. The yield curve, dollar index, and rate trajectory are not aligned in a clear direction. Monitor for convergence of signals before taking directional positions.';
+  }
+  condEl.textContent = text;
+
+  // Warsh Playbook Tracker
+  var y2Falling = y2Slope < 0;
+  var curveStep = sp > 1.0;
+  var dxyFalling = dxySlope < 0;
+  var longStable = current.y10 < 4.5;
+
+  var steps = [
+    { step: '1. Cut short rates', need: '2Y yield falling', status: current.y2.toFixed(2) + '% (' + (y2Falling ? 'falling' : 'rising') + ')', ok: y2Falling },
+    { step: '2. Steepen curve', need: 'Spread > 1.0%', status: (sp >= 0 ? '+' : '') + sp.toFixed(2) + 'pp', ok: curveStep },
+    { step: '3. Dollar easing', need: 'DXY falling', status: current.dxy.toFixed(2) + ' (' + (dxyFalling ? 'falling' : 'rising') + ')', ok: dxyFalling },
+    { step: '4. Long end stable', need: '10Y < 4.5%', status: current.y10.toFixed(2) + '%', ok: longStable }
+  ];
+
+  var tbody = document.getElementById('warsh-tbody');
+  tbody.innerHTML = steps.map(function(s) {
+    var sig = s.ok ? '<span style="color:#00FF88">✓</span>' : '<span style="color:#FF4444">✗</span>';
+    return '<tr><td>' + s.step + '</td><td>' + s.need + '</td><td>' + s.status + '</td><td>' + sig + '</td></tr>';
+  }).join('');
+
+  var met = steps.filter(function(s) { return s.ok; }).length;
+  var summaryEl = document.getElementById('warsh-summary');
+  var summaryColor, summaryText;
+  if (met === 4) { summaryColor = '#00FF88'; summaryText = 'All systems go — Warsh plan on track.'; }
+  else if (met === 3) { summaryColor = '#F0B429'; summaryText = 'Plan mostly intact — monitor the failing condition.'; }
+  else if (met === 2) { summaryColor = '#FF8C00'; summaryText = 'Plan under stress — significant obstacles remain.'; }
+  else { summaryColor = '#FF4444'; summaryText = 'Plan broken — macro conditions do not support the steepening trade.'; }
+  summaryEl.innerHTML = '<span style="color:' + summaryColor + '">' + met + '/4 conditions met: ' + summaryText + '</span>';
+
+  // Cross-tab signal banners
+  var bannerEl = document.getElementById('macro-cross-signal');
+  bannerEl.style.display = 'none';
+
+  // Check Gold/SPX slope for cross-tab signals
+  var goldSpxRising = spxData.length > 20 ? computeSlope(spxData, 20) > 0 : false;
+
+  // Signal A — Iran Stress
+  if (current.y10 > 4.5 && dxySlope > 0 && goldSpxRising) {
+    bannerEl.style.display = 'block';
+    bannerEl.style.background = 'rgba(255,68,68,0.1)';
+    bannerEl.style.borderLeft = '4px solid #FF4444';
+    bannerEl.style.color = '#FF4444';
+    bannerEl.textContent = '⚠ IRAN STRESS SIGNAL: Long rates elevated, dollar strengthening, gold outperforming. Bond market under pressure — consistent with Hormuz disruption scenario.';
+    return;
+  }
+  // Signal C — Stagflation (higher priority than B)
+  if (current.y10 > 4.5 && current.dxy > 104 && sp < 0.5) {
+    bannerEl.style.display = 'block';
+    bannerEl.style.background = 'rgba(255,140,0,0.1)';
+    bannerEl.style.borderLeft = '4px solid #FF8C00';
+    bannerEl.style.color = '#FF8C00';
+    bannerEl.textContent = '⚠ STAGFLATION SIGNAL: High long rates, strong dollar, flat curve — conditions consistent with persistent inflation constraining growth. Worst case for equities.';
+    return;
+  }
+  // Signal B — Dovish Pivot
+  if (consecutiveFalling(macroData, 'y2', 10) && dxySlope < 0 && spreadSlope > 0) {
+    bannerEl.style.display = 'block';
+    bannerEl.style.background = 'rgba(0,255,136,0.1)';
+    bannerEl.style.borderLeft = '4px solid #00FF88';
+    bannerEl.style.color = '#00FF88';
+    bannerEl.textContent = '◆ PIVOT SIGNAL: Short rates falling, dollar weakening, curve steepening. Markets pricing in rate cuts — watch for Warsh confirmation.';
+  }
+}
+
+// ---------- Macro Charts ----------
+
+function createDxyChart(data) {
+  var ctx = document.getElementById('dxyChart').getContext('2d');
+  if (dxyChart) dxyChart.destroy();
+
+  dxyChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: data.map(function(d) { return d.date; }),
+      datasets: [{
+        data: data.map(function(d) { return d.dxy; }),
+        borderColor: '#E5E5E5',
+        borderWidth: 2,
+        pointRadius: 0,
+        pointHitRadius: 8,
+        tension: 0,
+        fill: false
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        annotation: {
+          annotations: {
+            peak2022: {
+              type: 'line', yMin: 114, yMax: 114,
+              borderColor: '#FF4444', borderWidth: 1, borderDash: [6, 4],
+              label: { display: true, content: '2022 Peak', position: 'start',
+                font: { size: 10, family: 'IBM Plex Mono' }, color: '#FF4444',
+                backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 }
+            },
+            parity: {
+              type: 'line', yMin: 100, yMax: 100,
+              borderColor: '#888888', borderWidth: 1, borderDash: [6, 4],
+              label: { display: true, content: 'Parity / Key Level', position: 'start',
+                font: { size: 10, family: 'IBM Plex Mono' }, color: '#888888',
+                backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 }
+            },
+            low2021: {
+              type: 'line', yMin: 89, yMax: 89,
+              borderColor: '#00FF88', borderWidth: 1, borderDash: [6, 4],
+              label: { display: true, content: '2021 Low', position: 'start',
+                font: { size: 10, family: 'IBM Plex Mono' }, color: '#00FF88',
+                backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 }
+            }
+          }
+        },
+        tooltip: {
+          backgroundColor: '#1a1a1a',
+          borderColor: '#333333',
+          borderWidth: 1,
+          titleFont: { family: 'IBM Plex Mono', size: 11 },
+          bodyFont: { family: 'IBM Plex Mono', size: 11 },
+          titleColor: '#E5E5E5',
+          bodyColor: '#E5E5E5',
+          displayColors: false,
+          callbacks: {
+            title: function(items) { return items[0].label; },
+            label: function(item) {
+              var d = data[item.dataIndex];
+              return 'DXY: ' + d.dxy.toFixed(2);
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          type: 'time',
+          time: { parser: 'yyyy-MM-dd' },
+          grid: { color: '#1a1a1a' },
+          ticks: { color: '#666666', font: { family: 'IBM Plex Mono', size: 10 }, maxRotation: 0 },
+          border: { color: '#222222' }
+        },
+        y: {
+          position: 'right',
+          grid: { color: '#1a1a1a' },
+          ticks: {
+            color: '#666666',
+            font: { family: 'IBM Plex Mono', size: 10 },
+            callback: function(v) { return v.toFixed(2); }
+          },
+          border: { color: '#222222' }
+        }
+      }
+    }
+  });
+}
+
+function createSpreadChart(data) {
+  var ctx = document.getElementById('spreadChart').getContext('2d');
+  if (spreadChart) spreadChart.destroy();
+
+  var uninvDate = findLastUninversion(data);
+  var annotations = {
+    inversionLine: {
+      type: 'line', yMin: 0, yMax: 0,
+      borderColor: '#FF4444', borderWidth: 2, borderDash: [],
+      label: { display: true, content: 'Inversion Line', position: 'start',
+        font: { size: 10, family: 'IBM Plex Mono' }, color: '#FF4444',
+        backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 }
+    },
+    healthyRange: {
+      type: 'line', yMin: 1.0, yMax: 1.0,
+      borderColor: '#00FF88', borderWidth: 1, borderDash: [6, 4],
+      label: { display: true, content: 'Healthy Range', position: 'start',
+        font: { size: 10, family: 'IBM Plex Mono' }, color: '#00FF88',
+        backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 }
+    },
+    steepIdeal: {
+      type: 'line', yMin: 1.5, yMax: 1.5,
+      borderColor: '#F0B429', borderWidth: 1, borderDash: [6, 4],
+      label: { display: true, content: 'Steep / Ideal for Banks', position: 'start',
+        font: { size: 10, family: 'IBM Plex Mono' }, color: '#F0B429',
+        backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 }
+    },
+    deepInversion: {
+      type: 'line', yMin: -0.5, yMax: -0.5,
+      borderColor: '#FF4444', borderWidth: 1, borderDash: [6, 4],
+      label: { display: true, content: 'Deep Inversion', position: 'start',
+        font: { size: 10, family: 'IBM Plex Mono' }, color: '#FF4444',
+        backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 }
+    },
+    zoneGreen: {
+      type: 'box', yMin: 1.0, yMax: 2.5,
+      backgroundColor: 'rgba(0,255,136,0.04)', borderWidth: 0
+    },
+    zoneAmber: {
+      type: 'box', yMin: 0, yMax: 1.0,
+      backgroundColor: 'rgba(240,180,41,0.04)', borderWidth: 0
+    },
+    zoneRed: {
+      type: 'box', yMin: -2, yMax: 0,
+      backgroundColor: 'rgba(255,68,68,0.06)', borderWidth: 0
+    }
+  };
+
+  if (uninvDate) {
+    annotations.uninversion = {
+      type: 'line', xMin: uninvDate, xMax: uninvDate,
+      borderColor: '#00FF88', borderWidth: 1, borderDash: [4, 3],
+      label: { display: true, content: 'Uninversion', position: 'start', rotation: -90,
+        font: { size: 10, family: 'IBM Plex Mono' }, color: '#00FF88',
+        backgroundColor: 'transparent', padding: { bottom: 4 } }
+    };
+  }
+
+  spreadChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: data.map(function(d) { return d.date; }),
+      datasets: [{
+        data: data.map(function(d) { return d.spread; }),
+        borderColor: '#00FF88',
+        borderWidth: 2,
+        pointRadius: 0,
+        pointHitRadius: 8,
+        tension: 0,
+        fill: false,
+        segment: {
+          borderColor: function(ctx) {
+            return ctx.p0.parsed.y < 0 || ctx.p1.parsed.y < 0 ? '#FF4444' : '#00FF88';
+          }
+        }
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        annotation: { annotations: annotations },
+        tooltip: {
+          backgroundColor: '#1a1a1a',
+          borderColor: '#333333',
+          borderWidth: 1,
+          titleFont: { family: 'IBM Plex Mono', size: 11 },
+          bodyFont: { family: 'IBM Plex Mono', size: 11 },
+          titleColor: '#E5E5E5',
+          bodyColor: '#E5E5E5',
+          displayColors: false,
+          callbacks: {
+            title: function(items) { return items[0].label; },
+            label: function(item) {
+              var d = data[item.dataIndex];
+              return [
+                'Spread: ' + (d.spread >= 0 ? '+' : '') + d.spread.toFixed(2) + 'pp',
+                '2Y: ' + d.y2.toFixed(2) + '%',
+                '10Y: ' + d.y10.toFixed(2) + '%'
+              ];
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          type: 'time',
+          time: { parser: 'yyyy-MM-dd' },
+          grid: { color: '#1a1a1a' },
+          ticks: { color: '#666666', font: { family: 'IBM Plex Mono', size: 10 }, maxRotation: 0 },
+          border: { color: '#222222' }
+        },
+        y: {
+          position: 'right',
+          grid: { color: '#1a1a1a' },
+          ticks: {
+            color: '#666666',
+            font: { family: 'IBM Plex Mono', size: 10 },
+            callback: function(v) { return v.toFixed(2); }
+          },
+          border: { color: '#222222' }
+        }
+      }
+    }
+  });
+}
+
+function createYield2yChart(data) {
+  var ctx = document.getElementById('yield2yChart').getContext('2d');
+  if (yield2yChart) yield2yChart.destroy();
+
+  yield2yChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: data.map(function(d) { return d.date; }),
+      datasets: [{
+        data: data.map(function(d) { return d.y2; }),
+        borderColor: '#6B8AFF',
+        borderWidth: 2,
+        pointRadius: 0,
+        pointHitRadius: 8,
+        tension: 0,
+        fill: false
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        annotation: {
+          annotations: {
+            peak2023: {
+              type: 'line', yMin: 5.25, yMax: 5.25,
+              borderColor: '#FF4444', borderWidth: 1, borderDash: [6, 4],
+              label: { display: true, content: '2023 Peak', position: 'start',
+                font: { size: 10, family: 'IBM Plex Mono' }, color: '#FF4444',
+                backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 }
+            },
+            neutral: {
+              type: 'line', yMin: 4.0, yMax: 4.0,
+              borderColor: '#888888', borderWidth: 1, borderDash: [6, 4],
+              label: { display: true, content: 'Neutral Rate Est.', position: 'start',
+                font: { size: 10, family: 'IBM Plex Mono' }, color: '#888888',
+                backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 }
+            },
+            preHike: {
+              type: 'line', yMin: 2.0, yMax: 2.0,
+              borderColor: '#00FF88', borderWidth: 1, borderDash: [6, 4],
+              label: { display: true, content: 'Pre-hike Level', position: 'start',
+                font: { size: 10, family: 'IBM Plex Mono' }, color: '#00FF88',
+                backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 }
+            }
+          }
+        },
+        tooltip: {
+          backgroundColor: '#1a1a1a',
+          borderColor: '#333333',
+          borderWidth: 1,
+          titleFont: { family: 'IBM Plex Mono', size: 11 },
+          bodyFont: { family: 'IBM Plex Mono', size: 11 },
+          titleColor: '#E5E5E5',
+          bodyColor: '#E5E5E5',
+          displayColors: false,
+          callbacks: {
+            title: function(items) { return items[0].label; },
+            label: function(item) {
+              var d = data[item.dataIndex];
+              return '2Y Yield: ' + d.y2.toFixed(2) + '%';
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          type: 'time',
+          time: { parser: 'yyyy-MM-dd' },
+          grid: { color: '#1a1a1a' },
+          ticks: { color: '#666666', font: { family: 'IBM Plex Mono', size: 10 }, maxRotation: 0 },
+          border: { color: '#222222' }
+        },
+        y: {
+          position: 'right',
+          grid: { color: '#1a1a1a' },
+          ticks: {
+            color: '#666666',
+            font: { family: 'IBM Plex Mono', size: 10 },
+            callback: function(v) { return v.toFixed(2) + '%'; }
+          },
+          border: { color: '#222222' }
+        }
+      }
+    }
+  });
+}
+
+function createYield10yChart(data) {
+  var ctx = document.getElementById('yield10yChart').getContext('2d');
+  if (yield10yChart) yield10yChart.destroy();
+
+  yield10yChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: data.map(function(d) { return d.date; }),
+      datasets: [{
+        data: data.map(function(d) { return d.y10; }),
+        borderColor: '#F0B429',
+        borderWidth: 2,
+        pointRadius: 0,
+        pointHitRadius: 8,
+        tension: 0,
+        fill: false
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        annotation: {
+          annotations: {
+            peak2023: {
+              type: 'line', yMin: 5.0, yMax: 5.0,
+              borderColor: '#FF4444', borderWidth: 1, borderDash: [6, 4],
+              label: { display: true, content: '2023 Peak / Danger Zone', position: 'start',
+                font: { size: 10, family: 'IBM Plex Mono' }, color: '#FF4444',
+                backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 }
+            },
+            resistance: {
+              type: 'line', yMin: 4.5, yMax: 4.5,
+              borderColor: '#FF8C00', borderWidth: 1, borderDash: [6, 4],
+              label: { display: true, content: 'Current Resistance', position: 'start',
+                font: { size: 10, family: 'IBM Plex Mono' }, color: '#FF8C00',
+                backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 }
+            },
+            support: {
+              type: 'line', yMin: 3.5, yMax: 3.5,
+              borderColor: '#888888', borderWidth: 1, borderDash: [6, 4],
+              label: { display: true, content: 'Support', position: 'start',
+                font: { size: 10, family: 'IBM Plex Mono' }, color: '#888888',
+                backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 }
+            },
+            preHike: {
+              type: 'line', yMin: 2.0, yMax: 2.0,
+              borderColor: '#00FF88', borderWidth: 1, borderDash: [6, 4],
+              label: { display: true, content: 'Pre-hike Level', position: 'start',
+                font: { size: 10, family: 'IBM Plex Mono' }, color: '#00FF88',
+                backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 }
+            }
+          }
+        },
+        tooltip: {
+          backgroundColor: '#1a1a1a',
+          borderColor: '#333333',
+          borderWidth: 1,
+          titleFont: { family: 'IBM Plex Mono', size: 11 },
+          bodyFont: { family: 'IBM Plex Mono', size: 11 },
+          titleColor: '#E5E5E5',
+          bodyColor: '#E5E5E5',
+          displayColors: false,
+          callbacks: {
+            title: function(items) { return items[0].label; },
+            label: function(item) {
+              var d = data[item.dataIndex];
+              return '10Y Yield: ' + d.y10.toFixed(2) + '%';
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          type: 'time',
+          time: { parser: 'yyyy-MM-dd' },
+          grid: { color: '#1a1a1a' },
+          ticks: { color: '#666666', font: { family: 'IBM Plex Mono', size: 10 }, maxRotation: 0 },
+          border: { color: '#222222' }
+        },
+        y: {
+          position: 'right',
+          grid: { color: '#1a1a1a' },
+          ticks: {
+            color: '#666666',
+            font: { family: 'IBM Plex Mono', size: 10 },
+            callback: function(v) { return v.toFixed(2) + '%'; }
+          },
+          border: { color: '#222222' }
+        }
+      }
+    }
+  });
+}
+
+// ---------- Macro Render ----------
+
+function renderMacro() {
+  var data = filterByMonths(macroData, macroMonths);
+  if (!data.length) return;
+  renderMacroStats(data);
+  renderMacroRegime(data);
+  createDxyChart(data);
+  createSpreadChart(data);
+  createYield2yChart(data);
+  createYield10yChart(data);
+}
+
+// ---------- Regime interpretation ----------
+
+function renderEquityRegime(data) {
   const bar = document.getElementById('regime-bar');
   const current = data[data.length - 1];
   const slope = computeSlope(data, 20);
@@ -332,67 +1369,278 @@ function renderRegime(data) {
   bar.textContent = text;
 }
 
-function makeAnnotations() {
+function renderSilverRegime(data) {
+  const bar = document.getElementById('regime-bar');
+  const current = data[data.length - 1];
+  const slope = computeSlope(data, 20);
+  const r = current.ratio;
+  const rising = slope >= 0;
+  let text;
+  if (r > 90 && rising) text = 'Extreme gold/silver ratio — historically one of the strongest signals to rotate from gold into silver. Mean reversion likely.';
+  else if (r > 90 && !rising) text = 'Ratio pulling back from extremes — rotation from gold to silver may already be underway.';
+  else if (r >= 80) text = 'Gold expensive relative to silver on historical basis. Silver offers better value within the hard asset space.';
+  else if (r >= 55) text = 'Ratio within normal historical range. No strong rotation signal.';
+  else if (r >= 40) text = 'Silver becoming expensive relative to gold. Monitor for rotation back toward gold.';
+  else text = 'Extreme silver premium — historically signals rotation back into gold. Mean reversion likely.';
+  bar.textContent = text;
+}
+
+function renderBuffettRegime(data) {
+  var bar = document.getElementById('regime-bar');
+  var current = data[data.length - 1];
+  var slope = computeSlope(data, 20);
+  var r = current.ratio;
+  var rising = slope >= 0;
+  var text;
+
+  if (r > 200 && rising) {
+    text = 'The Buffett Indicator is in unprecedented territory, exceeding even the dot-com peak. Markets are pricing in extraordinary future growth — any disappointment in earnings or GDP could trigger sharp mean reversion. Buffett himself has been building cash at Berkshire.';
+  } else if (r > 200 && !rising) {
+    text = 'The indicator is pulling back from historic extremes but remains in uncharted territory. Contraction from these levels has historically been painful and prolonged. Risk/reward strongly favours defensive positioning.';
+  } else if (r >= 135) {
+    text = 'Markets are significantly overvalued relative to the underlying economy. Not a signal to panic-sell, but forward returns from this level have historically been poor over a 7-10 year horizon. Buffett\'s warning zone.';
+  } else if (r >= 115) {
+    text = 'Modestly overvalued. The market can stay here for extended periods, especially during low-rate environments. Watch for GDP growth accelerating to close the gap rather than markets falling.';
+  } else if (r >= 90) {
+    text = 'Fair value range. Historically this has been a reasonable entry point for long-term investors. Neither a screaming buy nor a reason for alarm.';
+  } else {
+    text = 'Below historical mean — markets are cheap relative to GDP. Rare in modern history outside of recessions and crises. Long-term expected returns from this level have historically been strong.';
+  }
+
+  if (r > 135) {
+    text += ' At current interest rates, this valuation level implies lower risk-adjusted forward returns than the same reading would have during the zero-rate era.';
+  }
+
+  bar.textContent = text;
+
+  // Cross-signal check
+  var crossEl = document.getElementById('cross-signal');
+  if (r > 150 && spxData.length > 0) {
+    var spxSlope = computeSlope(spxData, 20);
+    if (spxSlope >= 0) {
+      // Gold/SPX rising = gold strengthening vs equities
+      crossEl.textContent = '⚠ Cross-signal: Equities appear overvalued vs GDP (Buffett) AND vs hard assets (Gold/SPX). Historically a strong signal for defensive rotation.';
+      crossEl.style.display = 'block';
+    } else {
+      crossEl.style.display = 'none';
+    }
+  } else {
+    crossEl.style.display = 'none';
+  }
+}
+
+// ---------- Annotations ----------
+
+function makeEquityAnnotations() {
   const today = luxon.DateTime.now().toFormat('yyyy-MM-dd');
-  return {
+  const annotations = {
     box1: {
-      type: 'box',
-      xMin: '2000-01-01',
-      xMax: '2011-12-31',
-      backgroundColor: 'rgba(240,180,41,0.08)',
-      borderWidth: 0,
-      label: {
-        display: true,
-        content: 'Commodity Cycle',
-        position: { x: 'start', y: 'start' },
-        font: { size: 10, family: 'IBM Plex Mono' },
-        color: '#555555',
-        padding: 4
-      }
+      type: 'box', xMin: '2000-01-01', xMax: '2011-12-31',
+      backgroundColor: 'rgba(240,180,41,0.08)', borderWidth: 0,
+      label: { display: true, content: 'Commodity Cycle', position: { x: 'start', y: 'start' },
+        font: { size: 10, family: 'IBM Plex Mono' }, color: '#555555', padding: 4 }
     },
     box2: {
-      type: 'box',
-      xMin: '2012-01-01',
-      xMax: '2019-12-31',
-      backgroundColor: 'rgba(107,138,255,0.08)',
-      borderWidth: 0,
-      label: {
-        display: true,
-        content: 'Financial Asset Cycle',
-        position: { x: 'start', y: 'start' },
-        font: { size: 10, family: 'IBM Plex Mono' },
-        color: '#555555',
-        padding: 4
-      }
+      type: 'box', xMin: '2012-01-01', xMax: '2019-12-31',
+      backgroundColor: 'rgba(107,138,255,0.08)', borderWidth: 0,
+      label: { display: true, content: 'Financial Asset Cycle', position: { x: 'start', y: 'start' },
+        font: { size: 10, family: 'IBM Plex Mono' }, color: '#555555', padding: 4 }
     },
     box3: {
-      type: 'box',
-      xMin: '2020-01-01',
-      xMax: today,
-      backgroundColor: 'rgba(240,180,41,0.08)',
-      borderWidth: 0,
-      label: {
-        display: true,
-        content: 'Current Cycle',
-        position: { x: 'start', y: 'start' },
-        font: { size: 10, family: 'IBM Plex Mono' },
-        color: '#555555',
-        padding: 4
-      }
+      type: 'box', xMin: '2020-01-01', xMax: today,
+      backgroundColor: 'rgba(240,180,41,0.08)', borderWidth: 0,
+      label: { display: true, content: 'Current Cycle', position: { x: 'start', y: 'start' },
+        font: { size: 10, family: 'IBM Plex Mono' }, color: '#555555', padding: 4 }
     }
   };
+
+  if (eventsVisible) {
+    MACRO_EVENTS.forEach(function(evt, i) {
+      annotations['evt_' + i] = {
+        type: 'line', xMin: evt.date, xMax: evt.date,
+        borderColor: '#444444', borderWidth: 1, borderDash: [4, 3],
+        label: { display: true, content: evt.label, position: 'start', rotation: -90,
+          font: { size: 10, family: 'IBM Plex Mono' }, color: '#555555',
+          backgroundColor: 'transparent', padding: { bottom: 4 } }
+      };
+    });
+  }
+
+  return annotations;
 }
+
+function makeSilverAnnotations() {
+  var a = {};
+  // Zone shading (boxes spanning full x range — Chart.js will clip to chart area)
+  a.zoneBelow30 = {
+    type: 'box', yMin: 0, yMax: 30,
+    backgroundColor: 'rgba(107,138,255,0.06)', borderWidth: 0
+  };
+  a.zone60to80 = {
+    type: 'box', yMin: 60, yMax: 80,
+    backgroundColor: 'rgba(240,180,41,0.04)', borderWidth: 0
+  };
+  a.zone80to90 = {
+    type: 'box', yMin: 80, yMax: 90,
+    backgroundColor: 'rgba(240,180,41,0.10)', borderWidth: 0
+  };
+  a.zoneAbove90 = {
+    type: 'box', yMin: 90, yMax: 130,
+    backgroundColor: 'rgba(255,68,68,0.08)', borderWidth: 0
+  };
+  // Horizontal reference lines
+  a.line30 = {
+    type: 'line', yMin: 30, yMax: 30,
+    borderColor: '#6B8AFF', borderWidth: 1, borderDash: [6, 4],
+    label: { display: true, content: 'Silver Expensive / Buy Gold', position: 'start',
+      font: { size: 10, family: 'IBM Plex Mono' }, color: '#6B8AFF',
+      backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 }
+  };
+  a.line60 = {
+    type: 'line', yMin: 60, yMax: 60,
+    borderColor: '#444444', borderWidth: 1, borderDash: [6, 4],
+    label: { display: true, content: 'Historical Mean', position: 'start',
+      font: { size: 10, family: 'IBM Plex Mono' }, color: '#444444',
+      backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 }
+  };
+  a.line80 = {
+    type: 'line', yMin: 80, yMax: 80,
+    borderColor: '#F0B429', borderWidth: 1, borderDash: [6, 4],
+    label: { display: true, content: 'Gold Expensive / Buy Silver', position: 'start',
+      font: { size: 10, family: 'IBM Plex Mono' }, color: '#F0B429',
+      backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 }
+  };
+  a.line90 = {
+    type: 'line', yMin: 90, yMax: 90,
+    borderColor: '#FF4444', borderWidth: 1, borderDash: [6, 4],
+    label: { display: true, content: 'Extreme — Rotate to Silver', position: 'start',
+      font: { size: 10, family: 'IBM Plex Mono' }, color: '#FF4444',
+      backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 }
+  };
+
+  // Macro events (if toggled on)
+  if (eventsVisible) {
+    MACRO_EVENTS.forEach(function(evt, i) {
+      a['evt_' + i] = {
+        type: 'line', xMin: evt.date, xMax: evt.date,
+        borderColor: '#444444', borderWidth: 1, borderDash: [4, 3],
+        label: { display: true, content: evt.label, position: 'start', rotation: -90,
+          font: { size: 10, family: 'IBM Plex Mono' }, color: '#555555',
+          backgroundColor: 'transparent', padding: { bottom: 4 } }
+      };
+    });
+  }
+
+  return a;
+}
+
+function makeBuffettAnnotations() {
+  var a = {};
+
+  // Zone shading
+  a.zoneBelow75 = {
+    type: 'box', yMin: 0, yMax: 75,
+    backgroundColor: 'rgba(0,255,136,0.06)', borderWidth: 0
+  };
+  a.zone90to115 = {
+    type: 'box', yMin: 90, yMax: 115,
+    backgroundColor: 'rgba(240,180,41,0.04)', borderWidth: 0
+  };
+  a.zone115to135 = {
+    type: 'box', yMin: 115, yMax: 135,
+    backgroundColor: 'rgba(240,180,41,0.10)', borderWidth: 0
+  };
+  a.zone135to200 = {
+    type: 'box', yMin: 135, yMax: 200,
+    backgroundColor: 'rgba(255,68,68,0.08)', borderWidth: 0
+  };
+  a.zoneAbove200 = {
+    type: 'box', yMin: 200, yMax: 300,
+    backgroundColor: 'rgba(255,68,68,0.15)', borderWidth: 0
+  };
+
+  // Horizontal reference lines
+  a.line75 = {
+    type: 'line', yMin: 75, yMax: 75,
+    borderColor: '#00FF88', borderWidth: 1, borderDash: [6, 4],
+    label: { display: true, content: 'Undervalued', position: 'start',
+      font: { size: 10, family: 'IBM Plex Mono' }, color: '#00FF88',
+      backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 }
+  };
+  a.line90 = {
+    type: 'line', yMin: 90, yMax: 90,
+    borderColor: '#888888', borderWidth: 1, borderDash: [6, 4],
+    label: { display: true, content: 'Fair Value', position: 'start',
+      font: { size: 10, family: 'IBM Plex Mono' }, color: '#888888',
+      backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 }
+  };
+  a.line115 = {
+    type: 'line', yMin: 115, yMax: 115,
+    borderColor: '#F0B429', borderWidth: 1, borderDash: [6, 4],
+    label: { display: true, content: 'Overvalued', position: 'start',
+      font: { size: 10, family: 'IBM Plex Mono' }, color: '#F0B429',
+      backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 }
+  };
+  a.line135 = {
+    type: 'line', yMin: 135, yMax: 135,
+    borderColor: '#FF8C00', borderWidth: 1, borderDash: [6, 4],
+    label: { display: true, content: 'Strongly Overvalued', position: 'start',
+      font: { size: 10, family: 'IBM Plex Mono' }, color: '#FF8C00',
+      backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 }
+  };
+  a.line200 = {
+    type: 'line', yMin: 200, yMax: 200,
+    borderColor: '#FF4444', borderWidth: 1, borderDash: [6, 4],
+    label: { display: true, content: 'Extreme / Unprecedented', position: 'start',
+      font: { size: 10, family: 'IBM Plex Mono' }, color: '#FF4444',
+      backgroundColor: 'rgba(10,10,10,0.8)', padding: 3 }
+  };
+
+  // Buffett-specific vertical event annotations
+  if (eventsVisible) {
+    var buffettEvents = [
+      { date: '2000-03-10', label: 'Dot-com Peak (~190%)' },
+      { date: '2008-09-15', label: 'Lehman (~110%)' },
+      { date: '2020-03-23', label: 'COVID Low (~130%)' },
+      { date: '2021-11-01', label: 'Post-COVID Peak (~210%)' },
+      { date: '2022-10-13', label: '2022 Bottom (~150%)' }
+    ];
+    buffettEvents.forEach(function(evt, i) {
+      a['evt_' + i] = {
+        type: 'line', xMin: evt.date, xMax: evt.date,
+        borderColor: '#444444', borderWidth: 1, borderDash: [4, 3],
+        label: { display: true, content: evt.label, position: 'start', rotation: -90,
+          font: { size: 10, family: 'IBM Plex Mono' }, color: '#555555',
+          backgroundColor: 'transparent', padding: { bottom: 4 } }
+      };
+    });
+  }
+
+  return a;
+}
+
+function makeAnnotations() {
+  return currentTab === 'silver' ? makeSilverAnnotations() : currentTab === 'buffett' ? makeBuffettAnnotations() : makeEquityAnnotations();
+}
+
+// ---------- Charts ----------
 
 function createRatioChart(data) {
   const ctx = document.getElementById('ratioChart').getContext('2d');
   if (ratioChart) ratioChart.destroy();
+  const label = getIndexLabel();
+  const isSilver = currentTab === 'silver';
+  const isBuffett = currentTab === 'buffett';
+  const lineColor = isBuffett ? '#E5E5E5' : isSilver ? '#C0C0C0' : '#F0B429';
+  const dp = isBuffett ? 1 : isSilver ? 1 : 4;
+
   ratioChart = new Chart(ctx, {
     type: 'line',
     data: {
-      labels: data.map(d => d.date),
+      labels: data.map(function(d) { return d.date; }),
       datasets: [{
-        data: data.map(d => d.ratio),
-        borderColor: '#F0B429',
+        data: data.map(function(d) { return d.ratio; }),
+        borderColor: lineColor,
         borderWidth: 2,
         pointRadius: 0,
         pointHitRadius: 8,
@@ -417,14 +1665,20 @@ function createRatioChart(data) {
           bodyColor: '#E5E5E5',
           displayColors: false,
           callbacks: {
-            title: (items) => items[0].label,
-            label: (item) => {
-              const d = data[item.dataIndex];
-              return [
-                `Ratio: ${d.ratio.toFixed(4)}`,
-                `Gold: $${d.gold.toFixed(2)}`,
-                `SPX: ${d.spx.toFixed(2)}`
-              ];
+            title: function(items) { return items[0].label; },
+            label: function(item) {
+              var d = data[item.dataIndex];
+              if (isBuffett) {
+                return [
+                  'Indicator: ' + d.ratio.toFixed(1) + '%',
+                  'Wilshire: ' + d.index.toLocaleString(undefined, {maximumFractionDigits: 0}),
+                  'GDP: $' + d.gold.toFixed(1) + 'T'
+                ];
+              }
+              var lines = ['Ratio: ' + d.ratio.toFixed(dp), 'Gold: $' + d.gold.toFixed(2)];
+              if (isSilver) lines.push('Silver: $' + d.index.toFixed(2));
+              else lines.push(label + ': ' + d.index.toFixed(2));
+              return lines;
             }
           }
         }
@@ -443,7 +1697,10 @@ function createRatioChart(data) {
           ticks: {
             color: '#666666',
             font: { family: 'IBM Plex Mono', size: 10 },
-            callback: (v) => v.toFixed(4)
+            callback: function(v) {
+              if (isBuffett) return v.toFixed(0) + '%';
+              return isSilver ? v.toFixed(0) : v.toFixed(4);
+            }
           },
           border: { color: '#222222' }
         }
@@ -452,17 +1709,19 @@ function createRatioChart(data) {
   });
 }
 
-function createSparkline(canvasId, data, key, color) {
+function createSparkline(canvasId, data, key, color, prefix, suffix) {
   const ctx = document.getElementById(canvasId).getContext('2d');
-  const existing = canvasId === 'goldChart' ? goldChart : spxChart;
-  if (existing) existing.destroy();
+  if (canvasId === 'goldChart' && goldChart) goldChart.destroy();
+  if (canvasId === 'indexChart' && indexChart) indexChart.destroy();
+
+  const sfx = suffix || '';
 
   const chart = new Chart(ctx, {
     type: 'line',
     data: {
-      labels: data.map(d => d.date),
+      labels: data.map(function(d) { return d.date; }),
       datasets: [{
-        data: data.map(d => d[key]),
+        data: data.map(function(d) { return d[key]; }),
         borderColor: color,
         borderWidth: 1.5,
         pointRadius: 0,
@@ -486,9 +1745,9 @@ function createSparkline(canvasId, data, key, color) {
           bodyColor: '#E5E5E5',
           displayColors: false,
           callbacks: {
-            label: (item) => {
-              const v = data[item.dataIndex][key];
-              return key === 'gold' ? `$${v.toFixed(2)}` : v.toFixed(2);
+            label: function(item) {
+              var v = data[item.dataIndex][key];
+              return (prefix || '') + v.toFixed(2) + sfx;
             }
           }
         }
@@ -505,7 +1764,7 @@ function createSparkline(canvasId, data, key, color) {
             color: '#666666',
             font: { family: 'IBM Plex Mono', size: 9 },
             maxTicksLimit: 4,
-            callback: (v) => key === 'gold' ? '$' + v.toFixed(0) : v.toFixed(0)
+            callback: function(v) { return (prefix || '') + v.toFixed(0) + sfx; }
           },
           border: { color: '#222222' }
         }
@@ -514,23 +1773,114 @@ function createSparkline(canvasId, data, key, color) {
   });
 
   if (canvasId === 'goldChart') goldChart = chart;
-  else spxChart = chart;
+  else indexChart = chart;
 }
 
+// ---------- Render ----------
+
 function render() {
-  const data = filterByYears(fullData, currentYears);
-  renderStats(data);
-  renderRegime(data);
+  var isMacro = currentTab === 'macro';
+
+  // Destroy macro charts when leaving macro tab
+  if (!isMacro) {
+    if (dxyChart) { dxyChart.destroy(); dxyChart = null; }
+    if (spreadChart) { spreadChart.destroy(); spreadChart = null; }
+    if (yield2yChart) { yield2yChart.destroy(); yield2yChart = null; }
+    if (yield10yChart) { yield10yChart.destroy(); yield10yChart = null; }
+  }
+
+  // Toggle sections
+  document.getElementById('stats-bar').style.display = isMacro ? 'none' : '';
+  document.getElementById('regime-bar').style.display = isMacro ? 'none' : '';
+  document.getElementById('timeframe-bar').style.display = isMacro ? 'none' : '';
+  document.querySelector('.chart-panel').style.display = isMacro ? 'none' : '';
+  document.getElementById('disclaimer').style.display = isMacro ? 'none' : (currentTab === 'asx' ? 'block' : 'none');
+  document.getElementById('silver-note').style.display = isMacro ? 'none' : (currentTab === 'silver' ? 'block' : 'none');
+  document.getElementById('buffett-note').style.display = isMacro ? 'none' : (currentTab === 'buffett' ? 'block' : 'none');
+  document.getElementById('cross-signal').style.display = isMacro ? 'none' : '';
+  document.querySelector('.sparkline-row').style.display = isMacro ? 'none' : '';
+  document.getElementById('macro-section').style.display = isMacro ? 'block' : 'none';
+
+  if (isMacro) {
+    document.getElementById('page-title').innerHTML = 'MACRO PULSE';
+    renderMacro();
+    return;
+  }
+
+  var fullData = getActiveData();
+  var data = filterByYears(fullData, currentYears);
+  if (!data.length) return;
+
+  var isSilver = currentTab === 'silver';
+  var isSPX = currentTab === 'spx';
+  var isBuffett = currentTab === 'buffett';
+
+  // Header title
+  if (isBuffett) document.getElementById('page-title').innerHTML = 'BUFFETT INDICATOR';
+  else if (isSilver) document.getElementById('page-title').innerHTML = 'GOLD / SILVER RATIO';
+  else if (isSPX) document.getElementById('page-title').innerHTML = 'GOLD / S&amp;P 500 RATIO';
+  else document.getElementById('page-title').innerHTML = 'GOLD / ASX200 RATIO';
+
+  // Left sparkline title
+  if (isBuffett) document.getElementById('left-sparkline-title').innerHTML = 'WILSHIRE 5000';
+  else document.getElementById('left-sparkline-title').innerHTML = 'GOLD (USD)';
+
+  // Right sparkline title
+  if (isBuffett) document.getElementById('index-sparkline-title').innerHTML = 'US GDP (ANNUALISED $T)';
+  else if (isSilver) document.getElementById('index-sparkline-title').innerHTML = 'SILVER (USD)';
+  else if (isSPX) document.getElementById('index-sparkline-title').innerHTML = 'S&amp;P 500';
+  else document.getElementById('index-sparkline-title').innerHTML = 'ASX200 (AUD)';
+
+  // Disclaimers (already handled above for macro toggle; re-set for non-macro)
+  document.getElementById('disclaimer').style.display = (currentTab === 'asx') ? 'block' : 'none';
+  document.getElementById('silver-note').style.display = isSilver ? 'block' : 'none';
+  document.getElementById('buffett-note').style.display = isBuffett ? 'block' : 'none';
+  if (!isBuffett) document.getElementById('cross-signal').style.display = 'none';
+
+  // Stats and regime — tab-specific
+  if (isBuffett) {
+    renderBuffettStats(data);
+    renderBuffettRegime(data);
+  } else if (isSilver) {
+    renderSilverStats(data);
+    renderSilverRegime(data);
+  } else {
+    renderEquityStats(data);
+    renderEquityRegime(data);
+  }
+
+  // Charts
   createRatioChart(data);
-  createSparkline('goldChart', data, 'gold', '#F0B429');
-  createSparkline('spxChart', data, 'spx', '#6B8AFF');
+
+  if (isBuffett) {
+    createSparkline('goldChart', data, 'index', '#E5E5E5', '');
+    createSparkline('indexChart', data, 'gold', '#6B8AFF', '$', 'T');
+  } else {
+    createSparkline('goldChart', data, 'gold', '#F0B429', '$');
+    var indexColor = isSilver ? '#C0C0C0' : '#6B8AFF';
+    createSparkline('indexChart', data, 'index', indexColor, isSilver ? '$' : '');
+  }
+}
+
+// ---------- UI setup ----------
+
+function setupTabButtons() {
+  var btns = document.querySelectorAll('.tab-btn');
+  btns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      btns.forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      currentTab = btn.dataset.tab;
+      render();
+    });
+  });
 }
 
 function setupTimeframeButtons() {
-  const btns = document.querySelectorAll('.tf-btn');
-  btns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      btns.forEach(b => b.classList.remove('active'));
+  var btns = document.querySelectorAll('#timeframe-bar .tf-btn');
+  btns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      btns.forEach(function(b) { b.classList.remove('active'); });
       btn.classList.add('active');
       currentYears = parseInt(btn.dataset.years);
       render();
@@ -538,18 +1888,108 @@ function setupTimeframeButtons() {
   });
 }
 
+function setupMacroTimeframeButtons() {
+  var btns = document.querySelectorAll('.macro-tf-btn');
+  btns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      btns.forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      macroMonths = parseInt(btn.dataset.months);
+      renderMacro();
+    });
+  });
+}
+
+function setupEventsToggle() {
+  var btn = document.getElementById('events-toggle');
+  btn.addEventListener('click', function() {
+    eventsVisible = !eventsVisible;
+    btn.textContent = eventsVisible ? 'EVENTS OFF' : 'EVENTS ON';
+    btn.classList.toggle('active', eventsVisible);
+    if (ratioChart) {
+      ratioChart.options.plugins.annotation.annotations = makeAnnotations();
+      ratioChart.update();
+    }
+  });
+}
+
+// ---------- Auto-refresh ----------
+
+const REFRESH_INTERVAL = 15 * 60 * 1000;
+const STALE_THRESHOLD = 20 * 60 * 1000;
+let lastFetchTime = null;
+let lastFetchFailed = false;
+let refreshTimer = null;
+let staleTimer = null;
+
+function updateRefreshDot() {
+  var dot = document.getElementById('refresh-dot');
+  if (!dot) return;
+  dot.classList.remove('stale', 'error');
+  if (lastFetchFailed) {
+    dot.classList.add('error');
+  } else if (lastFetchTime && (Date.now() - lastFetchTime > STALE_THRESHOLD)) {
+    dot.classList.add('stale');
+  }
+}
+
+function updateTimestamp() {
+  document.getElementById('last-updated').textContent =
+    'Updated: ' + luxon.DateTime.now().toFormat('dd LLL yyyy, HH:mm');
+}
+
+async function silentRefresh() {
+  try {
+    await fetchAllData();
+    lastFetchTime = Date.now();
+    lastFetchFailed = false;
+    updateTimestamp();
+    updateRefreshDot();
+    render();
+  } catch (err) {
+    lastFetchFailed = true;
+    updateRefreshDot();
+  }
+}
+
+function scheduleRefresh() {
+  if (refreshTimer) clearInterval(refreshTimer);
+  if (staleTimer) clearInterval(staleTimer);
+  refreshTimer = setInterval(silentRefresh, REFRESH_INTERVAL);
+  staleTimer = setInterval(updateRefreshDot, 60 * 1000);
+}
+
+function setupVisibilityRefresh() {
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible' && lastFetchTime) {
+      if (Date.now() - lastFetchTime > REFRESH_INTERVAL) {
+        silentRefresh();
+      }
+    }
+  });
+}
+
+// ---------- Init ----------
+
 async function init() {
   try {
-    fullData = await fetchData();
+    await fetchAllData();
+    lastFetchTime = Date.now();
+    lastFetchFailed = false;
     document.getElementById('loading').style.display = 'none';
     document.getElementById('dashboard').style.display = 'block';
-    document.getElementById('last-updated').textContent =
-      'Updated: ' + luxon.DateTime.now().toFormat('dd LLL yyyy, HH:mm');
+    document.getElementById('refresh-status').style.display = 'flex';
+    updateTimestamp();
+    setupTabButtons();
     setupTimeframeButtons();
+    setupMacroTimeframeButtons();
+    setupEventsToggle();
+    setupVisibilityRefresh();
+    scheduleRefresh();
     render();
   } catch (err) {
     document.getElementById('loading').style.display = 'none';
-    const el = document.getElementById('error');
+    var el = document.getElementById('error');
     el.style.display = 'block';
     el.textContent = 'DATA FETCH FAILED — ' + err.message;
   }
