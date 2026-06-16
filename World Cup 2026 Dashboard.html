@@ -230,7 +230,7 @@ a:hover{text-decoration:underline}
         <option value="Pacific/Auckland">NZST – Auckland</option>
       </select>
     </div>
-    <button class="api-btn" id="apiBtn" onclick="openApiModal()">🔑 API <span id="apiStatus">Not set</span></button>
+    <button class="api-btn" id="apiBtn" onclick="openApiModal()">⚡ Sync <span id="apiStatus"></span></button>
     <a class="fifa-link" href="https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/match-centre" target="_blank">Live ↗</a>
   </div>
 </div>
@@ -327,35 +327,27 @@ a:hover{text-decoration:underline}
       <tr><td>Group stage (×16)</td><td>$9,000,000</td></tr>
     </table></div>
     <div style="margin-top:20px;font-size:12px;color:#64748b;border-top:1px solid #2d3a52;padding-top:14px">
-      Dashboard built June 12, 2026. Static kickoff times are estimates — connect the API for confirmed times.
-      Real-time data from <a href="https://wc2026api.com" target="_blank">wc2026api.com</a>.
-      Live scores at <a href="https://www.fifa.com" target="_blank">fifa.com</a>.
+      Dashboard built June 12, 2026. Live scores via <a href="https://www.espn.com" target="_blank">ESPN API</a> (free, no sign-in). Click ⚡ Sync to refresh.
+      Official schedule at <a href="https://www.fifa.com" target="_blank">fifa.com</a>.
     </div>
   </div>
 </div>
 
 <!-- ══════════════ MODALS ══════════════ -->
 
-<!-- API Settings Modal -->
+<!-- Sync Modal -->
 <div class="modal-bg" id="apiModalBg" onclick="closeApiModal(event)">
   <div class="modal">
-    <h3>🔑 Live Scores API</h3>
-    <p>Free live scores from <a href="https://github.com/rezarahiminia/worldcup2026" target="_blank">github.com/rezarahiminia/worldcup2026</a>.<br>
-    <strong>Step 1:</strong> Register at <a href="http://worldcup26.ir:3050/api-docs/" target="_blank">worldcup26.ir:3050/api-docs</a> → POST /auth/register<br>
-    <strong>Step 2:</strong> Login → POST /auth/authenticate to get your JWT token<br>
-    <strong>Step 3:</strong> Paste the token below. It lasts 84 days.</p>
-    <div class="form-row">
-      <label class="form-label">JWT Token</label>
-      <input class="form-input" id="apiTokenInput" type="password" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
-    </div>
+    <h3>⚡ Live Score Sync</h3>
+    <p>Live scores from <a href="https://www.espn.com" target="_blank">ESPN</a> — free, no sign-in needed.</p>
     <div class="api-stats">
       <div class="api-stat"><div class="api-stat-v" id="statLastSync">—</div><div class="api-stat-l">Last synced</div></div>
     </div>
-    <div style="font-size:11px;color:#64748b;margin-bottom:12px">Auto-polls every 5 min while a match is live. Token stored locally in your browser.</div>
+    <div id="syncErrorMsg" style="font-size:12px;color:#f87171;margin-bottom:10px;display:none"></div>
+    <div style="font-size:11px;color:#64748b;margin-bottom:12px">Auto-polls every 5 min while a match is live. Fetches all dates since Jun 11.</div>
     <div class="modal-btns">
       <button class="btn btn-cancel" onclick="closeApiModal()">Close</button>
       <button class="btn btn-sync" onclick="manualSync()">↻ Sync Now</button>
-      <button class="btn btn-save" onclick="saveApiToken()">Save Token</button>
     </div>
   </div>
 </div>
@@ -587,22 +579,18 @@ const VENUES = [
 //  STATE
 // ═══════════════════════════════════════════════════════
 let scores      = {};   // { matchId: { home, away } }
-let apiMatches  = {};   // { matchId: { phase, apiId, kickoff_utc } } from API
-let apiStandings = {};  // { 'A': [...] } from API
+let matchPhases = {};   // { matchId: { phase:'FT'|'live'|null, elapsed:str } }
 let currentTz   = 'America/New_York';
 let scheduleFilter = 'all';
 let confFilter  = 'all';
 let currentScoreMatchId = null;
-let apiToken    = '';
 let lastSyncTime = null;
-const API_BASE  = 'http://worldcup26.ir:3050';
 let pollTimer   = null;
 
 // ── Persist / load ──
 function load() {
   try {
     scores       = JSON.parse(localStorage.getItem('wc2026_scores') || '{}');
-    apiToken     = localStorage.getItem('wc2026_token') || '';
     currentTz    = localStorage.getItem('wc2026_tz') || 'America/New_York';
     const ls     = localStorage.getItem('wc2026_lastsync');
     lastSyncTime = ls ? new Date(ls) : null;
@@ -611,19 +599,10 @@ function load() {
     Object.entries(scores).forEach(([k, v]) => { newScores[parseInt(k, 10)] = v; });
     scores = newScores;
   } catch(e) { scores = {}; }
-  // Reset daily counter if it's a new day
-  const today = new Date().toISOString().slice(0,10);
-  if (reqDate !== today) { reqToday = 0; reqDate = today; saveReqCount(); }
 }
 function saveScores()   { try { localStorage.setItem('wc2026_scores', JSON.stringify(scores)); } catch(e) {} }
 function saveTz()       { try { localStorage.setItem('wc2026_tz', currentTz); } catch(e) {} }
-function saveApiToken() {
-  apiToken = document.getElementById('apiTokenInput').value.trim();
-  try { localStorage.setItem('wc2026_token', apiToken); } catch(e) {}
-  updateApiBtn();
-  if (apiToken) syncAll();
-  closeApiModal();
-}
+
 
 // ═══════════════════════════════════════════════════════
 //  TIMEZONE HELPERS
@@ -666,84 +645,92 @@ function formatDateLabel(dateKey) {
 }
 
 // ═══════════════════════════════════════════════════════
-//  API INTEGRATION
+//  API INTEGRATION (ESPN — no token needed)
 // ═══════════════════════════════════════════════════════
-async function apiFetch(endpoint) {
-  if (!apiToken) return null;
+const ESPN_SCOREBOARD = 'https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard';
+
+const ESPN_NAME_MAP = {
+  'Türkiye':           'Turkey',
+  'Bosnia Herzegovina':'Bosnia-Herzegovina',
+  "Côte d'Ivoire":     'Ivory Coast',
+  'Korea Republic':    'South Korea',
+};
+function espnToLocal(n) { return ESPN_NAME_MAP[n] || n; }
+
+async function fetchESPNDate(yyyymmdd) {
   try {
-    const res = await fetch(API_BASE + endpoint, {
-      headers: { 'Authorization': 'Bearer ' + apiToken }
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    return await res.json();
-  } catch(e) {
-    console.error('API error:', e);
-    return null;
-  }
+    const r = await fetch(`${ESPN_SCOREBOARD}?dates=${yyyymmdd}`);
+    if (!r.ok) return [];
+    return (await r.json()).events || [];
+  } catch(e) { return []; }
 }
 
 async function syncAll() {
-  if (!apiToken) return;
   updateApiBtn('syncing');
-  const [matchData, standData] = await Promise.all([
-    apiFetch('/get/games'),
-    apiFetch('/get/groups')
-  ]);
+  const errEl = document.getElementById('syncErrorMsg');
+  if (errEl) errEl.style.display = 'none';
+
+  // Dates: June 11 → tomorrow (catches late overnight matches)
+  const start = new Date('2026-06-11');
+  const end   = new Date(); end.setDate(end.getDate() + 1);
+  const dates = [];
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    dates.push(
+      d.getFullYear() +
+      String(d.getMonth()+1).padStart(2,'0') +
+      String(d.getDate()).padStart(2,'0')
+    );
+  }
+
+  let allEvents;
+  try {
+    allEvents = (await Promise.all(dates.map(fetchESPNDate))).flat();
+  } catch(e) {
+    updateApiBtn('error');
+    if (errEl) { errEl.textContent = 'Network error: ' + e.message; errEl.style.display = 'block'; }
+    return;
+  }
 
   let updated = false;
 
-  // worldcup26.ir API: match fields = id(numeric), home_team_id, away_team_id,
-  // home_score, away_score, finished('TRUE'/'FALSE'), time_elapsed, group, matchday
-  // Teams are numbered 1-48 matching GROUPS order A→L, 4 per group
-  const TEAM_ID_MAP = {};
-  let tid = 1;
-  'ABCDEFGHIJKL'.split('').forEach(g => {
-    GROUPS[g].forEach(t => { TEAM_ID_MAP[tid] = t; tid++; });
-  });
+  for (const ev of allEvents) {
+    const comp = ev.competitions?.[0];
+    if (!comp) continue;
+    const comps = comp.competitors || [];
+    const hc = comps.find(c => c.homeAway === 'home');
+    const ac = comps.find(c => c.homeAway === 'away');
+    if (!hc || !ac) continue;
 
-  if (Array.isArray(matchData)) {
-    matchData.forEach(m => {
-      const homeTeam = TEAM_ID_MAP[parseInt(m.home_team_id)];
-      const awayTeam = TEAM_ID_MAP[parseInt(m.away_team_id)];
-      if (!homeTeam || !awayTeam) return;
-      const local = MATCHES.find(lm => lm.home === homeTeam && lm.away === awayTeam);
-      if (!local) return;
-      const isLive = m.time_elapsed && m.time_elapsed !== 'notstarted';
-      const isDone = m.finished === 'TRUE' || m.finished === true;
-      apiMatches[local.id] = {
-        phase: isDone ? 'FT' : (isLive ? m.time_elapsed : 'PRE'),
-        apiId: m.id
-      };
-      if ((isDone || isLive) && m.home_score != null && m.away_score != null) {
-        const hs = parseInt(m.home_score), as_ = parseInt(m.away_score);
-        if (!isNaN(hs) && !isNaN(as_)) {
-          scores[local.id] = { home: hs, away: as_ };
-          updated = true;
-        }
-      }
-    });
-    if (updated) saveScores();
+    const lHome  = espnToLocal(hc.team.displayName);
+    const lAway  = espnToLocal(ac.team.displayName);
+    const status = comp.status?.type;
+    const state  = status?.state;    // 'pre' | 'in' | 'post'
+    const detail = status?.detail || '';
+    const done   = status?.completed === true;
+
+    const match = MATCHES.find(lm =>
+      (lm.home === lHome && lm.away === lAway) ||
+      (lm.home === lAway && lm.away === lHome)
+    );
+    if (!match) continue;
+
+    let hs, as_;
+    if (match.home === lHome) {
+      hs = parseInt(hc.score); as_ = parseInt(ac.score);
+    } else {
+      hs = parseInt(ac.score); as_ = parseInt(hc.score);
+    }
+    if (isNaN(hs) || isNaN(as_)) continue;
+
+    matchPhases[match.id] = { phase: done ? 'FT' : (state === 'in' ? 'live' : null), elapsed: detail };
+
+    if (done || state === 'in') {
+      scores[match.id] = { home: hs, away: as_ };
+      updated = true;
+    }
   }
 
-  // worldcup26.ir /get/groups returns array of {group, teams:[{team_id, pts, gf, ga}]}
-  if (Array.isArray(standData)) {
-    apiStandings = {};
-    standData.forEach(grp => {
-      const g = grp.group;
-      if (!g || !Array.isArray(grp.teams)) return;
-      const rows = grp.teams.map(t => {
-        const name = TEAM_ID_MAP[parseInt(t.team_id)];
-        if (!name) return null;
-        const gf = parseInt(t.gf)||0, ga = parseInt(t.ga)||0;
-        const pts = parseInt(t.pts)||0;
-        return { name, pts, gf, ga, gd: gf-ga, pld: 0, w: 0, d: 0, l: 0 };
-      }).filter(Boolean);
-      // Sort by pts desc then gd desc
-      rows.sort((a,b) => b.pts-a.pts || b.gd-a.gd || b.gf-a.gf);
-      apiStandings[g] = rows;
-    });
-  }
-
+  if (updated) saveScores();
   lastSyncTime = new Date();
   try { localStorage.setItem('wc2026_lastsync', lastSyncTime.toISOString()); } catch(e) {}
   updateApiBtn('ok');
@@ -753,7 +740,6 @@ async function syncAll() {
 async function manualSync() { await syncAll(); updateApiModalStats(); }
 
 function shouldPoll() {
-  if (!apiToken) return false;
   const now = Date.now();
   return MATCHES.some(m => {
     if (!m.kickoff || m.home === 'TBD') return false;
@@ -793,20 +779,6 @@ function calcStandings(gid) {
 }
 
 function getStandings(gid) {
-  // Use API standings if available and has data
-  if (apiStandings[gid] && apiStandings[gid].length > 0) {
-    return apiStandings[gid].map(s => ({
-      name: s.team_name || s.team,
-      pld: s.played || s.pld || 0,
-      w: s.wins || s.w || 0,
-      d: s.draws || s.d || 0,
-      l: s.losses || s.l || 0,
-      gf: s.goals_for || s.gf || 0,
-      ga: s.goals_against || s.ga || 0,
-      gd: s.goal_diff || s.gd || (s.goals_for - s.goals_against) || 0,
-      pts: s.points || s.pts || 0,
-    }));
-  }
   return calcStandings(gid);
 }
 
@@ -831,11 +803,11 @@ function renderGroupCard(gid) {
     </tr>`;
   }).join('');
 
-  const fromApi = apiStandings[gid] && apiStandings[gid].length > 0;
+  const hasLiveData = Object.keys(matchPhases).length > 0;
   return `<div class="group-card">
     <div class="group-header ${gid==='A'?'gc-A':gid==='B'?'gc-B':gid==='C'?'gc-C':gid==='D'?'gc-D':gid==='E'?'gc-E':gid==='F'?'gc-F':gid==='G'?'gc-G':gid==='H'?'gc-H':gid==='I'?'gc-I':gid==='J'?'gc-J':gid==='K'?'gc-K':'gc-L'}">
-      <div class="group-header-label"><span>Group ${gid}</span>${fromApi?'<span class="api-synced-dot" title="Live from API"></span>':''}</div>
-      <span style="font-size:10px;opacity:.7;font-weight:400">${fromApi?'API live':'local'}</span>
+      <div class="group-header-label"><span>Group ${gid}</span>${hasLiveData?'<span class="api-synced-dot" title="ESPN synced"></span>':''}</div>
+      <span style="font-size:10px;opacity:.7;font-weight:400">${lastSyncTime?'ESPN':'local'}</span>
     </div>
     <table class="group-table">
       <colgroup>
@@ -860,10 +832,10 @@ function renderMatchCard(m) {
   const isTBD = m.home === 'TBD';
   const s = scores[m.id];
   const played = s && s.home != null && s.away != null;
-  const apiMeta = apiMatches[m.id];
+  const apiMeta = matchPhases[m.id];
   const phase = apiMeta ? apiMeta.phase : null;
-  const isLive = phase && ['1H','HT','2H','ET1','ET2','PEN'].includes(phase);
-  const isFinished = phase === 'FT' || phase === 'FT_PEN' || played;
+  const isLive = phase === 'live';
+  const isFinished = phase === 'FT' || played;
 
   const {date: dateStr, time: timeStr} = formatKickoff(m.kickoff);
 
@@ -885,7 +857,7 @@ function renderMatchCard(m) {
   }
 
   const cardClass = `match-card${isLive?' live-match':played||isFinished?' finished':''}`;
-  const phaseLabel = isLive ? `<div class="phase-badge">🔴 ${phase}</div>` : '';
+  const phaseLabel = isLive ? `<div class="phase-badge">🔴 ${apiMeta?.elapsed||'LIVE'}</div>` : '';
   const noteLabel = m.note ? `<div class="match-note">${m.note}</div>` : '';
 
   return `<div class="${cardClass}">
@@ -1076,18 +1048,17 @@ function updateApiModalStats() {
   document.getElementById('statLastSync').textContent = lastSyncTime
     ? lastSyncTime.toLocaleTimeString('en-AU', {timeZone: currentTz, hour:'2-digit', minute:'2-digit', hour12:false})
     : '—';
-  document.getElementById('apiTokenInput').value = apiToken;
 }
 function updateApiBtn(state) {
   const btn = document.getElementById('apiBtn');
   const status = document.getElementById('apiStatus');
-  if (!apiToken) { btn.className = 'api-btn'; status.textContent = 'Not set'; return; }
-  if (state === 'syncing') { btn.className = 'api-btn'; status.textContent = '↻ syncing…'; return; }
+  if (state === 'syncing') { btn.className = 'api-btn'; status.textContent = '↻'; return; }
+  if (state === 'error') { btn.className = 'api-btn error'; status.textContent = '✗'; return; }
   if (state === 'ok' || lastSyncTime) {
     btn.className = 'api-btn synced';
     const t = lastSyncTime ? lastSyncTime.toLocaleTimeString('en-AU',{timeZone:currentTz,hour:'2-digit',minute:'2-digit',hour12:false}) : '';
-    status.textContent = '✓ ' + t;
-  } else { btn.className = 'api-btn'; status.textContent = 'Token set'; }
+    status.textContent = t ? '✓ ' + t : '✓';
+  } else { btn.className = 'api-btn'; status.textContent = ''; }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1158,10 +1129,8 @@ updateApiBtn();
 renderAll();
 setInterval(renderCountdown, 60000);
 startPolling();
-// Auto-sync on load if key exists
-if (apiToken) {
-  setTimeout(syncAll, 500);
-}
+// Auto-sync on load (ESPN, no token needed)
+setTimeout(syncAll, 800);
 </script>
 </body>
 </html>
