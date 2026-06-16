@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gold / S&P 500 Ratio Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.1/dist/chartjs-adapter-luxon.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #0a0a0a;
+  color: #E5E5E5;
+  font-family: 'IBM Plex Mono', monospace;
+  min-height: 100vh;
+}
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+}
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 20px;
+}
+header h1 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #F0B429;
+  letter-spacing: 2px;
+}
+header .updated {
+  font-size: 11px;
+  color: #666666;
+}
+/* Loading / Error */
+#loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 60vh;
+  font-size: 14px;
+  color: #F0B429;
+  letter-spacing: 1px;
+}
+#error {
+  display: none;
+  text-align: center;
+  padding: 40px;
+  font-size: 13px;
+  color: #FF4444;
+}
+#dashboard { display: none; }
+/* Stats bar */
+.stats-bar {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.stat-card {
+  background: #111111;
+  border: 1px solid #222222;
+  padding: 12px 14px;
+}
+.stat-label {
+  font-size: 10px;
+  color: #666666;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+.stat-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #E5E5E5;
+}
+.stat-sub {
+  font-size: 10px;
+  color: #666666;
+  margin-top: 4px;
+}
+.stat-change-pos { color: #4ADE80; }
+.stat-change-neg { color: #FF4444; }
+/* Regime bar */
+.regime-bar {
+  font-size: 12px;
+  color: #A07820;
+  font-style: italic;
+  margin-bottom: 16px;
+  padding: 0 2px;
+}
+/* Timeframe selector */
+.timeframe-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.tf-btn {
+  background: #111111;
+  border: 1px solid #222222;
+  color: #666666;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 16px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: all 0.15s;
+}
+.tf-btn:hover {
+  border-color: #F0B429;
+  color: #E5E5E5;
+}
+.tf-btn.active {
+  background: #F0B429;
+  color: #0a0a0a;
+  border-color: #F0B429;
+}
+/* Charts */
+.chart-panel {
+  background: #111111;
+  border: 1px solid #222222;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.chart-panel canvas {
+  background: #0d0d0d;
+}
+.sparkline-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.sparkline-panel {
+  background: #111111;
+  border: 1px solid #222222;
+  padding: 12px 16px;
+}
+.sparkline-title {
+  font-size: 10px;
+  font-weight: 500;
+  color: #666666;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.sparkline-panel canvas {
+  background: #0d0d0d;
+}
+/* Responsive */
+@media (max-width: 900px) {
+  .stats-bar { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 600px) {
+  .stats-bar { grid-template-columns: repeat(2, 1fr); }
+  .sparkline-row { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>GOLD / S&amp;P 500 RATIO</h1>
+    <span class="updated" id="last-updated"></span>
+  </header>
+
+  <div id="loading">FETCHING MARKET DATA...</div>
+  <div id="error"></div>
+
+  <div id="dashboard">
+    <div class="stats-bar" id="stats-bar"></div>
+    <div class="regime-bar" id="regime-bar"></div>
+    <div class="timeframe-bar" id="timeframe-bar">
+      <button class="tf-btn" data-years="1">1Y</button>
+      <button class="tf-btn" data-years="3">3Y</button>
+      <button class="tf-btn active" data-years="5">5Y</button>
+      <button class="tf-btn" data-years="10">10Y</button>
+      <button class="tf-btn" data-years="20">20Y</button>
+    </div>
+    <div class="chart-panel">
+      <canvas id="ratioChart" height="320"></canvas>
+    </div>
+    <div class="sparkline-row">
+      <div class="sparkline-panel">
+        <div class="sparkline-title">GOLD (USD)</div>
+        <canvas id="goldChart" height="140"></canvas>
+      </div>
+      <div class="sparkline-panel">
+        <div class="sparkline-title">S&amp;P 500</div>
+        <canvas id="spxChart" height="140"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+Chart.register(ChartAnnotation);
+
+const PROXY = 'https://market-data-proxy.alex-9d8.workers.dev/';
+let fullData = [];
+let currentYears = 5;
+let ratioChart, goldChart, spxChart;
+
+async function fetchData() {
+  const [goldRes, spxRes] = await Promise.all([
+    fetch(PROXY + '?ticker=GC%3DF&range=20y&interval=1d').then(r => r.json()),
+    fetch(PROXY + '?ticker=%5EGSPC&range=20y&interval=1d').then(r => r.json())
+  ]);
+
+  const parse = (res) => {
+    const result = res.chart.result[0];
+    const ts = result.timestamp;
+    const closes = result.indicators.quote[0].close;
+    const map = new Map();
+    for (let i = 0; i < ts.length; i++) {
+      if (closes[i] == null) continue;
+      const d = luxon.DateTime.fromSeconds(ts[i]).toFormat('yyyy-MM-dd');
+      map.set(d, closes[i]);
+    }
+    return map;
+  };
+
+  const goldMap = parse(goldRes);
+  const spxMap = parse(spxRes);
+  const aligned = [];
+
+  for (const [date, gold] of goldMap) {
+    if (spxMap.has(date)) {
+      aligned.push({ date, gold, spx: spxMap.get(date), ratio: gold / spxMap.get(date) });
+    }
+  }
+
+  aligned.sort((a, b) => a.date.localeCompare(b.date));
+  return aligned;
+}
+
+function filterByYears(data, years) {
+  const cutoff = luxon.DateTime.now().minus({ years }).toFormat('yyyy-MM-dd');
+  return data.filter(d => d.date >= cutoff);
+}
+
+function findClosest(data, targetDate) {
+  const t = targetDate;
+  let best = null;
+  let bestDiff = Infinity;
+  for (const d of data) {
+    const diff = Math.abs(luxon.DateTime.fromISO(d.date).toMillis() - luxon.DateTime.fromISO(t).toMillis());
+    if (diff < bestDiff) { bestDiff = diff; best = d; }
+  }
+  return best;
+}
+
+function computeSlope(data, n) {
+  const slice = data.slice(-n);
+  if (slice.length < 2) return 0;
+  let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+  for (let i = 0; i < slice.length; i++) {
+    sumX += i; sumY += slice[i].ratio;
+    sumXY += i * slice[i].ratio; sumX2 += i * i;
+  }
+  const nn = slice.length;
+  return (nn * sumXY - sumX * sumY) / (nn * sumX2 - sumX * sumX);
+}
+
+function renderStats(data) {
+  const container = document.getElementById('stats-bar');
+  const current = data[data.length - 1];
+  const now = current.ratio;
+
+  // 1Y ago
+  const oneYearAgo = findClosest(fullData, luxon.DateTime.now().minus({ years: 1 }).toFormat('yyyy-MM-dd'));
+  const change1Y = oneYearAgo ? ((now - oneYearAgo.ratio) / oneYearAgo.ratio * 100) : null;
+
+  // Since 2020
+  const since2020 = fullData.find(d => d.date >= '2020-01-01');
+  const change2020 = since2020 ? ((now - since2020.ratio) / since2020.ratio * 100) : null;
+
+  // Cycle high/low (full dataset)
+  let high = fullData[0], low = fullData[0];
+  for (const d of fullData) {
+    if (d.ratio > high.ratio) high = d;
+    if (d.ratio < low.ratio) low = d;
+  }
+
+  // Trend
+  const slope = computeSlope(fullData, 20);
+  const trendLabel = slope >= 0 ? 'Real Assets ↑' : 'Financial Assets ↑';
+  const trendColor = slope >= 0 ? '#F0B429' : '#6B8AFF';
+
+  const fmtPct = (v) => {
+    if (v == null) return '—';
+    const sign = v >= 0 ? '+' : '';
+    const cls = v >= 0 ? 'stat-change-pos' : 'stat-change-neg';
+    return `<span class="${cls}">${sign}${v.toFixed(1)}%</span>`;
+  };
+
+  const cards = [
+    { label: 'RATIO NOW', value: now.toFixed(4), sub: '' },
+    { label: '1Y AGO', value: oneYearAgo ? oneYearAgo.ratio.toFixed(4) : '—', sub: fmtPct(change1Y) },
+    { label: 'SINCE 2020', value: since2020 ? since2020.ratio.toFixed(4) : '—', sub: fmtPct(change2020) },
+    { label: 'CYCLE HIGH', value: high.ratio.toFixed(4), sub: `<span class="stat-sub">${high.date}</span>` },
+    { label: 'CYCLE LOW', value: low.ratio.toFixed(4), sub: `<span class="stat-sub">${low.date}</span>` },
+    { label: 'TREND (20D)', value: `<span style="color:${trendColor}">${trendLabel}</span>`, sub: '' }
+  ];
+
+  container.innerHTML = cards.map(c => `
+    <div class="stat-card">
+      <div class="stat-label">${c.label}</div>
+      <div class="stat-value">${c.value}</div>
+      ${c.sub ? `<div class="stat-sub">${c.sub}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+function renderRegime(data) {
+  const bar = document.getElementById('regime-bar');
+  const current = data[data.length - 1];
+  const slope = computeSlope(data, 20);
+  const r = current.ratio;
+  const rising = slope >= 0;
+  let text;
+  if (r > 0.5 && rising) text = 'Deep commodity supercycle — hard assets outperforming equities in real terms.';
+  else if (r >= 0.3 && r <= 0.5 && rising) text = 'Rotation underway — real assets gaining ground vs equities.';
+  else if (r >= 0.3 && r <= 0.5 && !rising) text = 'Rotation stalling — financial assets reasserting.';
+  else if (r < 0.3) text = 'Financial asset dominance — equity outperformance regime.';
+  else text = 'Commodity outperformance regime — gold leading.';
+  bar.textContent = text;
+}
+
+function makeAnnotations() {
+  const today = luxon.DateTime.now().toFormat('yyyy-MM-dd');
+  return {
+    box1: {
+      type: 'box',
+      xMin: '2000-01-01',
+      xMax: '2011-12-31',
+      backgroundColor: 'rgba(240,180,41,0.08)',
+      borderWidth: 0,
+      label: {
+        display: true,
+        content: 'Commodity Cycle',
+        position: { x: 'start', y: 'start' },
+        font: { size: 10, family: 'IBM Plex Mono' },
+        color: '#555555',
+        padding: 4
+      }
+    },
+    box2: {
+      type: 'box',
+      xMin: '2012-01-01',
+      xMax: '2019-12-31',
+      backgroundColor: 'rgba(107,138,255,0.08)',
+      borderWidth: 0,
+      label: {
+        display: true,
+        content: 'Financial Asset Cycle',
+        position: { x: 'start', y: 'start' },
+        font: { size: 10, family: 'IBM Plex Mono' },
+        color: '#555555',
+        padding: 4
+      }
+    },
+    box3: {
+      type: 'box',
+      xMin: '2020-01-01',
+      xMax: today,
+      backgroundColor: 'rgba(240,180,41,0.08)',
+      borderWidth: 0,
+      label: {
+        display: true,
+        content: 'Current Cycle',
+        position: { x: 'start', y: 'start' },
+        font: { size: 10, family: 'IBM Plex Mono' },
+        color: '#555555',
+        padding: 4
+      }
+    }
+  };
+}
+
+function createRatioChart(data) {
+  const ctx = document.getElementById('ratioChart').getContext('2d');
+  if (ratioChart) ratioChart.destroy();
+  ratioChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: data.map(d => d.date),
+      datasets: [{
+        data: data.map(d => d.ratio),
+        borderColor: '#F0B429',
+        borderWidth: 2,
+        pointRadius: 0,
+        pointHitRadius: 8,
+        tension: 0,
+        fill: false
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        annotation: { annotations: makeAnnotations() },
+        tooltip: {
+          backgroundColor: '#1a1a1a',
+          borderColor: '#333333',
+          borderWidth: 1,
+          titleFont: { family: 'IBM Plex Mono', size: 11 },
+          bodyFont: { family: 'IBM Plex Mono', size: 11 },
+          titleColor: '#E5E5E5',
+          bodyColor: '#E5E5E5',
+          displayColors: false,
+          callbacks: {
+            title: (items) => items[0].label,
+            label: (item) => {
+              const d = data[item.dataIndex];
+              return [
+                `Ratio: ${d.ratio.toFixed(4)}`,
+                `Gold: $${d.gold.toFixed(2)}`,
+                `SPX: ${d.spx.toFixed(2)}`
+              ];
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          type: 'time',
+          time: { parser: 'yyyy-MM-dd' },
+          grid: { color: '#1a1a1a' },
+          ticks: { color: '#666666', font: { family: 'IBM Plex Mono', size: 10 }, maxRotation: 0 },
+          border: { color: '#222222' }
+        },
+        y: {
+          position: 'right',
+          grid: { color: '#1a1a1a' },
+          ticks: {
+            color: '#666666',
+            font: { family: 'IBM Plex Mono', size: 10 },
+            callback: (v) => v.toFixed(4)
+          },
+          border: { color: '#222222' }
+        }
+      }
+    }
+  });
+}
+
+function createSparkline(canvasId, data, key, color) {
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  const existing = canvasId === 'goldChart' ? goldChart : spxChart;
+  if (existing) existing.destroy();
+
+  const chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: data.map(d => d.date),
+      datasets: [{
+        data: data.map(d => d[key]),
+        borderColor: color,
+        borderWidth: 1.5,
+        pointRadius: 0,
+        tension: 0,
+        fill: false
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1a1a1a',
+          borderColor: '#333333',
+          borderWidth: 1,
+          titleFont: { family: 'IBM Plex Mono', size: 10 },
+          bodyFont: { family: 'IBM Plex Mono', size: 10 },
+          titleColor: '#E5E5E5',
+          bodyColor: '#E5E5E5',
+          displayColors: false,
+          callbacks: {
+            label: (item) => {
+              const v = data[item.dataIndex][key];
+              return key === 'gold' ? `$${v.toFixed(2)}` : v.toFixed(2);
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          type: 'time',
+          time: { parser: 'yyyy-MM-dd' },
+          display: false
+        },
+        y: {
+          grid: { color: '#1a1a1a' },
+          ticks: {
+            color: '#666666',
+            font: { family: 'IBM Plex Mono', size: 9 },
+            maxTicksLimit: 4,
+            callback: (v) => key === 'gold' ? '$' + v.toFixed(0) : v.toFixed(0)
+          },
+          border: { color: '#222222' }
+        }
+      }
+    }
+  });
+
+  if (canvasId === 'goldChart') goldChart = chart;
+  else spxChart = chart;
+}
+
+function render() {
+  const data = filterByYears(fullData, currentYears);
+  renderStats(data);
+  renderRegime(data);
+  createRatioChart(data);
+  createSparkline('goldChart', data, 'gold', '#F0B429');
+  createSparkline('spxChart', data, 'spx', '#6B8AFF');
+}
+
+function setupTimeframeButtons() {
+  const btns = document.querySelectorAll('.tf-btn');
+  btns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      btns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentYears = parseInt(btn.dataset.years);
+      render();
+    });
+  });
+}
+
+async function init() {
+  try {
+    fullData = await fetchData();
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    document.getElementById('last-updated').textContent =
+      'Updated: ' + luxon.DateTime.now().toFormat('dd LLL yyyy, HH:mm');
+    setupTimeframeButtons();
+    render();
+  } catch (err) {
+    document.getElementById('loading').style.display = 'none';
+    const el = document.getElementById('error');
+    el.style.display = 'block';
+    el.textContent = 'DATA FETCH FAILED — ' + err.message;
+  }
+}
+
+init();
+</script>
+</body>
+</html>
