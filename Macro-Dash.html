@@ -26,7 +26,7 @@
   /* HEADER */
   .header {
     display: flex; align-items: center; justify-content: space-between;
-    border-bottom: 1px solid #222222;
+    border-bottom: 1px solid #2a2a2a;
     padding-bottom: 16px;
     margin-bottom: 20px;
     gap: 16px; flex-wrap: wrap;
@@ -38,7 +38,7 @@
   }
   .header-right {
     display: flex; align-items: center; gap: 16px;
-    color: #666; font-size: 12px;
+    color: #B0B0B0; font-size: 12px;
   }
   .pulse-dot {
     display: inline-block; width: 8px; height: 8px;
@@ -54,7 +54,7 @@
     50%     { opacity: 0.3; }
   }
   .events-toggle {
-    background: #111111; border: 1px solid #222; color: #666;
+    background: #141414; border: 1px solid #3a3a3a; color: #D0D0D0;
     font-family: inherit; font-size: 11px; padding: 4px 10px;
     cursor: pointer; letter-spacing: 0.1em;
   }
@@ -63,20 +63,20 @@
   /* TABS */
   .tabs {
     display: flex; gap: 24px;
-    border-bottom: 1px solid #1a1a1a;
+    border-bottom: 1px solid #2a2a2a;
     margin-bottom: 20px;
   }
   .tab {
     background: none; border: none;
-    color: #444; font-family: inherit; font-size: 12px;
+    color: #999; font-family: inherit; font-size: 12px;
     padding: 12px 0; cursor: pointer;
     letter-spacing: 0.12em;
     border-bottom: 2px solid transparent;
     transition: color 0.15s;
   }
-  .tab:hover { color: #888; }
+  .tab:hover { color: #FFF; }
   .tab.active { color: #F0B429; border-bottom-color: #F0B429; }
-  .tab.situation { color: #FF4444; position: relative; }
+  .tab.situation { color: #FF7070; position: relative; }
   .tab.situation.active { color: #FF4444; border-bottom-color: #FF4444; }
   .tab.situation::after {
     content: ""; position: absolute; top: 8px; right: -10px;
@@ -91,20 +91,30 @@
   }
   .timeframes { display: flex; gap: 8px; }
   .tf-btn {
-    background: #111111; border: 1px solid #222;
-    color: #666; font-family: inherit; font-size: 11px;
+    background: #141414; border: 1px solid #3a3a3a;
+    color: #D0D0D0; font-family: inherit; font-size: 11px;
     padding: 6px 12px; cursor: pointer; letter-spacing: 0.1em;
   }
-  .tf-btn:hover { color: #aaa; }
+  .tf-btn:hover { color: #FFF; border-color: #555; }
   .tf-btn.active { color: #F0B429; border-color: #F0B429; }
+
+  /* CAPTION (tab explainer) */
+  .caption {
+    background: #141414; border: 1px solid #2a2a2a;
+    border-left: 3px solid #F0B429;
+    padding: 14px 16px; margin-bottom: 16px;
+    color: #C8C8C8; font-size: 12.5px; line-height: 1.7;
+  }
+  .caption strong { color: #F0B429; font-weight: 600; }
+  .caption .em { color: #FFFFFF; }
 
   /* REGIME LINE */
   .regime-line {
-    color: #A07820; font-style: italic; font-size: 12px;
+    color: #E0B449; font-style: italic; font-size: 13px;
     margin: 12px 0 4px 0;
   }
   .static-note {
-    color: #444; font-size: 10px; margin: 4px 0 16px 0;
+    color: #909090; font-size: 11px; margin: 4px 0 16px 0;
     line-height: 1.6;
   }
 
@@ -117,14 +127,14 @@
   }
   .stats.eight { grid-template-columns: repeat(8, 1fr); }
   .stat {
-    background: #111111; border: 1px solid #222;
+    background: #161616; border: 1px solid #2e2e2e;
     padding: 12px;
     display: flex; flex-direction: column; gap: 4px;
     min-height: 76px;
   }
-  .stat-label { color: #666; font-size: 10px; letter-spacing: 0.12em; }
-  .stat-value { color: #E5E5E5; font-size: 18px; font-weight: 500; }
-  .stat-sub { color: #666; font-size: 10px; }
+  .stat-label { color: #B0B0B0; font-size: 10px; letter-spacing: 0.12em; }
+  .stat-value { color: #FFFFFF; font-size: 18px; font-weight: 500; }
+  .stat-sub { color: #A0A0A0; font-size: 10px; }
   .stat-pos { color: #00FF88; }
   .stat-neg { color: #FF4444; }
 
@@ -134,15 +144,15 @@
 
   /* CHARTS */
   .panel {
-    background: #0d0d0d; border: 1px solid #1a1a1a;
+    background: #101010; border: 1px solid #2a2a2a;
     padding: 16px; margin-bottom: 16px;
   }
   .panel-title {
-    color: #666; font-size: 11px; letter-spacing: 0.15em;
+    color: #C0C0C0; font-size: 11px; letter-spacing: 0.15em;
     margin-bottom: 6px;
   }
   .panel-subtitle {
-    color: #555; font-size: 10px; font-style: italic;
+    color: #909090; font-size: 10.5px; font-style: italic;
     margin-bottom: 6px;
   }
   .main-chart { height: 320px; }
@@ -154,6 +164,31 @@
     display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
   }
   .quad-chart { height: 280px; }
+  .tri-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;
+  }
+  .tri-chart { height: 240px; }
+
+  /* PLAIN ENGLISH EXPLAINER BOX */
+  .explainer {
+    background: #141414; border: 1px solid #2a2a2a;
+    padding: 14px 16px; margin-bottom: 16px;
+  }
+  .explainer-title {
+    color: #F0B429; font-size: 11px; letter-spacing: 0.15em;
+    margin-bottom: 10px;
+  }
+  .explainer-row {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 8px 0; border-top: 1px solid #222;
+    font-size: 12.5px; line-height: 1.6;
+  }
+  .explainer-row:first-of-type { border-top: none; padding-top: 0; }
+  .explainer-key {
+    color: #E0E0E0; font-weight: 600;
+    min-width: 180px; flex-shrink: 0;
+  }
+  .explainer-val { color: #C8C8C8; flex: 1; }
 
   /* LOADING / ERROR */
   .loading {
@@ -180,46 +215,46 @@
   /* SITUATION ROOM */
   .sr-regime-banner {
     padding: 18px 24px; text-align: center;
-    background: #0d0d0d; border: 1px solid #222;
+    background: #101010; border: 1px solid #2e2e2e;
     margin-bottom: 16px;
   }
   .sr-regime-label {
     font-size: 28px; font-weight: 700; letter-spacing: 0.05em;
     margin-bottom: 6px;
   }
-  .sr-regime-sub { font-size: 12px; color: #888; }
+  .sr-regime-sub { font-size: 12.5px; color: #C8C8C8; }
   .sr-pills {
     display: flex; justify-content: center; flex-wrap: wrap;
     gap: 8px; margin-top: 12px;
   }
   .sr-pill {
-    background: #111111; border: 1px solid #222;
+    background: #161616; border: 1px solid #2e2e2e;
     padding: 4px 10px; font-size: 11px; letter-spacing: 0.04em;
   }
   .sr-section { margin-bottom: 28px; }
   .sr-section-title {
-    color: #333; font-size: 11px;
+    color: #B0B0B0; font-size: 11px;
     letter-spacing: 0.15em; text-transform: uppercase;
-    padding-bottom: 8px; border-bottom: 1px solid #1a1a1a;
+    padding-bottom: 8px; border-bottom: 1px solid #2a2a2a;
     margin-bottom: 16px;
   }
   .sr-briefing p {
-    color: #CCCCCC; font-size: 14px; line-height: 1.9;
-    max-width: 780px; margin: 0 0 14px 12px;
+    color: #E5E5E5; font-size: 14px; line-height: 1.9;
+    max-width: 820px; margin: 0 0 14px 12px;
   }
   .sr-matrix {
     width: 100%; border-collapse: collapse;
     font-size: 12px;
   }
   .sr-matrix th {
-    background: #1a1a1a; color: #666;
+    background: #1f1f1f; color: #D0D0D0;
     text-align: left; padding: 10px 12px;
     font-weight: 500; letter-spacing: 0.1em;
-    border: 1px solid #222;
+    border: 1px solid #2e2e2e;
   }
   .sr-matrix td {
     padding: 10px 12px;
-    border: 1px solid #222;
+    border: 1px solid #2a2a2a;
     height: 36px;
   }
   .sr-watch {
@@ -227,16 +262,16 @@
     gap: 16px;
   }
   .sr-col {
-    background: #111111; border: 1px solid #222;
+    background: #141414; border: 1px solid #2e2e2e;
     padding: 16px;
   }
   .sr-col-title {
-    color: #666; font-size: 11px;
+    color: #C0C0C0; font-size: 11px;
     letter-spacing: 0.15em; text-transform: uppercase;
     margin-bottom: 10px;
   }
   .sr-col-body {
-    color: #888; font-size: 13px; line-height: 1.8;
+    color: #C8C8C8; font-size: 13px; line-height: 1.8;
     white-space: pre-line;
   }
 
@@ -246,13 +281,13 @@
     font-size: 12px; margin: 16px 0 12px 0;
   }
   .playbook th {
-    background: #1a1a1a; color: #666;
+    background: #1f1f1f; color: #D0D0D0;
     text-align: left; padding: 8px 10px;
     font-weight: 500; letter-spacing: 0.08em;
-    border: 1px solid #222;
+    border: 1px solid #2e2e2e;
   }
   .playbook td {
-    padding: 8px 10px; border: 1px solid #222;
+    padding: 8px 10px; border: 1px solid #2a2a2a;
   }
   .summary-line {
     font-size: 12px; padding: 8px 0; letter-spacing: 0.05em;
@@ -277,8 +312,8 @@
   /* FOOTER */
   .footer {
     text-align: center; padding: 16px;
-    color: #333; font-size: 11px;
-    border-top: 1px solid #1a1a1a;
+    color: #888; font-size: 11px;
+    border-top: 1px solid #2a2a2a;
     margin-top: 32px;
     line-height: 1.6;
   }
@@ -322,10 +357,13 @@
       </div>
     </div>
 
+    <div class="caption" id="ratioCaption"></div>
     <div class="regime-line" id="regimeLine"></div>
     <div class="static-note" id="ratioStaticNote"></div>
 
     <div class="stats" id="ratioStats"></div>
+
+    <div class="explainer" id="ratioReadout"></div>
 
     <div class="panel">
       <div class="panel-title" id="mainChartTitle">RATIO</div>
@@ -393,24 +431,36 @@
 
     <div class="stats eight" id="pulseStats"></div>
 
+    <div class="explainer" id="pulseReadout"></div>
+
     <div class="quad-grid">
       <div class="panel">
         <div class="panel-title">DXY — US DOLLAR INDEX</div>
+        <div class="panel-subtitle">How strong the US dollar is vs major currencies. Rising = tighter global money</div>
         <div class="quad-chart"><canvas id="dxyChart"></canvas></div>
       </div>
       <div class="panel">
-        <div class="panel-title">YIELD CURVE — 10Y MINUS 2Y</div>
+        <div class="panel-title">YIELD CURVE — 10Y MINUS 5Y</div>
+        <div class="panel-subtitle">Gap between long and medium rates. Positive &amp; widening = healthy economy &amp; bank lending</div>
         <div class="quad-chart"><canvas id="spreadChart"></canvas></div>
       </div>
+    </div>
+
+    <div class="tri-grid">
       <div class="panel">
-        <div class="panel-title">2Y TREASURY YIELD (SHORT END)</div>
-        <div class="panel-subtitle">Tracks Fed expectations — falls when markets price in cuts</div>
-        <div class="quad-chart"><canvas id="y2Chart"></canvas></div>
+        <div class="panel-title">13-WEEK T-BILL (SHORT RATE)</div>
+        <div class="panel-subtitle">Tracks Fed policy — falls when markets price in cuts</div>
+        <div class="tri-chart"><canvas id="y13Chart"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">5Y TREASURY YIELD (MID)</div>
+        <div class="panel-subtitle">Captures medium-term inflation &amp; growth expectations</div>
+        <div class="tri-chart"><canvas id="y5Chart"></canvas></div>
       </div>
       <div class="panel">
         <div class="panel-title">10Y TREASURY YIELD (LONG END)</div>
         <div class="panel-subtitle">Market-determined — rises when inflation or debt concerns grow</div>
-        <div class="quad-chart"><canvas id="y10Chart"></canvas></div>
+        <div class="tri-chart"><canvas id="y10Chart"></canvas></div>
       </div>
     </div>
 
@@ -522,11 +572,11 @@ const COLORS = {
 
 // State
 const STATE = {
-  raw: { gold: null, spx: null, axjo: null, silver: null, wilshire: null, dxy: null, y2: null, y10: null },
+  raw: { gold: null, spx: null, axjo: null, silver: null, wilshire: null, dxy: null, y13: null, y5: null, y10: null },
   series: {
     goldSpx: [], goldAsx: [], goldSilver: [],
     buffett: [], wilshire: [], gdp: [],
-    dxy: [], y2: [], y10: [], spread: [],
+    dxy: [], y13: [], y5: [], y10: [], spread: [],
   },
   activeTab: 'gold-spx',
   ratioRange: '5y',
@@ -581,6 +631,18 @@ function joinThree(a, b, c) {
   }
   return out;
 }
+function joinFour(a, b, c, d) {
+  const mb = new Map(b.map(x => [x.date, x.close]));
+  const mc = new Map(c.map(x => [x.date, x.close]));
+  const md = new Map(d.map(x => [x.date, x.close]));
+  const out = [];
+  for (const x of a) {
+    const bv = mb.get(x.date); const cv = mc.get(x.date); const dv = md.get(x.date);
+    if (bv == null || cv == null || dv == null) continue;
+    out.push({ date: x.date, ms: x.ms, a: x.close, b: bv, c: cv, d: dv });
+  }
+  return out;
+}
 
 // ============================================================
 // GDP DATA — annual values (trillions USD), interpolated daily
@@ -615,7 +677,7 @@ function gdpOn(dateStr) {
 // ============================================================
 async function loadAll() {
   try {
-    const [gold, spx, axjo, silver, wilshire, dxy, y2raw, y10raw] = await Promise.all([
+    const [gold, spx, axjo, silver, wilshire, dxy, y13raw, y5raw, y10raw] = await Promise.all([
       fetchTicker('GC=F', '20y'),
       fetchTicker('^GSPC', '20y'),
       fetchTicker('^AXJO', '20y'),
@@ -623,9 +685,10 @@ async function loadAll() {
       fetchTicker('^W5000', '20y'),
       fetchTicker('DX-Y.NYB', '5y'),
       fetchTicker('^IRX', '5y'),
+      fetchTicker('^FVX', '5y'),
       fetchTicker('^TNX', '5y'),
     ]);
-    STATE.raw = { gold, spx, axjo, silver, wilshire, dxy, y2: y2raw, y10: y10raw };
+    STATE.raw = { gold, spx, axjo, silver, wilshire, dxy, y13: y13raw, y5: y5raw, y10: y10raw };
     buildSeries();
     STATE.lastFetch = new Date();
     STATE.lastFetchOk = true;
@@ -646,7 +709,7 @@ async function loadAll() {
 }
 
 function buildSeries() {
-  const { gold, spx, axjo, silver, wilshire, dxy, y2, y10 } = STATE.raw;
+  const { gold, spx, axjo, silver, wilshire, dxy } = STATE.raw;
   // Gold / SPX
   STATE.series.goldSpx = joinByDate(gold, spx).map(d => ({ date: d.date, ms: d.ms, ratio: d.a / d.b, gold: d.a, other: d.b }));
   // Gold / ASX200
@@ -666,13 +729,16 @@ function buildSeries() {
   STATE.series.gdp = wilshire.map(d => ({ date: d.date, ms: d.ms, v: gdpOn(d.date) }));
 
   // Macro Pulse — yields are index/10
-  const y2pct = y2.map(d => ({ date: d.date, ms: d.ms, close: d.close * 0.1 }));
+  const { y13, y5, y10 } = STATE.raw;
+  const y13pct = y13.map(d => ({ date: d.date, ms: d.ms, close: d.close * 0.1 }));
+  const y5pct  = y5.map(d => ({ date: d.date, ms: d.ms, close: d.close * 0.1 }));
   const y10pct = y10.map(d => ({ date: d.date, ms: d.ms, close: d.close * 0.1 }));
-  const triple = joinThree(dxy, y2pct, y10pct);
-  STATE.series.dxy   = triple.map(d => ({ date: d.date, ms: d.ms, v: d.a }));
-  STATE.series.y2    = triple.map(d => ({ date: d.date, ms: d.ms, v: d.b }));
-  STATE.series.y10   = triple.map(d => ({ date: d.date, ms: d.ms, v: d.c }));
-  STATE.series.spread= triple.map(d => ({ date: d.date, ms: d.ms, v: d.c - d.b }));
+  const quad = joinFour(dxy, y13pct, y5pct, y10pct);
+  STATE.series.dxy   = quad.map(d => ({ date: d.date, ms: d.ms, v: d.a }));
+  STATE.series.y13   = quad.map(d => ({ date: d.date, ms: d.ms, v: d.b }));
+  STATE.series.y5    = quad.map(d => ({ date: d.date, ms: d.ms, v: d.c }));
+  STATE.series.y10   = quad.map(d => ({ date: d.date, ms: d.ms, v: d.d }));
+  STATE.series.spread= quad.map(d => ({ date: d.date, ms: d.ms, v: d.d - d.c })); // 10Y - 5Y
 }
 
 // ============================================================
@@ -718,10 +784,10 @@ function eventAnnotations() {
     ann['ev'+i] = {
       type: 'line',
       xMin: ms, xMax: ms,
-      borderColor: '#444', borderWidth: 1, borderDash: [3,3],
+      borderColor: '#888', borderWidth: 1, borderDash: [3,3],
       label: {
         display: true, content: label, position: 'start',
-        backgroundColor: 'transparent', color: '#555',
+        backgroundColor: 'transparent', color: '#D0D0D0',
         font: { size: 10, family: "'IBM Plex Mono'" },
         rotation: -90, yAdjust: -8, padding: 2,
       },
@@ -811,7 +877,7 @@ function regimeBandAnnotations() {
       xMax: DateTime.fromISO('2011-12-31').toMillis(),
       backgroundColor: 'rgba(240,180,41,0.08)',
       borderWidth: 0,
-      label: { display: true, content: 'Commodity Cycle', position: { x:'start', y:'start' }, color: '#555', font: { size: 10 }, backgroundColor: 'transparent' },
+      label: { display: true, content: 'Commodity Cycle', position: { x:'start', y:'start' }, color: '#D9A742', font: { size: 11, weight: 600 }, backgroundColor: 'transparent' },
     },
     band2: {
       type: 'box',
@@ -819,7 +885,7 @@ function regimeBandAnnotations() {
       xMax: DateTime.fromISO('2019-12-31').toMillis(),
       backgroundColor: 'rgba(107,138,255,0.08)',
       borderWidth: 0,
-      label: { display: true, content: 'Financial Asset Cycle', position: { x:'start', y:'start' }, color: '#555', font: { size: 10 }, backgroundColor: 'transparent' },
+      label: { display: true, content: 'Financial Asset Cycle', position: { x:'start', y:'start' }, color: '#9AB0FF', font: { size: 11, weight: 600 }, backgroundColor: 'transparent' },
     },
     band3: {
       type: 'box',
@@ -827,7 +893,7 @@ function regimeBandAnnotations() {
       xMax: DateTime.now().toMillis(),
       backgroundColor: 'rgba(240,180,41,0.08)',
       borderWidth: 0,
-      label: { display: true, content: 'Current Cycle', position: { x:'start', y:'start' }, color: '#555', font: { size: 10 }, backgroundColor: 'transparent' },
+      label: { display: true, content: 'Current Cycle', position: { x:'start', y:'start' }, color: '#D9A742', font: { size: 11, weight: 600 }, backgroundColor: 'transparent' },
     },
   };
 }
@@ -836,8 +902,8 @@ function goldSilverLineAnnotations() {
   return {
     g30: { type: 'line', yMin: 30, yMax: 30, borderColor: COLORS.blue, borderWidth: 1, borderDash: [4,4],
       label: { display: true, content: 'Silver Expensive / Buy Gold', position: 'end', color: COLORS.blue, font: {size:10}, backgroundColor: 'transparent' } },
-    g60: { type: 'line', yMin: 60, yMax: 60, borderColor: '#444', borderWidth: 1, borderDash: [4,4],
-      label: { display: true, content: 'Historical Mean', position: 'end', color: '#666', font: {size:10}, backgroundColor: 'transparent' } },
+    g60: { type: 'line', yMin: 60, yMax: 60, borderColor: '#888', borderWidth: 1, borderDash: [4,4],
+      label: { display: true, content: 'Historical Mean', position: 'end', color: '#BBB', font: {size:10}, backgroundColor: 'transparent' } },
     g80: { type: 'line', yMin: 80, yMax: 80, borderColor: COLORS.gold, borderWidth: 1, borderDash: [4,4],
       label: { display: true, content: 'Gold Expensive / Buy Silver', position: 'end', color: COLORS.gold, font: {size:10}, backgroundColor: 'transparent' } },
     g90: { type: 'line', yMin: 90, yMax: 90, borderColor: COLORS.red, borderWidth: 1, borderDash: [4,4],
@@ -849,6 +915,12 @@ function goldSilverLineAnnotations() {
   };
 }
 
+const RATIO_CAPTIONS = {
+  'gold-spx': `<strong>The Gold/SPX ratio</strong> shows gold's price relative to the S&amp;P 500. A <span class="em">rising</span> ratio means gold is winning the race against US stocks — gaining real purchasing power against the financial economy. A <span class="em">falling</span> ratio means equities are winning. Both can rise in dollars simultaneously — what matters is which one rises faster. Historically above <span class="em">0.5</span> = real-asset / commodity supercycle. Below <span class="em">0.3</span> = financial asset dominance (the 2010s).`,
+  'gold-asx': `<strong>The Gold/ASX200 ratio</strong> measures gold (USD) against the Australian market (AUD). Like Gold/SPX but with a cross-currency layer — when AUD weakens vs USD, the ratio rises even if both markets are flat. Useful for AU investors deciding between domestic equity and gold exposure. A rising ratio favours gold; a falling ratio favours ASX exposure.`,
+  'gold-silver': `<strong>The Gold/Silver ratio</strong> tells you how many ounces of silver it takes to buy 1oz of gold. Historical mean ~<span class="em">60</span>. Above <span class="em">80</span> = gold is expensive relative to silver — historically a strong signal to rotate <span class="em">from gold into silver</span> (silver tends to catch up violently). Below <span class="em">40</span> = silver expensive — rotate back into gold. This is a tactical rotation signal between two hard assets, not a real-vs-financial signal.`,
+};
+
 function renderRatioTab(tabKey) {
   const cfg = RATIO_CONFIGS[tabKey];
   document.getElementById('title').textContent = cfg.title;
@@ -856,6 +928,7 @@ function renderRatioTab(tabKey) {
   document.getElementById('sp1Title').textContent = cfg.sp1Label;
   document.getElementById('sp2Title').textContent = cfg.sp2Label;
   document.getElementById('ratioStaticNote').textContent = cfg.note || '';
+  document.getElementById('ratioCaption').innerHTML = RATIO_CAPTIONS[tabKey] || '';
 
   const all = STATE.series[cfg.series];
   if (!all || !all.length) return;
@@ -894,7 +967,7 @@ function renderRatioTab(tabKey) {
     let sigVal, sigCol, sigSub;
     if (cur > 90) { sigVal = 'BUY SILVER'; sigCol = COLORS.red; sigSub = 'Extreme — gold historically expensive'; }
     else if (cur > 80) { sigVal = 'FAVOUR SILVER'; sigCol = COLORS.gold; sigSub = 'Gold expensive vs silver'; }
-    else if (cur > 55) { sigVal = 'NEUTRAL'; sigCol = '#888'; sigSub = 'Within normal range'; }
+    else if (cur > 55) { sigVal = 'NEUTRAL'; sigCol = '#BBBBBB'; sigSub = 'Within normal range'; }
     else if (cur > 40) { sigVal = 'FAVOUR GOLD'; sigCol = COLORS.silver; sigSub = 'Silver expensive vs gold'; }
     else { sigVal = 'BUY GOLD'; sigCol = COLORS.blue; sigSub = 'Extreme — silver historically expensive'; }
     statCard(statsEl, { label: 'SIGNAL', value: sigVal, color: sigCol, sub: sigSub, borderColor: sigCol, signal: true });
@@ -976,12 +1049,12 @@ function renderRatioTab(tabKey) {
       animation: false,
       interaction: { intersect: false, mode: 'index' },
       scales: {
-        x: { type: 'time', grid: { color: '#1a1a1a' }, ticks: { color: '#666' } },
+        x: { type: 'time', grid: { color: '#222' }, ticks: { color: '#B0B0B0' } },
         y: {
           position: 'right',
-          grid: { color: '#1a1a1a' },
+          grid: { color: '#222' },
           ticks: {
-            color: '#666',
+            color: '#B0B0B0',
             callback: v => fmt(v, dpRatio),
           },
         },
@@ -989,8 +1062,8 @@ function renderRatioTab(tabKey) {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: '#0a0a0a', borderColor: '#222', borderWidth: 1,
-          titleColor: '#E5E5E5', bodyColor: '#CCC',
+          backgroundColor: '#0a0a0a', borderColor: '#3a3a3a', borderWidth: 1,
+          titleColor: '#FFFFFF', bodyColor: '#E5E5E5',
           callbacks: {
             label: (ctx) => {
               const idx = ctx.dataIndex;
@@ -1016,6 +1089,94 @@ function renderRatioTab(tabKey) {
   destroyChart('sp2');
   STATE.charts.sp1 = new Chart(document.getElementById('sp1Chart').getContext('2d'), sparklineConfig(view.map(d => ({x: d.ms, y: d.gold})), cfg.sp1Color));
   STATE.charts.sp2 = new Chart(document.getElementById('sp2Chart').getContext('2d'), sparklineConfig(view.map(d => ({x: d.ms, y: d.other})), cfg.sp2Color));
+
+  // Plain-English readout
+  renderRatioReadout(tabKey, view, all, cur, sl);
+}
+
+function renderRatioReadout(tabKey, view, all, cur, sl) {
+  const el = document.getElementById('ratioReadout');
+  if (!el) return;
+  const rows = [];
+  const cfg = RATIO_CONFIGS[tabKey];
+  const otherLabel = cfg.sp2Label.replace(/\s.*$/, '');
+  const goldNow  = last(view).gold;
+  const otherNow = last(view).other;
+
+  // 1Y comparison
+  const oneYAgo = DateTime.now().minus({years:1}).toMillis();
+  const yAgo = all.find(d => d.ms >= oneYAgo) || all[0];
+  const goldChange1y  = pct(goldNow,  yAgo.gold);
+  const otherChange1y = pct(otherNow, yAgo.other);
+  const ratioChange1y = pct(cur, yAgo.ratio);
+
+  if (tabKey === 'gold-silver') {
+    // Gold/Silver readout
+    rows.push({
+      key: `Ratio = ${fmt(cur, 1)}`,
+      val: `It takes <strong>${fmt(cur, 1)}oz of silver</strong> to buy 1oz of gold. ` +
+           (cur > 80 ? `Above the 80 threshold — <span style="color:${COLORS.gold}">gold is historically expensive vs silver</span>. Silver typically catches up violently when this ratio resolves.`
+            : cur > 55 ? `Within the normal historical range (mean ~60). No strong rotation signal.`
+            : cur > 40 ? `Below mean — silver is becoming relatively expensive. Monitor for rotation back toward gold.`
+            : `<span style="color:${COLORS.blue}">Extreme silver premium</span> — historically signals to rotate back into gold.`)
+    });
+    rows.push({
+      key: `Trend: Last 20 days`,
+      val: sl >= 0 ? `Ratio rising — <strong>gold is strengthening faster than silver</strong>. Both could be rising in dollar terms but gold is winning.`
+                   : `Ratio falling — <strong>silver is catching up to gold</strong>. Silver is the relative winner over the recent window.`
+    });
+    rows.push({
+      key: 'Action signal',
+      val: cur > 90 ? `<span style="color:${COLORS.red}">BUY SILVER</span> — extreme reading. Position size matters; silver is volatile.`
+        : cur > 80 ? `<span style="color:${COLORS.gold}">FAVOUR SILVER</span> within hard-asset allocation.`
+        : cur > 55 ? `<span style="color:#CCC">NEUTRAL</span> — no rotation edge in either direction.`
+        : cur > 40 ? `<span style="color:${COLORS.silver}">FAVOUR GOLD</span> within hard-asset allocation.`
+        : `<span style="color:${COLORS.blue}">BUY GOLD</span> — extreme reading.`
+    });
+  } else {
+    // Gold/SPX or Gold/ASX
+    rows.push({
+      key: `Ratio NOW = ${fmt(cur, 4)}`,
+      val: `Means it takes about <strong>${fmt(cur, 4)} units of ${otherLabel}</strong> to buy 1oz of gold. The number itself is just a unit — the <span class="em">direction</span> is what matters.`
+    });
+    rows.push({
+      key: `1Y change = ${ratioChange1y>=0?'+':''}${fmt(ratioChange1y, 1)}%`,
+      val: `Over the last year, gold ${goldChange1y>=0?'rose':'fell'} <strong>${fmt(Math.abs(goldChange1y),1)}%</strong> while ${otherLabel} ${otherChange1y>=0?'rose':'fell'} <strong>${fmt(Math.abs(otherChange1y),1)}%</strong>. ` +
+           (ratioChange1y > 0
+             ? `<span style="color:${COLORS.gold}">Gold won the year in real terms</span> — even if ${otherLabel} rose nominally, gold rose faster, meaning gold gained purchasing power against the financial economy.`
+             : `<span style="color:${COLORS.blue}">${otherLabel} won the year in real terms</span> — equity gains outpaced gold's gains. Stocks bought more gold this year than last.`)
+    });
+    rows.push({
+      key: `Trend: Last 20 days`,
+      val: sl >= 0
+        ? `Ratio rising — <strong>gold is currently outperforming ${otherLabel}</strong>. Real assets are gaining ground vs financial assets in the short term.`
+        : `Ratio falling — <strong>${otherLabel} is currently outperforming gold</strong>. Financial assets are winning the recent window. Doesn't mean equities are rising nominally — just that they're rising faster than gold (or falling slower).`
+    });
+    // Cycle context
+    const maxObj = all.reduce((a,b) => b.ratio > a.ratio ? b : a, all[0]);
+    const minObj = all.reduce((a,b) => b.ratio < a.ratio ? b : a, all[0]);
+    const distHigh = ((maxObj.ratio - cur) / maxObj.ratio) * 100;
+    const distLow  = ((cur - minObj.ratio) / minObj.ratio) * 100;
+    rows.push({
+      key: 'Cycle context',
+      val: `Cycle high <strong>${fmt(maxObj.ratio, 4)}</strong> in ${fmtDate(maxObj.date)} (you are <span class="em">${fmt(distHigh,0)}%</span> below it). ` +
+           `Cycle low <strong>${fmt(minObj.ratio, 4)}</strong> in ${fmtDate(minObj.date)} (you are <span class="em">+${fmt(distLow,0)}%</span> above it). ` +
+           (cur > 0.5 ? `At <strong>${fmt(cur,4)}</strong> you are firmly in <span style="color:${COLORS.gold}">supercycle territory</span> — the regime that produced the 2000s commodity bull market.`
+            : cur > 0.3 ? `At <strong>${fmt(cur,4)}</strong> you are in rotation territory — neither dominant regime, but moving.`
+            : `At <strong>${fmt(cur,4)}</strong> you are in financial-asset dominance territory — the 2010s regime.`)
+    });
+    rows.push({
+      key: 'What to do',
+      val: sl >= 0 && cur > 0.5
+        ? `<span style="color:${COLORS.gold}">Maintain or grow gold/commodity exposure</span>. Real-asset cycles run for 14-22 years historically — you are early.`
+        : sl >= 0
+        ? `Gold gaining ground but ratio still below supercycle threshold. <span style="color:${COLORS.amber}">Accumulate on dips</span> — rotation may be early.`
+        : `Equities winning the short term. <span style="color:#CCC">Don't fight tape</span> but don't abandon the structural gold thesis either. Mixed environment.`
+    });
+  }
+
+  el.innerHTML = `<div class="explainer-title">WHAT THIS MEANS — PLAIN ENGLISH</div>` +
+    rows.map(r => `<div class="explainer-row"><div class="explainer-key">${r.key}</div><div class="explainer-val">${r.val}</div></div>`).join('');
 }
 
 function sparklineConfig(data, color, fmtFn=null) {
@@ -1028,13 +1189,13 @@ function sparklineConfig(data, color, fmtFn=null) {
       interaction: { intersect: false, mode: 'index' },
       scales: {
         x: { type: 'time', display: false, grid: { display: false } },
-        y: { position: 'right', grid: { color: '#1a1a1a' },
-             ticks: { color: '#555', font: { size: 10 }, maxTicksLimit: 4,
+        y: { position: 'right', grid: { color: '#222' },
+             ticks: { color: '#A0A0A0', font: { size: 10 }, maxTicksLimit: 4,
                       callback: fmtFn ? fmtFn : v => fmt(v, 0) } },
       },
       plugins: {
         legend: { display: false },
-        tooltip: { backgroundColor: '#0a0a0a', borderColor: '#222', borderWidth: 1, titleColor: '#E5E5E5', bodyColor: '#CCC' },
+        tooltip: { backgroundColor: '#0a0a0a', borderColor: '#3a3a3a', borderWidth: 1, titleColor: '#FFFFFF', bodyColor: '#E5E5E5' },
       },
     },
   };
@@ -1085,7 +1246,7 @@ function renderBuffett() {
   if (cur > 200) sig = { v: 'EXTREME CAUTION', c: COLORS.red, s: 'Unprecedented territory' };
   else if (cur > 135) sig = { v: 'SIGNIFICANTLY OVERVALUED', c: COLORS.orange, s: 'Well above historical norms' };
   else if (cur > 115) sig = { v: 'OVERVALUED', c: COLORS.amber, s: 'Above fair value range' };
-  else if (cur > 90)  sig = { v: 'FAIR VALUE', c: '#888', s: 'Within normal range', border: '#444' };
+  else if (cur > 90)  sig = { v: 'FAIR VALUE', c: '#BBBBBB', s: 'Within normal range', border: '#666' };
   else if (cur > 75)  sig = { v: 'UNDERVALUED', c: COLORS.green, s: 'Below historical mean' };
   else                sig = { v: 'STRONG BUY SIGNAL', c: COLORS.green, s: 'Historically rare opportunity' };
   statCard(statsEl, { label: 'SIGNAL', value: sig.v, color: sig.c, sub: sig.s, borderColor: sig.border || sig.c, signal: true });
@@ -1126,7 +1287,7 @@ function renderBuffett() {
     z4: { type:'box', yMin:135, yMax:200, backgroundColor:'rgba(255,68,68,0.08)', borderWidth:0 },
     z5: { type:'box', yMin:200, yMax:400, backgroundColor:'rgba(255,68,68,0.15)', borderWidth:0 },
     l1: { type:'line', yMin:75, yMax:75, borderColor:COLORS.green, borderDash:[4,4], borderWidth:1, label:{ display:true, content:'Undervalued', position:'end', color:COLORS.green, font:{size:10}, backgroundColor:'transparent' } },
-    l2: { type:'line', yMin:90, yMax:90, borderColor:'#888', borderDash:[4,4], borderWidth:1, label:{ display:true, content:'Fair Value', position:'end', color:'#888', font:{size:10}, backgroundColor:'transparent' } },
+    l2: { type:'line', yMin:90, yMax:90, borderColor:'#AAA', borderDash:[4,4], borderWidth:1, label:{ display:true, content:'Fair Value', position:'end', color:'#CCC', font:{size:10}, backgroundColor:'transparent' } },
     l3: { type:'line', yMin:115, yMax:115, borderColor:COLORS.amber, borderDash:[4,4], borderWidth:1, label:{ display:true, content:'Overvalued', position:'end', color:COLORS.amber, font:{size:10}, backgroundColor:'transparent' } },
     l4: { type:'line', yMin:135, yMax:135, borderColor:COLORS.orange, borderDash:[4,4], borderWidth:1, label:{ display:true, content:'Strongly Overvalued', position:'end', color:COLORS.orange, font:{size:10}, backgroundColor:'transparent' } },
     l5: { type:'line', yMin:200, yMax:200, borderColor:COLORS.red, borderDash:[4,4], borderWidth:1, label:{ display:true, content:'Extreme / Unprecedented', position:'end', color:COLORS.red, font:{size:10}, backgroundColor:'transparent' } },
@@ -1146,14 +1307,14 @@ function renderBuffett() {
       maintainAspectRatio: false, animation: false,
       interaction: { intersect: false, mode: 'index' },
       scales: {
-        x: { type: 'time', grid: { color: '#1a1a1a' }, ticks: { color: '#666' } },
-        y: { position: 'right', grid: { color: '#1a1a1a' }, ticks: { color: '#666', callback: v => v + '%' } },
+        x: { type: 'time', grid: { color: '#222' }, ticks: { color: '#B0B0B0' } },
+        y: { position: 'right', grid: { color: '#222' }, ticks: { color: '#B0B0B0', callback: v => v + '%' } },
       },
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: '#0a0a0a', borderColor: '#222', borderWidth: 1,
-          titleColor: '#E5E5E5', bodyColor: '#CCC',
+          backgroundColor: '#0a0a0a', borderColor: '#3a3a3a', borderWidth: 1,
+          titleColor: '#FFFFFF', bodyColor: '#E5E5E5',
           callbacks: {
             label: (ctx) => {
               const idx = ctx.dataIndex; const d = view[idx];
@@ -1178,82 +1339,93 @@ function renderBuffett() {
 
 // ============================================================
 // MACRO PULSE TAB
+// Curve thresholds for 10Y-5Y spread (naturally smaller than 10Y-2Y):
+//   > 0.5pp  = STEEP    (healthy, banks profit, growth ahead)
+//   0 to 0.5 = FLAT     (caution, lending margin compressed)
+//   < 0      = INVERTED (recession warning)
 // ============================================================
 function renderPulse() {
   document.getElementById('title').textContent = 'MACRO PULSE';
-  const dxyAll = STATE.series.dxy, y2All = STATE.series.y2, y10All = STATE.series.y10, spAll = STATE.series.spread;
+  const dxyAll = STATE.series.dxy;
+  const y13All = STATE.series.y13, y5All = STATE.series.y5, y10All = STATE.series.y10;
+  const spAll  = STATE.series.spread;
   if (!dxyAll.length) return;
 
   const dxyView = filterRange(dxyAll, STATE.pulseRange);
-  const y2View  = filterRange(y2All, STATE.pulseRange);
+  const y13View = filterRange(y13All, STATE.pulseRange);
+  const y5View  = filterRange(y5All, STATE.pulseRange);
   const y10View = filterRange(y10All, STATE.pulseRange);
   const spView  = filterRange(spAll, STATE.pulseRange);
 
-  const dxyCur = last(dxyView).v, y2Cur = last(y2View).v, y10Cur = last(y10View).v, spCur = last(spView).v;
-  const dxySl = slope(dxyView.slice(-20), 'v');
-  const y2Sl  = slope(y2View.slice(-20), 'v');
-  const y10Sl = slope(y10View.slice(-20), 'v');
-  const spSl  = slope(spView.slice(-20), 'v');
+  const dxyCur = last(dxyView).v;
+  const y13Cur = last(y13View).v, y5Cur = last(y5View).v, y10Cur = last(y10View).v;
+  const spCur  = last(spView).v;
+  const dxySl  = slope(dxyView.slice(-20), 'v');
+  const y13Sl  = slope(y13View.slice(-20), 'v');
+  const y5Sl   = slope(y5View.slice(-20), 'v');
+  const y10Sl  = slope(y10View.slice(-20), 'v');
+  const spSl   = slope(spView.slice(-20), 'v');
 
-  // Stats
+  // STATS
   const sEl = document.getElementById('pulseStats');
   clearStats(sEl);
   statCard(sEl, { label:'DXY NOW', value: fmt(dxyCur, 2) });
   statCard(sEl, { label:'DXY TREND',
     value: dxySl >= 0 ? 'Strengthening ↑' : 'Weakening ↓',
-    color: dxySl >= 0 ? COLORS.orange : COLORS.green });
-  statCard(sEl, { label:'2Y YIELD', value: fmt(y2Cur, 2) + '%' });
-  statCard(sEl, { label:'10Y YIELD', value: fmt(y10Cur, 2) + '%' });
-  statCard(sEl, { label:'SPREAD NOW', value: fmt(spCur, 2) + 'pp',
-    color: spCur >= 0 ? COLORS.green : COLORS.red });
-  statCard(sEl, { label:'SPREAD TREND',
-    value: spSl >= 0 ? 'Steepening ↑' : 'Flattening ↓',
-    color: spSl >= 0 ? COLORS.green : COLORS.orange });
+    color: dxySl >= 0 ? COLORS.orange : COLORS.green,
+    sub: dxySl >= 0 ? 'Tighter global money' : 'Looser global money' });
+  statCard(sEl, { label:'13W T-BILL', value: fmt(y13Cur, 2) + '%', sub: y13Sl<0?'Falling ↓':'Rising ↑' });
+  statCard(sEl, { label:'5Y YIELD',   value: fmt(y5Cur, 2) + '%',  sub: y5Sl<0?'Falling ↓':'Rising ↑' });
+  statCard(sEl, { label:'10Y YIELD',  value: fmt(y10Cur, 2) + '%', sub: y10Sl<0?'Falling ↓':'Rising ↑' });
+  statCard(sEl, { label:'SPREAD (10Y-5Y)', value: fmt(spCur, 2) + 'pp',
+    color: spCur >= 0.5 ? COLORS.green : (spCur >= 0 ? COLORS.amber : COLORS.red),
+    sub: spSl >= 0 ? 'Steepening ↑' : 'Flattening ↓',
+    subColor: spSl >= 0 ? COLORS.green : COLORS.orange });
 
-  let cs, csCol;
-  if (spCur > 1.0) { cs = 'STEEP'; csCol = COLORS.green; }
-  else if (spCur > 0) { cs = 'FLAT'; csCol = COLORS.amber; }
-  else { cs = 'INVERTED'; csCol = COLORS.red; }
-  statCard(sEl, { label:'CURVE STATUS', value: cs, color: csCol });
+  let cs, csCol, csSub;
+  if (spCur > 0.5)      { cs = 'STEEP';    csCol = COLORS.green;  csSub = 'Healthy — banks profit'; }
+  else if (spCur > 0)   { cs = 'FLAT';     csCol = COLORS.amber;  csSub = 'Caution — lending squeeze'; }
+  else                  { cs = 'INVERTED'; csCol = COLORS.red;    csSub = 'Recession warning'; }
+  statCard(sEl, { label:'CURVE STATUS', value: cs, color: csCol, sub: csSub });
 
   // WARSH SIGNAL
   let w;
-  if (spCur > 1.0 && dxySl < 0 && y2Sl < 0)
-    w = { v:'SCISSOR WORKING', c: COLORS.green, s:'Short end falling, curve steepening, dollar easing' };
-  else if (spCur > 0.5 && spCur <= 1.0 && spSl > 0 && y2Sl < 0)
-    w = { v:'SCISSOR STARTING', c: COLORS.amber, s:'Steepening underway, watch for acceleration' };
+  if (spCur > 0.5 && dxySl < 0 && y13Sl < 0)
+    w = { v:'SCISSOR WORKING', c: COLORS.green, s:'Short falling, curve steepening, $ easing' };
+  else if (spCur > 0.25 && spSl > 0 && y13Sl < 0)
+    w = { v:'SCISSOR STARTING', c: COLORS.amber, s:'Steepening underway' };
   else if (spCur < 0)
-    w = { v:'CURVE INVERTED', c: COLORS.red, s:'Recession signal — Warsh plan cannot proceed' };
+    w = { v:'CURVE INVERTED', c: COLORS.red, s:'Plan blocked — recession risk' };
   else if (spCur > 0 && dxySl > 0 && y10Sl > 0)
-    w = { v:'HAWKISH PRESSURE', c: COLORS.orange, s:'Dollar and long rates rising — tightening bias' };
-  else if (spCur >= 0 && spCur < 0.5 && spSl <= 0)
-    w = { v:'SCISSOR STALLED', c: COLORS.orange, s:'Curve too flat — banks not incentivised' };
+    w = { v:'HAWKISH PRESSURE', c: COLORS.orange, s:'$ + long rates rising' };
+  else if (spCur >= 0 && spCur < 0.25 && spSl <= 0)
+    w = { v:'SCISSOR STALLED', c: COLORS.orange, s:'Curve too flat' };
   else
-    w = { v:'MIXED SIGNALS', c: COLORS.grey, s:'No clear scissor regime' };
+    w = { v:'MIXED SIGNALS', c: COLORS.grey, s:'No clear regime' };
   statCard(sEl, { label:'WARSH SIGNAL', value: w.v, color: w.c, sub: w.s, borderColor: w.c, signal: true });
 
-  // Cross-tab banner
+  // CROSS-TAB BANNER
   const bannerEl = document.getElementById('pulseCrossBanner');
   bannerEl.innerHTML = '';
-  // Priority A > C > B
   const goldSpxSl = STATE.series.goldSpx.length > 20 ? slope(STATE.series.goldSpx.slice(-20), 'ratio') : 0;
   if (y10Cur > 4.5 && dxySl > 0 && goldSpxSl > 0) {
     bannerEl.innerHTML = `<div class="cross-banner red">⚠ IRAN STRESS SIGNAL: Long rates elevated, dollar strengthening, gold outperforming. Bond market under pressure — consistent with Hormuz disruption scenario.</div>`;
-  } else if (y10Cur > 4.5 && dxyCur > 104 && spCur < 0.5) {
+  } else if (y10Cur > 4.5 && dxyCur > 104 && spCur < 0.25) {
     bannerEl.innerHTML = `<div class="cross-banner orange">⚠ STAGFLATION SIGNAL: High long rates, strong dollar, flat curve — conditions consistent with persistent inflation constraining growth. Worst case for equities.</div>`;
   } else {
-    // count y2 falling streak
     let streak = 0;
-    for (let i = y2All.length - 1; i > 0; i--) {
-      if (y2All[i].v < y2All[i-1].v) streak++;
-      else break;
+    for (let i = y13All.length - 1; i > 0; i--) {
+      if (y13All[i].v < y13All[i-1].v) streak++; else break;
     }
     if (streak >= 10 && dxySl < 0 && spSl > 0) {
       bannerEl.innerHTML = `<div class="cross-banner green">◆ PIVOT SIGNAL: Short rates falling, dollar weakening, curve steepening. Markets pricing in rate cuts — watch for Warsh confirmation.</div>`;
     }
   }
 
-  // CHARTS — DXY
+  // PLAIN-ENGLISH READOUT
+  renderPulseReadout({ dxyCur, dxySl, y13Cur, y13Sl, y5Cur, y5Sl, y10Cur, y10Sl, spCur, spSl, cs });
+
+  // CHART — DXY
   destroyChart('dxy');
   STATE.charts.dxy = new Chart(document.getElementById('dxyChart').getContext('2d'), {
     type: 'line',
@@ -1261,69 +1433,79 @@ function renderPulse() {
     options: lineChartOptions({
       yCallback: v => fmt(v,1),
       annotations: {
-        d1: { type:'line', yMin:114, yMax:114, borderColor:COLORS.red, borderDash:[4,4], borderWidth:1, label:{display:true, content:'2022 Peak', position:'end', color:COLORS.red, font:{size:10}, backgroundColor:'transparent'} },
-        d2: { type:'line', yMin:100, yMax:100, borderColor:'#888', borderDash:[4,4], borderWidth:1, label:{display:true, content:'Parity', position:'end', color:'#888', font:{size:10}, backgroundColor:'transparent'} },
-        d3: { type:'line', yMin:89, yMax:89, borderColor:COLORS.green, borderDash:[4,4], borderWidth:1, label:{display:true, content:'2021 Low', position:'end', color:COLORS.green, font:{size:10}, backgroundColor:'transparent'} },
+        d1: { type:'line', yMin:114, yMax:114, borderColor:COLORS.red, borderDash:[4,4], borderWidth:1, label:{display:true, content:'2022 Peak (strongest $)', position:'end', color:COLORS.red, font:{size:10}, backgroundColor:'transparent'} },
+        d2: { type:'line', yMin:100, yMax:100, borderColor:'#999', borderDash:[4,4], borderWidth:1, label:{display:true, content:'Parity', position:'end', color:'#BBB', font:{size:10}, backgroundColor:'transparent'} },
+        d3: { type:'line', yMin:89, yMax:89, borderColor:COLORS.green, borderDash:[4,4], borderWidth:1, label:{display:true, content:'2021 Low (weakest $)', position:'end', color:COLORS.green, font:{size:10}, backgroundColor:'transparent'} },
       },
     }),
   });
 
-  // CHARTS — Spread (segment-colored)
+  // CHART — Spread 10Y - 5Y
   destroyChart('spread');
   STATE.charts.spread = new Chart(document.getElementById('spreadChart').getContext('2d'), {
     type: 'line',
     data: {
       datasets: [{
         data: spView.map(d => ({x:d.ms, y:d.v})),
-        borderColor: ctx => {
-          const y = ctx.p1?.parsed?.y;
-          return y >= 0 ? COLORS.green : COLORS.red;
-        },
+        borderColor: COLORS.white,
         segment: {
-          borderColor: ctx => ctx.p1.parsed.y >= 0 ? COLORS.green : COLORS.red,
+          borderColor: ctx => (ctx.p1.parsed.y >= 0 ? COLORS.green : COLORS.red),
         },
-        borderWidth: 2, pointRadius: 0, tension: 0.05,
-        spanGaps: true,
+        borderWidth: 2, pointRadius: 0, tension: 0.05, spanGaps: true,
       }],
     },
     options: lineChartOptions({
       yCallback: v => fmt(v,2) + 'pp',
       annotations: {
-        z1: { type:'box', yMin:1.0, yMax:5, backgroundColor:'rgba(0,255,136,0.06)', borderWidth:0 },
-        z2: { type:'box', yMin:0, yMax:1.0, backgroundColor:'rgba(240,180,41,0.04)', borderWidth:0 },
-        z3: { type:'box', yMin:-5, yMax:0, backgroundColor:'rgba(255,68,68,0.08)', borderWidth:0 },
-        l0: { type:'line', yMin:0, yMax:0, borderColor:COLORS.red, borderWidth:2, label:{display:true, content:'Inversion Line', position:'end', color:COLORS.red, font:{size:10}, backgroundColor:'transparent'} },
-        l1: { type:'line', yMin:1.0, yMax:1.0, borderColor:COLORS.green, borderDash:[4,4], borderWidth:1, label:{display:true, content:'Healthy Range', position:'end', color:COLORS.green, font:{size:10}, backgroundColor:'transparent'} },
-        l2: { type:'line', yMin:1.5, yMax:1.5, borderColor:COLORS.amber, borderDash:[4,4], borderWidth:1, label:{display:true, content:'Steep / Ideal for Banks', position:'end', color:COLORS.amber, font:{size:10}, backgroundColor:'transparent'} },
-        l3: { type:'line', yMin:-0.5, yMax:-0.5, borderColor:COLORS.red, borderDash:[4,4], borderWidth:1, label:{display:true, content:'Deep Inversion', position:'end', color:COLORS.red, font:{size:10}, backgroundColor:'transparent'} },
+        z1: { type:'box', yMin:0.5, yMax:5, backgroundColor:'rgba(0,255,136,0.06)', borderWidth:0 },
+        z2: { type:'box', yMin:0,   yMax:0.5, backgroundColor:'rgba(240,180,41,0.05)', borderWidth:0 },
+        z3: { type:'box', yMin:-5,  yMax:0, backgroundColor:'rgba(255,68,68,0.08)', borderWidth:0 },
+        l0: { type:'line', yMin:0,  yMax:0, borderColor:COLORS.red, borderWidth:2, label:{display:true, content:'Inversion (recession)', position:'end', color:COLORS.red, font:{size:10}, backgroundColor:'transparent'} },
+        l1: { type:'line', yMin:0.5, yMax:0.5, borderColor:COLORS.green, borderDash:[4,4], borderWidth:1, label:{display:true, content:'Steep / Healthy', position:'end', color:COLORS.green, font:{size:10}, backgroundColor:'transparent'} },
+        l2: { type:'line', yMin:1.0, yMax:1.0, borderColor:COLORS.amber, borderDash:[4,4], borderWidth:1, label:{display:true, content:'Very Steep / Strong Growth', position:'end', color:COLORS.amber, font:{size:10}, backgroundColor:'transparent'} },
       },
       tooltipCallbacks: {
         label: (ctx) => {
           const idx = ctx.dataIndex; const date = spView[idx]?.date;
-          const y2v = y2All.find(d => d.date === date)?.v;
+          const y5v = y5All.find(d => d.date === date)?.v;
           const y10v = y10All.find(d => d.date === date)?.v;
-          return [`Spread: ${fmt(ctx.parsed.y, 2)}pp`, `2Y: ${fmt(y2v, 2)}%`, `10Y: ${fmt(y10v, 2)}%`];
+          return [`Spread: ${fmt(ctx.parsed.y, 2)}pp`, `5Y:  ${fmt(y5v, 2)}%`, `10Y: ${fmt(y10v, 2)}%`];
         },
       },
     }),
   });
 
-  // 2Y
-  destroyChart('y2');
-  STATE.charts.y2 = new Chart(document.getElementById('y2Chart').getContext('2d'), {
+  // CHART — 13W T-Bill
+  destroyChart('y13');
+  STATE.charts.y13 = new Chart(document.getElementById('y13Chart').getContext('2d'), {
     type: 'line',
-    data: { datasets: [{ data: y2View.map(d => ({x:d.ms, y:d.v})), borderColor: COLORS.blue, borderWidth: 2, pointRadius: 0, tension: 0.05 }] },
+    data: { datasets: [{ data: y13View.map(d => ({x:d.ms, y:d.v})), borderColor: COLORS.blue, borderWidth: 2, pointRadius: 0, tension: 0.05 }] },
     options: lineChartOptions({
       yCallback: v => fmt(v,2) + '%',
       annotations: {
-        l1: { type:'line', yMin:5.25, yMax:5.25, borderColor:COLORS.red, borderDash:[4,4], borderWidth:1, label:{display:true, content:'2023 Peak', position:'end', color:COLORS.red, font:{size:10}, backgroundColor:'transparent'} },
-        l2: { type:'line', yMin:4, yMax:4, borderColor:'#888', borderDash:[4,4], borderWidth:1, label:{display:true, content:'Neutral Rate', position:'end', color:'#888', font:{size:10}, backgroundColor:'transparent'} },
-        l3: { type:'line', yMin:2, yMax:2, borderColor:COLORS.green, borderDash:[4,4], borderWidth:1, label:{display:true, content:'Pre-hike', position:'end', color:COLORS.green, font:{size:10}, backgroundColor:'transparent'} },
+        l1: { type:'line', yMin:5.4, yMax:5.4, borderColor:COLORS.red, borderDash:[4,4], borderWidth:1, label:{display:true, content:'2023 Peak', position:'end', color:COLORS.red, font:{size:10}, backgroundColor:'transparent'} },
+        l2: { type:'line', yMin:4,   yMax:4,   borderColor:'#AAA', borderDash:[4,4], borderWidth:1, label:{display:true, content:'Neutral est.', position:'end', color:'#CCC', font:{size:10}, backgroundColor:'transparent'} },
+        l3: { type:'line', yMin:0.1, yMax:0.1, borderColor:COLORS.green, borderDash:[4,4], borderWidth:1, label:{display:true, content:'ZIRP era', position:'end', color:COLORS.green, font:{size:10}, backgroundColor:'transparent'} },
       },
     }),
   });
 
-  // 10Y
+  // CHART — 5Y
+  destroyChart('y5');
+  STATE.charts.y5 = new Chart(document.getElementById('y5Chart').getContext('2d'), {
+    type: 'line',
+    data: { datasets: [{ data: y5View.map(d => ({x:d.ms, y:d.v})), borderColor: COLORS.silver, borderWidth: 2, pointRadius: 0, tension: 0.05 }] },
+    options: lineChartOptions({
+      yCallback: v => fmt(v,2) + '%',
+      annotations: {
+        l1: { type:'line', yMin:4.9, yMax:4.9, borderColor:COLORS.red, borderDash:[4,4], borderWidth:1, label:{display:true, content:'2023 Peak', position:'end', color:COLORS.red, font:{size:10}, backgroundColor:'transparent'} },
+        l2: { type:'line', yMin:3.5, yMax:3.5, borderColor:'#AAA', borderDash:[4,4], borderWidth:1, label:{display:true, content:'Neutral', position:'end', color:'#CCC', font:{size:10}, backgroundColor:'transparent'} },
+        l3: { type:'line', yMin:1.5, yMax:1.5, borderColor:COLORS.green, borderDash:[4,4], borderWidth:1, label:{display:true, content:'Pre-hike', position:'end', color:COLORS.green, font:{size:10}, backgroundColor:'transparent'} },
+      },
+    }),
+  });
+
+  // CHART — 10Y
   destroyChart('y10');
   STATE.charts.y10 = new Chart(document.getElementById('y10Chart').getContext('2d'), {
     type: 'line',
@@ -1331,51 +1513,99 @@ function renderPulse() {
     options: lineChartOptions({
       yCallback: v => fmt(v,2) + '%',
       annotations: {
-        l1: { type:'line', yMin:5, yMax:5, borderColor:COLORS.red, borderDash:[4,4], borderWidth:1, label:{display:true, content:'2023 Peak / Danger', position:'end', color:COLORS.red, font:{size:10}, backgroundColor:'transparent'} },
+        l1: { type:'line', yMin:5,   yMax:5,   borderColor:COLORS.red, borderDash:[4,4], borderWidth:1, label:{display:true, content:'Danger Zone', position:'end', color:COLORS.red, font:{size:10}, backgroundColor:'transparent'} },
         l2: { type:'line', yMin:4.5, yMax:4.5, borderColor:COLORS.orange, borderDash:[4,4], borderWidth:1, label:{display:true, content:'Resistance', position:'end', color:COLORS.orange, font:{size:10}, backgroundColor:'transparent'} },
-        l3: { type:'line', yMin:3.5, yMax:3.5, borderColor:'#888', borderDash:[4,4], borderWidth:1, label:{display:true, content:'Support', position:'end', color:'#888', font:{size:10}, backgroundColor:'transparent'} },
-        l4: { type:'line', yMin:2, yMax:2, borderColor:COLORS.green, borderDash:[4,4], borderWidth:1, label:{display:true, content:'Pre-hike', position:'end', color:COLORS.green, font:{size:10}, backgroundColor:'transparent'} },
+        l3: { type:'line', yMin:3.5, yMax:3.5, borderColor:'#AAA', borderDash:[4,4], borderWidth:1, label:{display:true, content:'Support', position:'end', color:'#CCC', font:{size:10}, backgroundColor:'transparent'} },
+        l4: { type:'line', yMin:2,   yMax:2,   borderColor:COLORS.green, borderDash:[4,4], borderWidth:1, label:{display:true, content:'Pre-hike', position:'end', color:COLORS.green, font:{size:10}, backgroundColor:'transparent'} },
       },
     }),
   });
 
-  // Interpretation
+  // INTERPRETATION + WARSH PLAYBOOK
   let interp = '';
-  if (spCur < 0.5 && dxySl > 0 && y10Sl > 0)
-    interp = "The yield curve remains dangerously flat with the dollar strengthening — a combination that historically signals tight financial conditions. The long end is rising faster than the short end can fall, which is the exact opposite of what Warsh needs. Banks have little incentive to absorb Treasury supply at these spreads. Watch for the Fed to signal a dovish pivot or for the bond market to come under visible stress.";
-  else if (spCur > 1.0 && dxySl < 0)
-    interp = "The yield curve is steepening and the dollar is weakening — the twin hallmarks of easing financial conditions. This is the environment Warsh's plan requires: banks can borrow cheap and lend long, making Treasury absorption profitable. Risk assets historically perform well in this configuration. The scissor trade is operational.";
+  if (spCur < 0.25 && dxySl > 0 && y10Sl > 0)
+    interp = "The yield curve is dangerously flat and the dollar is strengthening — financial conditions are tight. Long rates are rising faster than short rates can fall, the opposite of what Warsh needs. Banks have little reason to absorb new Treasury supply. Watch for a dovish Fed pivot or a bond market dislocation.";
+  else if (spCur > 0.5 && dxySl < 0)
+    interp = "The curve is steepening and the dollar is weakening — the textbook signature of easing financial conditions. Banks can borrow cheap (short) and lend long, making Treasury absorption profitable. The Warsh scissor trade is operational.";
   else if (spCur > 0 && spSl > 0 && dxySl < 0)
-    interp = "Early signs of the steepening trade emerging. The spread between short and long rates is widening, and dollar weakness suggests markets are beginning to price in future liquidity. Not yet at levels that fully incentivise bank Treasury buying, but the direction is constructive.";
-  else if (y10Cur > 4.5 && spCur < 0.5)
-    interp = "Long-term rates above 4.5% with a flat curve is a stress signal for the Treasury market. At these levels the US government's interest expense is compounding rapidly, and the $8 trillion refinancing wall becomes increasingly costly. This is the scenario that forces Warsh's hand — either signal dovish intent or risk a bond market dislocation.";
+    interp = "Early signs of the steepening trade emerging. The 10Y-5Y spread is widening from a low base and dollar weakness suggests markets are pricing in future liquidity. Constructive but not yet at full bank-incentive levels.";
+  else if (y10Cur > 4.5 && spCur < 0.25)
+    interp = "Long rates above 4.5% with a flat curve is a stress signal. US interest expense is compounding rapidly into the $8T refinancing wall. The Fed is being forced toward either dovish signalling or a bond market dislocation.";
   else
-    interp = "Macro conditions are mixed. The yield curve sits at " + fmt(spCur, 2) + "pp with the dollar " + (dxySl >= 0 ? 'strengthening' : 'weakening') + " — neither clearly supportive nor obstructive of the Warsh plan. Watch the 2Y yield direction over the next sessions for confirmation of pivot intent.";
+    interp = `Mixed conditions. The 10Y-5Y spread sits at ${fmt(spCur,2)}pp with the dollar ${dxySl>=0?'strengthening':'weakening'} — neither clearly supportive nor obstructive of the Warsh plan. Watch the 13W T-bill direction for confirmation of Fed pivot intent.`;
   document.getElementById('pulseInterp').textContent = interp;
 
-  // Warsh playbook
   const tbody = document.querySelector('#warshTable tbody');
   tbody.innerHTML = '';
   const conds = [
-    { step:'1. Cut short rates', need:'2Y yield falling',  status: fmt(y2Cur, 2)+'% '+(y2Sl<0?'↓':'↑'),  ok: y2Sl < 0 },
-    { step:'2. Steepen curve',  need:'Spread > 1.0%',      status: fmt(spCur, 2)+'pp',                  ok: spCur > 1.0 },
-    { step:'3. Dollar easing',  need:'DXY falling',        status: fmt(dxyCur,2)+' '+(dxySl<0?'↓':'↑'), ok: dxySl < 0 },
-    { step:'4. Long end stable',need:'10Y < 4.5%',         status: fmt(y10Cur,2)+'%',                   ok: y10Cur < 4.5 },
+    { step:'1. Cut short rates',  need:'13W T-bill falling',  status: fmt(y13Cur, 2)+'% '+(y13Sl<0?'↓':'↑'), ok: y13Sl < 0 },
+    { step:'2. Steepen curve',    need:'10Y-5Y spread > 0.5%',status: fmt(spCur, 2)+'pp',                    ok: spCur > 0.5 },
+    { step:'3. Dollar easing',    need:'DXY falling',         status: fmt(dxyCur,2)+' '+(dxySl<0?'↓':'↑'),  ok: dxySl < 0 },
+    { step:'4. Long end stable',  need:'10Y < 4.5%',          status: fmt(y10Cur,2)+'%',                    ok: y10Cur < 4.5 },
   ];
   conds.forEach(c => {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td style="color:#888">${c.step}</td>
-                    <td style="color:#666">${c.need}</td>
-                    <td style="color:#CCC">${c.status}</td>
+    tr.innerHTML = `<td style="color:#E0E0E0">${c.step}</td>
+                    <td style="color:#B0B0B0">${c.need}</td>
+                    <td style="color:#FFFFFF">${c.status}</td>
                     <td style="color:${c.ok?COLORS.green:COLORS.red}; font-weight:600">${c.ok?'✓':'✗'}</td>`;
     tbody.appendChild(tr);
   });
   const okCount = conds.filter(c=>c.ok).length;
   const sumEl = document.getElementById('warshSummary');
-  if (okCount === 4) { sumEl.textContent = 'All systems go — Warsh plan on track.'; sumEl.style.color = COLORS.green; }
+  if (okCount === 4)      { sumEl.textContent = 'All systems go — Warsh plan on track.'; sumEl.style.color = COLORS.green; }
   else if (okCount === 3) { sumEl.textContent = 'Plan mostly intact — monitor the failing condition.'; sumEl.style.color = COLORS.amber; }
   else if (okCount === 2) { sumEl.textContent = 'Plan under stress — significant obstacles remain.'; sumEl.style.color = COLORS.orange; }
-  else { sumEl.textContent = 'Plan broken — macro conditions do not support the steepening trade.'; sumEl.style.color = COLORS.red; }
+  else                    { sumEl.textContent = 'Plan broken — macro conditions do not support the steepening trade.'; sumEl.style.color = COLORS.red; }
+}
+
+// Plain-English readout for the Macro Pulse tab
+function renderPulseReadout(s) {
+  const el = document.getElementById('pulseReadout');
+  const rows = [];
+
+  // DXY
+  const dxyState = s.dxySl >= 0 ? 'STRENGTHENING' : 'WEAKENING';
+  const dxyMeans = s.dxySl >= 0
+    ? 'Dollar is gaining vs other currencies. Global liquidity is tightening — bad for commodities, gold, and emerging markets. Risk assets historically struggle in this environment.'
+    : 'Dollar is losing ground vs other currencies. Global liquidity is loosening — supportive for commodities, gold, and risk assets. The classic backdrop for rallies.';
+  rows.push({ key: `DXY ${dxyState}`, val: dxyMeans });
+
+  // Curve status
+  let curveMeans;
+  if (s.cs === 'STEEP') {
+    curveMeans = 'Long rates well above medium rates. Banks profit from borrowing short and lending long — healthy lending environment. Historically precedes economic expansion. Action: pro-cyclical exposure (equities, financials) tends to work.';
+  } else if (s.cs === 'FLAT') {
+    curveMeans = 'Long and medium rates close together. Banks earn little from lending — credit conditions tightening. Late-cycle signal. Action: monitor for further flattening or inversion; favour quality over duration.';
+  } else {
+    curveMeans = 'Medium rates ABOVE long rates — an inversion. The market is pricing slower growth ahead. This is the strongest recession signal in finance, historically preceding downturns by 6-18 months. Action: defensive positioning, raise cash, favour long-duration Treasuries.';
+  }
+  rows.push({ key: `Curve is ${s.cs}`, val: curveMeans });
+
+  // Spread direction
+  const spDir = s.spSl >= 0 ? 'STEEPENING' : 'FLATTENING';
+  const spMeans = s.spSl >= 0
+    ? 'The gap between long and medium rates is WIDENING. Either long rates are rising faster than medium, or medium rates are falling faster than long. Usually a positive signal — growth expectations improving or rate cuts being priced in. Action: this is what Warsh needs.'
+    : 'The gap between long and medium rates is NARROWING. Either long rates falling or medium rates rising. Late-cycle warning — bank lending margins compress, recession risk rises. Action: caution on cyclicals and small caps.';
+  rows.push({ key: `Spread ${spDir}`, val: spMeans });
+
+  // Short rate (13W)
+  const y13Dir = s.y13Sl < 0 ? 'FALLING' : 'RISING';
+  const y13Means = s.y13Sl < 0
+    ? `Short rate at ${fmt(s.y13Cur,2)}% and falling. Markets are pricing Fed rate cuts. Bullish for risk assets, gold, and bonds. Action: this is the precondition for the Warsh scissor.`
+    : `Short rate at ${fmt(s.y13Cur,2)}% and rising. Markets are pricing Fed hold or more hikes. Tight policy continues. Action: defensive bias; cash earns a real return.`;
+  rows.push({ key: `Short rate ${y13Dir}`, val: y13Means });
+
+  // 10Y level
+  let y10Means;
+  if (s.y10Cur > 4.8)      y10Means = `10Y at ${fmt(s.y10Cur,2)}% — DANGER ZONE. Government interest expense compounding fast. Bond market stress likely. Action: watch for forced Fed pivot or accident.`;
+  else if (s.y10Cur > 4.5) y10Means = `10Y at ${fmt(s.y10Cur,2)}% — elevated. Pressure on Treasury, mortgage, and equity valuations. Action: monitor for breakout above 5% or pullback below 4.3%.`;
+  else if (s.y10Cur > 3.5) y10Means = `10Y at ${fmt(s.y10Cur,2)}% — normalised. Within recent post-pandemic range. Action: neutral; direction matters more than level here.`;
+  else                     y10Means = `10Y at ${fmt(s.y10Cur,2)}% — low end of post-pandemic range. Reflects either growth fears or genuine disinflation. Action: bullish for duration assets.`;
+  rows.push({ key: `10Y Yield = ${fmt(s.y10Cur,2)}%`, val: y10Means });
+
+  el.innerHTML = `<div class="explainer-title">WHAT THIS MEANS — PLAIN ENGLISH</div>` +
+    rows.map(r => `<div class="explainer-row"><div class="explainer-key">${r.key}</div><div class="explainer-val">${r.val}</div></div>`).join('');
 }
 
 function lineChartOptions(opts={}) {
@@ -1384,14 +1614,14 @@ function lineChartOptions(opts={}) {
     animation: false,
     interaction: { intersect: false, mode: 'index' },
     scales: {
-      x: { type: 'time', grid: { color: '#1a1a1a' }, ticks: { color: '#666' } },
-      y: { position: 'right', grid: { color: '#1a1a1a' }, ticks: { color: '#666', callback: opts.yCallback || (v => v) } },
+      x: { type: 'time', grid: { color: '#222' }, ticks: { color: '#B0B0B0' } },
+      y: { position: 'right', grid: { color: '#222' }, ticks: { color: '#B0B0B0', callback: opts.yCallback || (v => v) } },
     },
     plugins: {
       legend: { display: false },
       tooltip: {
-        backgroundColor: '#0a0a0a', borderColor: '#222', borderWidth: 1,
-        titleColor: '#E5E5E5', bodyColor: '#CCC',
+        backgroundColor: '#0a0a0a', borderColor: '#3a3a3a', borderWidth: 1,
+        titleColor: '#FFFFFF', bodyColor: '#E5E5E5',
         callbacks: opts.tooltipCallbacks || {},
       },
       annotation: { annotations: opts.annotations || {} },
@@ -1405,45 +1635,45 @@ function lineChartOptions(opts={}) {
 function computeAllSignals() {
   const gs = STATE.series.goldSpx, gsx = STATE.series.goldAsx, gsi = STATE.series.goldSilver;
   const bf = STATE.series.buffett;
-  const dxyS = STATE.series.dxy, y2S = STATE.series.y2, y10S = STATE.series.y10, spS = STATE.series.spread;
+  const dxyS = STATE.series.dxy, y13S = STATE.series.y13, y5S = STATE.series.y5, y10S = STATE.series.y10, spS = STATE.series.spread;
 
   const out = {};
-  out.gsCur = last(gs)?.ratio; out.gsSl = slope(gs.slice(-20), 'ratio');
+  out.gsCur  = last(gs)?.ratio;  out.gsSl  = slope(gs.slice(-20), 'ratio');
   out.gsxCur = last(gsx)?.ratio; out.gsxSl = slope(gsx.slice(-20), 'ratio');
   out.gsiCur = last(gsi)?.ratio; out.gsiSl = slope(gsi.slice(-20), 'ratio');
-  out.bfCur = last(bf)?.indicator; out.bfSl = slope(bf.slice(-20), 'indicator');
-  out.dxyCur = last(dxyS)?.v; out.dxySl = slope(dxyS.slice(-20), 'v');
-  out.y2Cur = last(y2S)?.v; out.y2Sl = slope(y2S.slice(-20), 'v');
-  out.y10Cur = last(y10S)?.v; out.y10Sl = slope(y10S.slice(-20), 'v');
-  out.spCur = last(spS)?.v; out.spSl = slope(spS.slice(-20), 'v');
+  out.bfCur  = last(bf)?.indicator; out.bfSl = slope(bf.slice(-20), 'indicator');
+  out.dxyCur = last(dxyS)?.v;   out.dxySl = slope(dxyS.slice(-20), 'v');
+  out.y13Cur = last(y13S)?.v;   out.y13Sl = slope(y13S.slice(-20), 'v');
+  out.y5Cur  = last(y5S)?.v;    out.y5Sl  = slope(y5S.slice(-20), 'v');
+  out.y10Cur = last(y10S)?.v;   out.y10Sl = slope(y10S.slice(-20), 'v');
+  out.spCur  = last(spS)?.v;    out.spSl  = slope(spS.slice(-20), 'v');
 
-  // Y2 falling streak
   let streak = 0;
-  for (let i = y2S.length-1; i > 0; i--) { if (y2S[i].v < y2S[i-1].v) streak++; else break; }
-  out.y2Streak = streak;
+  for (let i = y13S.length-1; i > 0; i--) { if (y13S[i].v < y13S[i-1].v) streak++; else break; }
+  out.y13Streak = streak;
 
   return out;
 }
 
 function classifyRegime(s) {
-  // E first
+  // E first — Stress / Crisis Watch
   if (s.spCur < 0) return 'E';
   if (s.y10Cur > 5.0 && s.y10Sl > 0) return 'E';
   if (s.dxyCur > 106 && s.dxySl > 0) return 'E';
   if (s.bfCur > 190 && s.bfSl > 0) return 'E';
 
-  // C — stagflation
-  if (s.spCur < 0.5 && s.spSl <= 0 && s.dxySl >= 0 && s.y10Cur > 4.5) return 'C';
+  // C — Stagflation / Stalled
+  if (s.spCur < 0.25 && s.spSl <= 0 && s.dxySl >= 0 && s.y10Cur > 4.5) return 'C';
 
-  // D — supercycle rotation
-  if (s.gsSl > 0 && s.gsiCur > 80 && s.bfCur > 150 && s.spCur < 1.0) return 'D';
+  // D — Supercycle Rotation
+  if (s.gsSl > 0 && s.gsiCur > 80 && s.bfCur > 150 && s.spCur < 0.5) return 'D';
 
-  // B — transition (any two of three plus buffett not > 180)
-  const cond = [s.spSl > 0 && s.spCur < 1.0, s.dxySl < 0, s.y2Sl < 0].filter(Boolean).length;
+  // B — Transition (any two of three plus buffett not > 180)
+  const cond = [s.spSl > 0 && s.spCur < 0.5, s.dxySl < 0, s.y13Sl < 0].filter(Boolean).length;
   if (cond >= 2 && s.bfCur <= 180) return 'B';
 
-  // A — risk on
-  if (s.spCur > 1.0 && s.spSl > 0 && s.dxySl < 0 && s.y2Sl < 0) return 'A';
+  // A — Risk On
+  if (s.spCur > 0.5 && s.spSl > 0 && s.dxySl < 0 && s.y13Sl < 0) return 'A';
 
   return 'B';
 }
@@ -1477,11 +1707,11 @@ function pillRow(s) {
   else if (s.bfCur > 135) bfLbl = 'Overvalued';
   else if (s.bfCur < 90) bfLbl = 'Undervalued';
   pills.push({ t: `BUFFETT: ${bfLbl}`, c: s.bfCur > 135 ? COLORS.red : (s.bfCur > 115 ? COLORS.amber : COLORS.green) });
-  // curve
+  // curve (10Y - 5Y)
   let curveLbl = 'Steep';
   if (s.spCur < 0) curveLbl = 'Inverted';
-  else if (s.spCur < 1.0) curveLbl = 'Flat';
-  pills.push({ t: `CURVE: ${curveLbl}`, c: s.spCur < 0 ? COLORS.red : (s.spCur < 1.0 ? COLORS.amber : COLORS.green) });
+  else if (s.spCur < 0.5) curveLbl = 'Flat';
+  pills.push({ t: `CURVE: ${curveLbl}`, c: s.spCur < 0 ? COLORS.red : (s.spCur < 0.5 ? COLORS.amber : COLORS.green) });
   // dxy
   pills.push({ t: `DXY: ${s.dxySl >= 0 ? 'Strengthening' : 'Weakening'}`, c: s.dxySl >= 0 ? COLORS.orange : COLORS.green });
 
@@ -1505,12 +1735,12 @@ function renderSituation() {
 
   // BRIEFING
   let p1, p2, p3;
-  if (s.spCur > 1.0 && s.spSl > 0 && s.dxySl < 0) {
-    p1 = `Short-term rates are trending lower and the yield curve is steepening, signalling that markets are beginning to price in the rate cuts Warsh needs to execute his plan. The spread between the 2-year and 10-year Treasury is ${fmt(s.spCur, 2)}pp, moving toward the 1% threshold that historically incentivises banks to absorb Treasury supply. Dollar weakness (${fmt(s.dxyCur, 1)} and falling) confirms that global liquidity conditions are loosening.`;
-  } else if (s.spCur < 0.5 || s.y10Cur > 4.5) {
-    p1 = `Monetary conditions remain tight. The yield curve spread of ${fmt(s.spCur, 2)}pp gives banks little incentive to borrow short and buy long — the core mechanism of Warsh's plan. With the 10-year yield at ${fmt(s.y10Cur, 2)}% and the dollar ${s.dxySl >= 0 ? 'strengthening' : 'flat'}, the Iran-driven inflation shock continues to constrain the Fed's room to move. The scissor trade cannot begin until this resolves.`;
+  if (s.spCur > 0.5 && s.spSl > 0 && s.dxySl < 0) {
+    p1 = `Short-term rates are trending lower and the yield curve is steepening, signalling that markets are pricing in the rate cuts Warsh needs to execute his plan. The 10Y-5Y spread is ${fmt(s.spCur, 2)}pp — comfortably above the 0.5pp threshold that gives banks meaningful incentive to absorb Treasury supply. Dollar weakness (${fmt(s.dxyCur, 1)} and falling) confirms global liquidity is loosening.`;
+  } else if (s.spCur < 0.25 || s.y10Cur > 4.5) {
+    p1 = `Monetary conditions remain tight. The 10Y-5Y spread of ${fmt(s.spCur, 2)}pp gives banks little incentive to borrow short and buy long — the core mechanism of Warsh's plan. With the 10Y at ${fmt(s.y10Cur, 2)}% and the dollar ${s.dxySl >= 0 ? 'strengthening' : 'flat'}, the inflation backdrop is constraining the Fed's room to move. The scissor trade cannot begin until this resolves.`;
   } else {
-    p1 = `Monetary conditions are in transition. The yield curve spread of ${fmt(s.spCur, 2)}pp remains below the 1% level needed to fully incentivise bank Treasury buying, but the direction of travel is constructive. The 2-year yield at ${fmt(s.y2Cur, 2)}% reflects market uncertainty about the timing of Fed cuts. Warsh's plan is on the drawing board but not yet operational.`;
+    p1 = `Monetary conditions are in transition. The 10Y-5Y spread of ${fmt(s.spCur, 2)}pp is below the 0.5pp level needed to fully incentivise bank Treasury buying, but the direction is constructive. The 13W T-bill at ${fmt(s.y13Cur, 2)}% reflects market uncertainty about the timing of Fed cuts. Warsh's plan is on the drawing board but not yet operational.`;
   }
 
   if (s.gsSl > 0 && s.bfCur > 150) {
@@ -1538,10 +1768,10 @@ function renderSituation() {
 
   function row(name, value, signal, signalColor, implication) {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td style="color:#AAA">${name}</td>
-                    <td style="color:#CCC">${value}</td>
+    tr.innerHTML = `<td style="color:#E0E0E0">${name}</td>
+                    <td style="color:#FFFFFF">${value}</td>
                     <td style="color:${signalColor}; font-weight:600">${signal}</td>
-                    <td style="color:#888">${implication}</td>`;
+                    <td style="color:#B8B8B8">${implication}</td>`;
     matrixBody.appendChild(tr);
   }
 
@@ -1559,7 +1789,7 @@ function renderSituation() {
   let gsiSig, gsiCol, gsiImp;
   if (s.gsiCur > 90) { gsiSig = 'BUY SILVER'; gsiCol = COLORS.red; gsiImp = 'Extreme gold premium'; }
   else if (s.gsiCur > 80) { gsiSig = 'FAVOUR SILVER'; gsiCol = COLORS.gold; gsiImp = 'Gold expensive vs silver'; }
-  else if (s.gsiCur > 55) { gsiSig = 'NEUTRAL'; gsiCol = '#888'; gsiImp = 'Within normal range'; }
+  else if (s.gsiCur > 55) { gsiSig = 'NEUTRAL'; gsiCol = '#BBBBBB'; gsiImp = 'Within normal range'; }
   else if (s.gsiCur > 40) { gsiSig = 'FAVOUR GOLD'; gsiCol = COLORS.silver; gsiImp = 'Silver expensive vs gold'; }
   else { gsiSig = 'BUY GOLD'; gsiCol = COLORS.blue; gsiImp = 'Extreme silver premium'; }
   row('Gold/Silver Ratio', fmt(s.gsiCur, 1), gsiSig, gsiCol, gsiImp);
@@ -1569,7 +1799,7 @@ function renderSituation() {
   if (s.bfCur > 200) { bfSig = 'EXTREME'; bfCol = COLORS.red; bfImp = 'Unprecedented territory'; }
   else if (s.bfCur > 135) { bfSig = 'STRONGLY OVERVALUED'; bfCol = COLORS.orange; bfImp = 'Buffett warning zone'; }
   else if (s.bfCur > 115) { bfSig = 'OVERVALUED'; bfCol = COLORS.amber; bfImp = 'Above fair value'; }
-  else if (s.bfCur > 90) { bfSig = 'FAIR VALUE'; bfCol = '#888'; bfImp = 'Within normal range'; }
+  else if (s.bfCur > 90) { bfSig = 'FAIR VALUE'; bfCol = '#BBBBBB'; bfImp = 'Within normal range'; }
   else { bfSig = 'UNDERVALUED'; bfCol = COLORS.green; bfImp = 'Below historical mean'; }
   row('Buffett Indicator', fmt(s.bfCur, 1) + '%', bfSig, bfCol, bfImp);
 
@@ -1577,25 +1807,29 @@ function renderSituation() {
       s.dxySl >= 0 ? 'Strengthening ↑' : 'Weakening ↓',
       s.dxySl >= 0 ? COLORS.orange : COLORS.green,
       `${s.dxySl >= 0 ? 'Tighter' : 'Looser'} global liquidity`);
-  row('2Y Yield', fmt(s.y2Cur, 2) + '%',
-      s.y2Sl >= 0 ? 'Rising ↑' : 'Falling ↓',
-      s.y2Sl >= 0 ? COLORS.orange : COLORS.green,
-      `Fed ${s.y2Sl >= 0 ? 'tightening' : 'easing'} expectations`);
+  row('13W T-Bill', fmt(s.y13Cur, 2) + '%',
+      s.y13Sl >= 0 ? 'Rising ↑' : 'Falling ↓',
+      s.y13Sl >= 0 ? COLORS.orange : COLORS.green,
+      `Fed ${s.y13Sl >= 0 ? 'tightening' : 'easing'} expectations`);
+  row('5Y Yield', fmt(s.y5Cur, 2) + '%',
+      s.y5Sl >= 0 ? 'Rising ↑' : 'Falling ↓',
+      s.y5Sl >= 0 ? COLORS.orange : COLORS.green,
+      `Medium-term ${s.y5Sl >= 0 ? 'inflation/growth concern' : 'easing'}`);
   row('10Y Yield', fmt(s.y10Cur, 2) + '%',
       s.y10Sl >= 0 ? 'Rising ↑' : 'Falling ↓',
       s.y10Sl >= 0 ? COLORS.orange : COLORS.green,
       s.y10Cur > 4.5 ? 'Inflation/debt concern' : (s.y10Sl < 0 ? 'Growth concern' : 'Stable'));
 
   let spSig, spCol, spImp;
-  if (s.spCur > 1.0) { spSig = 'STEEP'; spCol = COLORS.green; spImp = 'Banks incentivised'; }
+  if (s.spCur > 0.5) { spSig = 'STEEP'; spCol = COLORS.green; spImp = 'Banks incentivised'; }
   else if (s.spCur > 0) { spSig = 'FLAT'; spCol = COLORS.amber; spImp = 'Banks neutral'; }
   else { spSig = 'INVERTED'; spCol = COLORS.red; spImp = 'Banks constrained'; }
-  row('Yield Spread', fmt(s.spCur, 2) + 'pp', spSig, spCol, spImp);
+  row('Yield Spread (10Y-5Y)', fmt(s.spCur, 2) + 'pp', spSig, spCol, spImp);
 
   // Warsh
   let wSig, wCol, wImp;
-  if (s.spCur > 1.0 && s.dxySl < 0 && s.y2Sl < 0) { wSig = 'WORKING'; wCol = COLORS.green; wImp = 'Scissor operational'; }
-  else if (s.spCur > 0.5 && s.spSl > 0) { wSig = 'STARTING'; wCol = COLORS.amber; wImp = 'Steepening underway'; }
+  if (s.spCur > 0.5 && s.dxySl < 0 && s.y13Sl < 0) { wSig = 'WORKING'; wCol = COLORS.green; wImp = 'Scissor operational'; }
+  else if (s.spCur > 0.25 && s.spSl > 0) { wSig = 'STARTING'; wCol = COLORS.amber; wImp = 'Steepening underway'; }
   else if (s.spCur < 0) { wSig = 'BROKEN'; wCol = COLORS.red; wImp = 'Curve inverted'; }
   else { wSig = 'STALLED'; wCol = COLORS.orange; wImp = 'Spread too flat'; }
   row('Warsh Scissor', '—', wSig, wCol, wImp);
@@ -1615,11 +1849,11 @@ function renderSituation() {
     alerts.push({ pri:1, color: COLORS.red, label:'⚠ IRAN STRESS SIGNAL',
       body:'Long rates elevated, dollar strengthening, gold outperforming. Bond market under pressure — consistent with Hormuz disruption scenario.' });
   }
-  if (s.y10Cur > 4.5 && s.dxyCur > 104 && s.spCur < 0.5) {
+  if (s.y10Cur > 4.5 && s.dxyCur > 104 && s.spCur < 0.25) {
     alerts.push({ pri:2, color: COLORS.orange, label:'⚠ STAGFLATION SIGNAL',
       body:'High long rates, strong dollar, flat curve — conditions consistent with persistent inflation constraining growth. Worst case for equities.' });
   }
-  if (s.y2Streak >= 10 && s.dxySl < 0 && s.spSl > 0) {
+  if (s.y13Streak >= 10 && s.dxySl < 0 && s.spSl > 0) {
     alerts.push({ pri:5, color: COLORS.green, label:'◆ DOVISH PIVOT INCOMING',
       body:'Short rates falling, dollar weakening, curve steepening. Markets pricing in rate cuts — watch for Warsh confirmation.' });
   }
@@ -1629,7 +1863,7 @@ function renderSituation() {
   }
 
   // SR-unique
-  if (s.gsSl > 0 && s.gsiCur > 80 && s.bfCur > 150 && s.spCur < 1.0 && s.dxySl <= 0) {
+  if (s.gsSl > 0 && s.gsiCur > 80 && s.bfCur > 150 && s.spCur < 0.5 && s.dxySl <= 0) {
     alerts.push({ pri:4, color: COLORS.amber, label:'◆ FULL SUPERCYCLE ALIGNMENT',
       body:'All major indicators consistent with commodity supercycle rotation. Real assets historically outperform from this configuration over a 3-5 year horizon.' });
   }
@@ -1637,12 +1871,12 @@ function renderSituation() {
     alerts.push({ pri:4, color: COLORS.silver, label:'◆ SILVER SETUP',
       body:'High gold/silver ratio converging with easing monetary conditions. Historically this combination precedes silver outperforming gold. Mean reversion in the ratio likely.' });
   }
-  if (s.y10Cur > 4.8 && s.spCur < 0.4 && s.bfCur > 170) {
+  if (s.y10Cur > 4.8 && s.spCur < 0.2 && s.bfCur > 170) {
     alerts.push({ pri:2, color: COLORS.red, label:'⚠ BOND MARKET FRAGILITY',
       body:'Long rates elevated, curve flat, equities expensive. Three conditions that historically precede either a Fed emergency pivot or a disorderly market correction. Probability of a forced policy response is rising.' });
   }
   let maxAlert = false;
-  if (s.bfCur > 180 && s.gsSl > 0 && s.spCur < 0.3 && s.dxySl > 0 && s.y10Cur > 4.5) {
+  if (s.bfCur > 180 && s.gsSl > 0 && s.spCur < 0.15 && s.dxySl > 0 && s.y10Cur > 4.5) {
     alerts.push({ pri:0, color: COLORS.red, label:'⚠⚠ MAXIMUM STRESS', pulse:true,
       body:'Every indicator simultaneously in warning territory. Equities expensive, real assets outperforming, curve flat, dollar strong, long rates elevated. This configuration has historically preceded significant market dislocations.' });
     maxAlert = true;
