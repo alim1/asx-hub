@@ -51,46 +51,50 @@
     </div>
 
     <script>
-        // Core Engine Implementation
-        const proxyBase = "https://market-data-proxy.alex-9d8.workers.dev/";
-        const state = { activeTab: 'spx', data: {}, lastUpdate: null };
-
-        async function fetchData() {
-            try {
-                // In a real implementation, Promise.all triggers calls for GC=F, ^GSPC, ^AXJO, SI=F, ^W5000, DX-Y.NYB, ^IRX, ^TNX
-                // For this standalone artifact, we simulate the structure
-                document.getElementById('status-bar').innerText = "DATA FETCHED SUCCESSFULLY";
-                renderDashboard();
-            } catch (e) {
-                document.getElementById('dashboard-content').innerHTML = `<div style="color:var(--red)">DATA FETCH FAILED: ${e.message}</div>`;
-            }
-        }
-
-        function switchTab(tabId) {
-            state.activeTab = tabId;
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
-            renderDashboard();
-        }
-
-        function renderDashboard() {
-            const container = document.getElementById('dashboard-content');
-            if (state.activeTab === 'sr') {
-                container.innerHTML = `
-                    <div style="text-align:center; padding: 40px;">
-                        <h2 style="color:var(--red)">SITUATION ROOM: BRIEFING ACTIVE</h2>
-                        <p style="color:var(--muted)">Synthesis of all signals loading...</p>
-                    </div>`;
+    // 1. Ensure dependencies are registered properly
+    async function initDashboard() {
+        // Wait briefly to ensure CDNs have injected global variables
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        try {
+            if (typeof ChartAnnotation !== 'undefined') {
+                Chart.register(ChartAnnotation);
             } else {
-                container.innerHTML = `<div class="chart-container" style="height:320px;">Main Chart Placeholder for ${state.activeTab}</div>
-                                       <div class="stats-bar">Stats Grid Placeholder</div>`;
+                console.error("ChartAnnotation variable is missing. Check CDN loading.");
             }
+            
+            // Proceed to data fetching
+            await fetchData();
+        } catch (err) {
+            console.error("Initialization failed:", err);
         }
+    }
 
-        // Initialize
-        Chart.register(ChartAnnotation);
-        fetchData();
-        setInterval(fetchData, 900000); // 15M Refresh
-    </script>
+    // 2. Data fetching and State Management
+    const proxyBase = "https://market-data-proxy.alex-9d8.workers.dev/";
+    const state = { activeTab: 'spx', data: {} };
+
+    async function fetchData() {
+        document.getElementById('status-bar').innerText = "FETCHING MARKET DATA...";
+        try {
+            // Simulated fetch for structure - replace with your actual fetch logic
+            const response = await fetch(`${proxyBase}?ticker=GC=F&range=1d&interval=1d`);
+            if (!response.ok) throw new Error(`Proxy error: ${response.status}`);
+            
+            document.getElementById('status-bar').innerText = "SYSTEM ONLINE";
+            renderDashboard();
+        } catch (e) {
+            document.getElementById('dashboard-content').innerHTML = 
+                `<div style="color:var(--red); text-align:center;">FETCH FAILED: ${e.message}</div>`;
+        }
+    }
+
+    // Initialize on load
+    initDashboard();
+</script>
+
+
+
+    
 </body>
 </html>
