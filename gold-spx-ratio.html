@@ -94,7 +94,7 @@
 
     /* Macro Pulse styles */
     #macro-section { display: none; }
-    .macro-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+    .macro-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 12px; margin-bottom: 16px; }
     .macro-chart-card { background: #111827; border: 1px solid #4b5563; padding: 12px; height: 280px; }
     .macro-chart-card canvas { width: 100% !important; height: 100% !important; }
     .macro-chart-title { font-size: 10px; letter-spacing: 1px; color: #c1cdd9; margin-bottom: 8px; }
@@ -222,12 +222,16 @@
             <canvas id="dxyChart"></canvas>
           </div>
           <div class="macro-chart-card">
-            <div class="macro-chart-title">YIELD CURVE SPREAD (10Y - 2Y)</div>
+            <div class="macro-chart-title">YIELD CURVE SPREAD (10Y \u2212 5Y)</div>
             <canvas id="spreadChart"></canvas>
           </div>
           <div class="macro-chart-card">
-            <div class="macro-chart-title">2-YEAR TREASURY YIELD</div>
+            <div class="macro-chart-title">SHORT-TERM RATE (13-WEEK T-BILL)</div>
             <canvas id="yield2yChart"></canvas>
+          </div>
+          <div class="macro-chart-card">
+            <div class="macro-chart-title">5-YEAR TREASURY YIELD</div>
+            <canvas id="yield5yChart"></canvas>
           </div>
           <div class="macro-chart-card">
             <div class="macro-chart-title">10-YEAR TREASURY YIELD</div>
@@ -251,8 +255,8 @@
         <div class="macro-cross-signal" id="macro-cross-signal"></div>
 
         <div class="macro-static-notes">
-          Data: Yahoo Finance via proxy. DXY = US Dollar Index (ICE). 2Y = 13-week T-bill rate (^IRX) scaled.
-          10Y = 10-year Treasury yield (^TNX) scaled. Spread = 10Y minus 2Y. Warsh framework based on Kevin Warsh's
+          Data: Yahoo Finance via proxy. DXY = US Dollar Index (ICE). 13W = 13-week T-bill rate (^IRX). 5Y = 5-year Treasury yield (^FVX).
+          10Y = 10-year Treasury yield (^TNX). Spread = 10Y minus 5Y. Warsh framework based on Kevin Warsh's
           public commentary on yield curve steepening as a prerequisite for Treasury market normalisation.
           This dashboard is for informational purposes only and does not constitute investment advice.
         </div>
@@ -273,7 +277,7 @@ let eventsVisible = false;
 let ratioChart, goldChart, indexChart;
 let macroData = [];
 let macroMonths = 24;
-let dxyChart, spreadChart, yield2yChart, yield10yChart;
+let dxyChart, spreadChart, yield2yChart, yield5yChart, yield10yChart;
 
 const MACRO_EVENTS = [
   { date: '2000-03-10', label: 'Dot-com Peak' },
@@ -356,7 +360,7 @@ function alignSeries(goldMap, indexMap) {
 }
 
 async function fetchAllData() {
-  const [goldRes, spxRes, asxRes, silverRes, wilshireRes, dxyRes, irxRes, tnxRes] = await Promise.all([
+  const [goldRes, spxRes, asxRes, silverRes, wilshireRes, dxyRes, irxRes, fvxRes, tnxRes] = await Promise.all([
     fetch(PROXY + '?ticker=GC%3DF&range=20y&interval=1d').then(r => r.json()),
     fetch(PROXY + '?ticker=%5EGSPC&range=20y&interval=1d').then(r => r.json()),
     fetch(PROXY + '?ticker=%5EAXJO&range=20y&interval=1d').then(r => r.json()),
@@ -364,6 +368,7 @@ async function fetchAllData() {
     fetch(PROXY + '?ticker=%5EW5000&range=20y&interval=1d').then(r => r.json()),
     fetch(PROXY + '?ticker=DX-Y.NYB&range=5y&interval=1d').then(r => r.json()),
     fetch(PROXY + '?ticker=%5EIRX&range=5y&interval=1d').then(r => r.json()),
+    fetch(PROXY + '?ticker=%5EFVX&range=5y&interval=1d').then(r => r.json()),
     fetch(PROXY + '?ticker=%5ETNX&range=5y&interval=1d').then(r => r.json())
   ]);
 
@@ -393,13 +398,15 @@ async function fetchAllData() {
   // Build Macro Pulse data
   var dxyMap = parseYahoo(dxyRes);
   var irxMap = parseYahoo(irxRes);
+  var fvxMap = parseYahoo(fvxRes);
   var tnxMap = parseYahoo(tnxRes);
   var macroAligned = [];
   for (var [date, dxy] of dxyMap) {
-    if (irxMap.has(date) && tnxMap.has(date)) {
-      var y2 = irxMap.get(date) * 0.1;
-      var y10 = tnxMap.get(date) * 0.1;
-      macroAligned.push({ date: date, dxy: dxy, y2: y2, y10: y10, spread: y10 - y2 });
+    if (irxMap.has(date) && fvxMap.has(date) && tnxMap.has(date)) {
+      var y2 = irxMap.get(date);
+      var y5 = fvxMap.get(date);
+      var y10 = tnxMap.get(date);
+      macroAligned.push({ date: date, dxy: dxy, y2: y2, y5: y5, y10: y10, spread: y10 - y5 });
     }
   }
   macroAligned.sort(function(a, b) { return a.date.localeCompare(b.date); });
@@ -633,12 +640,13 @@ function renderMacroStats(data) {
   var dxySlope = computeSlopeField(macroData, 20, 'dxy');
   var spreadSlope = computeSlopeField(macroData, 20, 'spread');
   var y2Slope = computeSlopeField(macroData, 20, 'y2');
+  var y5SlopeW = computeSlopeField(macroData, 20, 'y5');
 
   var warshValue, warshColor, warshSub, warshBorder;
   var sp = current.spread;
-  if (sp > 1.0 && dxySlope < 0 && y2Slope < 0) {
+  if (sp > 1.0 && dxySlope < 0 && y5SlopeW < 0) {
     warshValue = 'SCISSOR WORKING'; warshColor = '#00FF88'; warshSub = 'Short end falling, curve steepening, dollar easing'; warshBorder = '#00FF88';
-  } else if (sp >= 0.5 && sp <= 1.0 && spreadSlope > 0 && y2Slope < 0) {
+  } else if (sp >= 0.5 && sp <= 1.0 && spreadSlope > 0 && y5SlopeW < 0) {
     warshValue = 'SCISSOR STARTING'; warshColor = '#F0B429'; warshSub = 'Steepening underway, watch for acceleration'; warshBorder = '#F0B429';
   } else if (sp >= 0 && sp < 0.5 && spreadSlope <= 0) {
     warshValue = 'SCISSOR STALLED'; warshColor = '#FF8C00'; warshSub = 'Curve too flat \u2014 banks not incentivised'; warshBorder = '#FF8C00';
@@ -653,7 +661,8 @@ function renderMacroStats(data) {
   var cards = [
     { label: 'DXY NOW', value: current.dxy.toFixed(2), sub: '' },
     { label: 'DXY TREND', value: dxySlope >= 0 ? '<span style="color:#FF8C00">Strengthening \u2191</span>' : '<span style="color:#00FF88">Weakening \u2193</span>', sub: '' },
-    { label: '2Y YIELD', value: current.y2.toFixed(2) + '%', sub: '' },
+    { label: '13W RATE', value: current.y2.toFixed(2) + '%', sub: '' },
+    { label: '5Y YIELD', value: current.y5.toFixed(2) + '%', sub: '' },
     { label: '10Y YIELD', value: current.y10.toFixed(2) + '%', sub: '' },
     { label: 'SPREAD NOW', value: '<span style="color:' + (current.spread >= 0 ? '#00FF88' : '#FF4444') + '">' + (current.spread >= 0 ? '+' : '') + current.spread.toFixed(2) + 'pp</span>', sub: '' },
     { label: 'SPREAD TREND', value: spreadSlope >= 0 ? '<span style="color:#00FF88">Steepening \u2191</span>' : '<span style="color:#FF8C00">Flattening \u2193</span>', sub: '' },
@@ -688,13 +697,14 @@ function renderMacroRegime(data) {
   }
   condEl.textContent = text;
 
-  var y2Falling = y2Slope < 0;
+  var y5Slope = computeSlopeField(macroData, 20, 'y5');
+  var y2Falling = y5Slope < 0;
   var curveStep = sp > 1.0;
   var dxyFalling = dxySlope < 0;
   var longStable = current.y10 < 4.5;
 
   var steps = [
-    { step: '1. Cut short rates', need: '2Y yield falling', status: current.y2.toFixed(2) + '% (' + (y2Falling ? 'falling' : 'rising') + ')', ok: y2Falling },
+    { step: '1. Mid-curve easing', need: '5Y yield falling', status: current.y5.toFixed(2) + '% (' + (y2Falling ? 'falling' : 'rising') + ')', ok: y2Falling },
     { step: '2. Steepen curve', need: 'Spread > 1.0%', status: (sp >= 0 ? '+' : '') + sp.toFixed(2) + 'pp', ok: curveStep },
     { step: '3. Dollar easing', need: 'DXY falling', status: current.dxy.toFixed(2) + ' (' + (dxyFalling ? 'falling' : 'rising') + ')', ok: dxyFalling },
     { step: '4. Long end stable', need: '10Y < 4.5%', status: current.y10.toFixed(2) + '%', ok: longStable }
@@ -905,7 +915,7 @@ function createSpreadChart(data) {
             title: function(items) { return items[0].label; },
             label: function(item) {
               var d = data[item.dataIndex];
-              return ['Spread: ' + (d.spread >= 0 ? '+' : '') + d.spread.toFixed(2) + 'pp', '2Y: ' + d.y2.toFixed(2) + '%', '10Y: ' + d.y10.toFixed(2) + '%'];
+              return ['Spread (10Y-5Y): ' + (d.spread >= 0 ? '+' : '') + d.spread.toFixed(2) + 'pp', '5Y: ' + d.y5.toFixed(2) + '%', '10Y: ' + d.y10.toFixed(2) + '%'];
             }
           }
         }
@@ -947,7 +957,47 @@ function createYield2yChart(data) {
           backgroundColor: '#253041', borderColor: '#4b5563', borderWidth: 1,
           titleFont: { family: 'IBM Plex Mono', size: 11 }, bodyFont: { family: 'IBM Plex Mono', size: 11 },
           titleColor: '#E5E5E5', bodyColor: '#E5E5E5', displayColors: false,
-          callbacks: { title: function(items) { return items[0].label; }, label: function(item) { var d = data[item.dataIndex]; return '2Y Yield: ' + d.y2.toFixed(2) + '%'; } }
+          callbacks: { title: function(items) { return items[0].label; }, label: function(item) { var d = data[item.dataIndex]; return '13W Rate: ' + d.y2.toFixed(2) + '%'; } }
+        }
+      },
+      scales: {
+        x: { type: 'time', time: { parser: 'yyyy-MM-dd' }, grid: { color: '#253041' }, ticks: { color: '#c1cdd9', font: { family: 'IBM Plex Mono', size: 10 }, maxRotation: 0 }, border: { color: '#4b5563' } },
+        y: { position: 'right', grid: { color: '#253041' }, ticks: { color: '#c1cdd9', font: { family: 'IBM Plex Mono', size: 10 }, callback: function(v) { return v.toFixed(2) + '%'; } }, border: { color: '#4b5563' } }
+      }
+    }
+  });
+}
+
+function createYield5yChart(data) {
+  var ctx = document.getElementById('yield5yChart').getContext('2d');
+  if (yield5yChart) yield5yChart.destroy();
+
+  yield5yChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: data.map(function(d) { return d.date; }),
+      datasets: [{
+        data: data.map(function(d) { return d.y5; }),
+        borderColor: '#8b5cf6', borderWidth: 2, pointRadius: 0, pointHitRadius: 8, tension: 0, fill: false
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        annotation: {
+          annotations: {
+            peak2023: { type: 'line', yMin: 5.0, yMax: 5.0, borderColor: '#FF4444', borderWidth: 1, borderDash: [6, 4], label: { display: true, content: '2023 Peak', position: 'start', font: { size: 10, family: 'IBM Plex Mono' }, color: '#FF4444', backgroundColor: 'rgba(15,23,42,0.9)', padding: 3 } },
+            neutral: { type: 'line', yMin: 3.5, yMax: 3.5, borderColor: '#c1cdd9', borderWidth: 1, borderDash: [6, 4], label: { display: true, content: 'Neutral Est.', position: 'start', font: { size: 10, family: 'IBM Plex Mono' }, color: '#c1cdd9', backgroundColor: 'rgba(15,23,42,0.9)', padding: 3 } },
+            preHike: { type: 'line', yMin: 2.0, yMax: 2.0, borderColor: '#00FF88', borderWidth: 1, borderDash: [6, 4], label: { display: true, content: 'Pre-hike Level', position: 'start', font: { size: 10, family: 'IBM Plex Mono' }, color: '#00FF88', backgroundColor: 'rgba(15,23,42,0.9)', padding: 3 } }
+          }
+        },
+        tooltip: {
+          backgroundColor: '#253041', borderColor: '#4b5563', borderWidth: 1,
+          titleFont: { family: 'IBM Plex Mono', size: 11 }, bodyFont: { family: 'IBM Plex Mono', size: 11 },
+          titleColor: '#E5E5E5', bodyColor: '#E5E5E5', displayColors: false,
+          callbacks: { title: function(items) { return items[0].label; }, label: function(item) { var d = data[item.dataIndex]; return '5Y Yield: ' + d.y5.toFixed(2) + '%'; } }
         }
       },
       scales: {
@@ -1014,7 +1064,7 @@ function renderMacroCaption(data) {
   html += '"Strengthening" = dollar getting more expensive (bad for gold, commodities, and emerging markets). ';
   html += '"Weakening" = dollar losing value (good for gold, commodities, and exporters).<br><br>';
 
-  html += '<strong>Yield Curve Spread</strong> = 10-year Treasury yield minus 2-year yield. ';
+  html += '<strong>Yield Curve Spread</strong> = 10-year Treasury yield minus 5-year yield. ';
   html += '"Steepening" = the gap is widening (banks earn more by lending long \u2014 this is healthy). ';
   html += '"Flattening" = the gap is shrinking (banks lose incentive to lend \u2014 signals tightening). ';
   html += '"Inverted" = short rates above long rates (historically precedes recessions).<br><br>';
@@ -1057,6 +1107,7 @@ function renderMacro() {
   createDxyChart(data);
   createSpreadChart(data);
   createYield2yChart(data);
+  createYield5yChart(data);
   createYield10yChart(data);
 }
 
@@ -1490,6 +1541,7 @@ function render() {
     if (dxyChart) { dxyChart.destroy(); dxyChart = null; }
     if (spreadChart) { spreadChart.destroy(); spreadChart = null; }
     if (yield2yChart) { yield2yChart.destroy(); yield2yChart = null; }
+    if (yield5yChart) { yield5yChart.destroy(); yield5yChart = null; }
     if (yield10yChart) { yield10yChart.destroy(); yield10yChart = null; }
   }
 
