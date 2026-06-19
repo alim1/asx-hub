@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mansfield SHS — Pathway Planner 2026</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f9f8f6;
+    --surface: #ffffff;
+    --surface2: #f3f2ef;
+    --border: #e2e0da;
+    --border2: #ccc9c0;
+    --text: #1a1a18;
+    --text2: #5a5850;
+    --text3: #8a8780;
+    --blue: #1a6bbf;
+    --blue-bg: #e8f0fb;
+    --blue-border: #b3cef0;
+    --green: #2a7a3a;
+    --green-bg: #e8f5ec;
+    --green-border: #a8d8b4;
+    --amber: #7a5200;
+    --amber-bg: #fff4e0;
+    --amber-border: #f0d090;
+    --red: #a03020;
+    --red-bg: #fdecea;
+    --red-border: #f0b8b0;
+    --purple: #5030a0;
+    --purple-bg: #f0ecfd;
+    --purple-border: #c8b8f0;
+    --teal: #0f6e56;
+    --teal-bg: #e4f5ef;
+    --teal-border: #90d4bc;
+    --radius: 8px;
+    --radius-lg: 12px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141412; --surface: #1e1e1c; --surface2: #2a2a28;
+      --border: #38382e; --border2: #4a4a40;
+      --text: #f0ede8; --text2: #a0a098; --text3: #6a6a60;
+      --blue: #6aa8e8; --blue-bg: #0e2040; --blue-border: #1e4080;
+      --green: #60c878; --green-bg: #0a2010; --green-border: #1a5030;
+      --amber: #e8b840; --amber-bg: #2a1a00; --amber-border: #5a3800;
+      --red: #e07060; --red-bg: #2a0e0a; --red-border: #5a2020;
+      --purple: #a888e8; --purple-bg: #180e2a; --purple-border: #3a2060;
+      --teal: #40c8a0; --teal-bg: #082018; --teal-border: #145038;
+    }
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.5; }
+  .app { max-width: 900px; margin: 0 auto; padding: 24px 20px 60px; }
+
+  /* Header */
+  .header { margin-bottom: 28px; }
+  .header h1 { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
+  .header p { font-size: 14px; color: var(--text2); }
+  .school-tag { display: inline-block; font-size: 12px; font-weight: 500; padding: 2px 10px; border-radius: 20px; background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue-border); margin-bottom: 10px; }
+
+  /* Step nav */
+  .step-nav { display: flex; gap: 4px; margin-bottom: 28px; overflow-x: auto; padding-bottom: 2px; }
+  .step-btn { flex: 1; min-width: 90px; padding: 9px 6px; font-size: 12px; font-weight: 500; border: 1px solid var(--border); background: var(--surface); border-radius: var(--radius); cursor: pointer; color: var(--text2); transition: all 0.15s; white-space: nowrap; }
+  .step-btn:hover { border-color: var(--border2); background: var(--surface2); }
+  .step-btn.active { background: var(--blue-bg); color: var(--blue); border-color: var(--blue-border); }
+  .step-btn.done { background: var(--green-bg); color: var(--green); border-color: var(--green-border); }
+  .step-btn.done::before { content: '✓ '; }
+
+  /* Panels */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* Section labels */
+  .sec-label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.07em; margin: 20px 0 8px; }
+  .sec-label:first-child { margin-top: 0; }
+  .sec-desc { font-size: 13px; color: var(--text2); margin-bottom: 10px; margin-top: -4px; }
+
+  /* Cards grid */
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; margin-bottom: 4px; }
+  .cards.tight { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+  .card { border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px; cursor: pointer; background: var(--surface); transition: border-color 0.12s, background 0.12s; user-select: none; }
+  .card:hover:not(.locked):not(.required-card) { border-color: var(--border2); background: var(--surface2); }
+  .card.selected { border-color: var(--blue-border); background: var(--blue-bg); }
+  .card.selected .card-name { color: var(--blue); }
+  .card.locked { opacity: 0.4; cursor: not-allowed; }
+  .card.required-card { border-color: var(--green-border); background: var(--green-bg); cursor: default; }
+  .card.required-card .card-name { color: var(--green); }
+  .card.recommended { border-color: var(--teal-border); }
+  .card.recommended::after { content: '★ rec'; font-size: 10px; color: var(--teal); display: block; margin-top: 4px; }
+  .card-name { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
+  .card-meta { font-size: 12px; color: var(--text2); }
+  .card-badges { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  .badge { font-size: 11px; padding: 1px 7px; border-radius: 4px; font-weight: 500; }
+  .badge-g { background: var(--blue-bg); color: var(--blue); }
+  .badge-a { background: var(--amber-bg); color: var(--amber); }
+  .badge-atar { background: var(--green-bg); color: var(--green); }
+  .badge-cert { background: var(--purple-bg); color: var(--purple); }
+  .badge-sem { background: var(--surface2); color: var(--text2); }
+
+  /* Alert boxes */
+  .alert { border-radius: var(--radius); padding: 10px 14px; font-size: 13px; margin-bottom: 8px; border: 1px solid; }
+  .alert-info { background: var(--blue-bg); color: var(--blue); border-color: var(--blue-border); }
+  .alert-success { background: var(--green-bg); color: var(--green); border-color: var(--green-border); }
+  .alert-warning { background: var(--amber-bg); color: var(--amber); border-color: var(--amber-border); }
+  .alert-error { background: var(--red-bg); color: var(--red); border-color: var(--red-border); }
+  .alert strong { font-weight: 600; }
+
+  /* Nav row */
+  .nav-row { display: flex; justify-content: space-between; align-items: center; margin-top: 28px; padding-top: 16px; border-top: 1px solid var(--border); gap: 10px; flex-wrap: wrap; }
+  .btn { padding: 8px 18px; font-size: 14px; font-weight: 500; border-radius: var(--radius); border: 1px solid var(--border2); background: var(--surface); color: var(--text); cursor: pointer; transition: all 0.12s; font-family: inherit; }
+  .btn:hover { background: var(--surface2); }
+  .btn-primary { background: var(--blue-bg); color: var(--blue); border-color: var(--blue-border); }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-ask { background: transparent; border: 1px solid var(--blue-border); color: var(--blue); font-size: 13px; padding: 7px 14px; border-radius: var(--radius); cursor: pointer; font-family: inherit; font-weight: 500; }
+  .btn-ask:hover { background: var(--blue-bg); }
+
+  /* Divider */
+  .divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+  /* Pill list */
+  .pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pill { font-size: 12px; padding: 3px 10px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface2); color: var(--text); }
+  .pill.g { background: var(--blue-bg); border-color: var(--blue-border); color: var(--blue); }
+  .pill.a { background: var(--amber-bg); border-color: var(--amber-border); color: var(--amber); }
+  .pill.cert { background: var(--purple-bg); border-color: var(--purple-border); color: var(--purple); }
+
+  /* Pathway track */
+  .track { border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 10px; }
+  .track-head { padding: 10px 16px; background: var(--surface2); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+  .track-head-title { font-size: 14px; font-weight: 600; }
+  .track-body { padding: 14px 16px; }
+  .track-row { margin-bottom: 10px; }
+  .track-row:last-child { margin-bottom: 0; }
+  .track-row-label { font-size: 12px; color: var(--text2); margin-bottom: 5px; }
+  .count-tag { font-size: 12px; font-weight: 500; padding: 2px 9px; border-radius: 20px; background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue-border); }
+
+  /* ATAR meter */
+  .atar-meter { background: var(--surface2); border-radius: var(--radius-lg); padding: 16px; margin-bottom: 12px; border: 1px solid var(--border); }
+  .atar-meter-title { font-size: 13px; font-weight: 600; margin-bottom: 10px; }
+  .atar-bar-wrap { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 6px; }
+  .atar-bar { height: 100%; border-radius: 4px; transition: width 0.4s; }
+  .atar-checks { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; }
+  .atar-check { font-size: 12px; display: flex; align-items: center; gap: 6px; }
+  .check-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .check-dot.ok { background: var(--green); }
+  .check-dot.fail { background: var(--red); }
+  .check-dot.warn { background: var(--amber); }
+
+  /* Recommendation box */
+  .rec-box { background: var(--teal-bg); border: 1px solid var(--teal-border); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 10px; font-size: 13px; color: var(--teal); }
+  .rec-box strong { font-weight: 600; }
+  .rec-list { margin-top: 6px; padding-left: 16px; }
+  .rec-list li { margin-bottom: 3px; }
+
+  /* Grade inputs */
+  .grade-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
+  .grade-item { display: flex; align-items: center; justify-content: space-between; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 12px; }
+  .grade-item label { font-size: 13px; color: var(--text2); }
+  .grade-item select { font-size: 13px; border: 1px solid var(--border2); background: var(--surface2); color: var(--text); border-radius: 6px; padding: 3px 8px; font-family: inherit; cursor: pointer; }
+
+  /* Goal cards */
+  .goal-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+  .goal-card { border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 14px; cursor: pointer; background: var(--surface); transition: all 0.12s; }
+  .goal-card:hover { border-color: var(--border2); background: var(--surface2); }
+  .goal-card.selected { border-color: var(--blue-border); background: var(--blue-bg); }
+  .goal-card.selected .goal-title { color: var(--blue); }
+  .goal-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .goal-desc { font-size: 12px; color: var(--text2); }
+
+  /* Prereq warning tag */
+  .prereq-tag { font-size: 11px; margin-top: 4px; color: var(--red); }
+  .prereq-ok { font-size: 11px; margin-top: 4px; color: var(--green); }
+
+  /* Subject count bar */
+  .count-bar { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--surface2); border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 10px; font-size: 13px; }
+  .count-bar-fill { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .count-bar-inner { height: 100%; border-radius: 3px; transition: width 0.3s; }
+
+  /* Locked note */
+  .locked-reason { font-size: 11px; color: var(--red); margin-top: 3px; }
+
+  /* Step 0 year buttons */
+  .year-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .year-btn { padding: 8px 20px; font-size: 14px; font-weight: 500; border: 1px solid var(--border2); border-radius: var(--radius); background: var(--surface); color: var(--text); cursor: pointer; transition: all 0.12s; font-family: inherit; }
+  .year-btn:hover { background: var(--surface2); }
+  .year-btn.selected { background: var(--blue-bg); color: var(--blue); border-color: var(--blue-border); }
+
+  /* Summary table */
+  .sum-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .sum-table th { text-align: left; padding: 6px 10px; color: var(--text2); font-weight: 500; border-bottom: 1px solid var(--border); }
+  .sum-table td { padding: 7px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .sum-table tr:last-child td { border-bottom: none; }
+
+  @media (max-width: 600px) {
+    .cards { grid-template-columns: 1fr 1fr; }
+    .atar-checks { grid-template-columns: 1fr; }
+    .step-btn { font-size: 11px; padding: 7px 4px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <span class="school-tag">Mansfield State High School</span>
+    <h1>Subject Pathway Planner 2026</h1>
+    <p>Plan your journey from Year 8 to Year 12. Prerequisites are checked automatically based on the official curriculum guides.</p>
+  </div>
+
+  <div class="step-nav">
+    <button class="step-btn active" onclick="goStep(0)">1. About you</button>
+    <button class="step-btn" onclick="goStep(1)">2. Yr 8–9 electives</button>
+    <button class="step-btn" onclick="goStep(2)">3. Year 10</button>
+    <button class="step-btn" onclick="goStep(3)">4. Yr 11–12</button>
+    <button class="step-btn" onclick="goStep(4)">5. My plan</button>
+  </div>
+
+  <!-- STEP 0: About you -->
+  <div id="step0" class="panel active">
+    <div class="sec-label">What year are you currently in?</div>
+    <div class="year-btns">
+      <button class="year-btn" onclick="pickYear(7,this)">Year 7</button>
+      <button class="year-btn" onclick="pickYear(8,this)">Year 8</button>
+      <button class="year-btn" onclick="pickYear(9,this)">Year 9</button>
+      <button class="year-btn" onclick="pickYear(10,this)">Year 10</button>
+      <button class="year-btn" onclick="pickYear(11,this)">Year 11</button>
+    </div>
+
+    <div class="sec-label">What is your goal after school?</div>
+    <div class="goal-grid">
+      <div class="goal-card" onclick="pickGoal('atar',this)">
+        <div class="goal-title">University via ATAR</div>
+        <div class="goal-desc">Aim for a competitive rank for direct university entry</div>
+      </div>
+      <div class="goal-card" onclick="pickGoal('vet',this)">
+        <div class="goal-title">Vocational / Trade</div>
+        <div class="goal-desc">Certificates, apprenticeships, school-based traineeships</div>
+      </div>
+      <div class="goal-card" onclick="pickGoal('mixed',this)">
+        <div class="goal-title">Keep options open</div>
+        <div class="goal-desc">Mix of General and Applied subjects, decide later</div>
+      </div>
+    </div>
+
+    <div class="sec-label" style="margin-top:20px">Your Year 9 grades <span style="font-weight:400;text-transform:none;font-size:12px;color:var(--text2)">(used to check Year 10 prerequisites)</span></div>
+    <div class="grade-grid">
+      <div class="grade-item"><label>English</label><select id="ge" onchange="st.grades.english=this.value;render()"><option value="">—</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option></select></div>
+      <div class="grade-item"><label>Mathematics</label><select id="gm" onchange="st.grades.maths=this.value;render()"><option value="">—</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option></select></div>
+      <div class="grade-item"><label>Science</label><select id="gs" onchange="st.grades.science=this.value;render()"><option value="">—</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option></select></div>
+    </div>
+
+    <div id="step0-advice" style="margin-top:12px"></div>
+
+    <div class="nav-row">
+      <div style="font-size:13px;color:var(--text2)">Fill in your details to get personalised pathway advice</div>
+      <button class="btn btn-primary" onclick="goStep(1)">Next: Yr 8–9 electives →</button>
+    </div>
+  </div>
+
+  <!-- STEP 1: Years 8-9 -->
+  <div id="step1" class="panel">
+    <div class="alert alert-info">Your Year 8 and 9 electives unlock pathways. In particular: <strong>Languages need to be studied continuously from Year 7</strong>, and some music subjects require prior study.</div>
+
+    <div class="sec-label">Year 8 — Language (compulsory, one semester)</div>
+    <div class="cards tight" id="y8-lang-grid"></div>
+
+    <div class="sec-label">Year 8 — Arts elective (pick 1)</div>
+    <div class="cards tight" id="y8-arts-grid"></div>
+
+    <div class="sec-label">Year 8 — Technologies elective (pick 1)</div>
+    <div class="cards tight" id="y8-tech-grid"></div>
+
+    <div class="divider"></div>
+
+    <div class="sec-label">Year 9 — electives (up to 4 total, 2 per semester)</div>
+    <div class="sec-desc">Languages run both semesters and count as 2 of your 4 slots. French Immersion (Immersion program) and Music Extension (Accelerando program) are compulsory for those programs.</div>
+    <div id="y9-count-bar"></div>
+    <div id="y9-warnings"></div>
+    <div class="cards" id="y9-grid"></div>
+
+    <div class="nav-row">
+      <button class="btn" onclick="goStep(0)">← Back</button>
+      <button class="btn btn-primary" onclick="goStep(2)">Next: Year 10 →</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: Year 10 -->
+  <div id="step2" class="panel">
+    <div class="alert alert-info"><strong>Year 10 is critical.</strong> Your selections here directly determine which Year 11–12 subjects you can access. English and Maths run all year; electives are one semester each (languages run all year = 2 slots).</div>
+
+    <div class="sec-label">Year 10 English — choose one (full year, compulsory)</div>
+    <div class="cards" id="y10-eng-grid"></div>
+
+    <div class="sec-label">Year 10 Mathematics — choose one (full year, compulsory)</div>
+    <div class="sec-desc">Prep Specialist Mathematics is an <em>additional elective</em> you can take alongside your main maths if you intend to study Specialist Mathematics in Year 11–12.</div>
+    <div class="cards" id="y10-mat-grid"></div>
+
+    <div class="sec-label">Year 10 electives — 8 slots total (4 per semester)</div>
+    <div class="sec-desc">Languages are full year (= 2 slots). Science subjects are 1 semester each — you can do both Biology and Chemistry in different semesters.</div>
+    <div id="y10-slot-bar"></div>
+    <div id="y10-warnings"></div>
+
+    <div class="sec-label" style="font-size:10px">Health & Physical Education</div>
+    <div class="cards tight" id="y10-hpe-grid"></div>
+    <div class="sec-label" style="font-size:10px">Humanities & Social Sciences</div>
+    <div class="cards tight" id="y10-hass-grid"></div>
+    <div class="sec-label" style="font-size:10px">Languages</div>
+    <div class="cards tight" id="y10-lang-grid"></div>
+    <div class="sec-label" style="font-size:10px">Sciences</div>
+    <div class="cards tight" id="y10-sci-grid"></div>
+    <div class="sec-label" style="font-size:10px">Technologies</div>
+    <div class="cards tight" id="y10-tech-grid"></div>
+    <div class="sec-label" style="font-size:10px">The Arts</div>
+    <div class="cards tight" id="y10-arts-grid"></div>
+
+    <div id="y10-recs"></div>
+
+    <div class="nav-row">
+      <button class="btn" onclick="goStep(1)">← Back</button>
+      <button class="btn btn-primary" onclick="goStep(3)">Next: Yr 11–12 →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: Year 11-12 -->
+  <div id="step3" class="panel">
+    <div id="y1112-prereq-alert"></div>
+    <div id="atar-meter"></div>
+    <div id="y1112-recs"></div>
+
+    <div class="sec-label">Select your Year 11–12 subjects</div>
+    <div class="sec-desc">Only subjects you have a pathway to are shown as selectable. Locked subjects show what Year 10 subjects you'd need. Aim for 5–6 subjects total.</div>
+
+    <div class="sec-label" style="font-size:10px">English</div>
+    <div class="cards" id="y1112-eng-grid"></div>
+    <div class="sec-label" style="font-size:10px">Mathematics</div>
+    <div class="cards" id="y1112-mat-grid"></div>
+    <div class="sec-label" style="font-size:10px">Sciences</div>
+    <div class="cards" id="y1112-sci-grid"></div>
+    <div class="sec-label" style="font-size:10px">Humanities & Social Sciences</div>
+    <div class="cards" id="y1112-hass-grid"></div>
+    <div class="sec-label" style="font-size:10px">Languages</div>
+    <div class="cards" id="y1112-lang-grid"></div>
+    <div class="sec-label" style="font-size:10px">Technologies</div>
+    <div class="cards" id="y1112-tech-grid"></div>
+    <div class="sec-label" style="font-size:10px">Health & Physical Education</div>
+    <div class="cards" id="y1112-hpe-grid"></div>
+    <div class="sec-label" style="font-size:10px">The Arts</div>
+    <div class="cards" id="y1112-arts-grid"></div>
+    <div class="sec-label" style="font-size:10px">Certificates & VET</div>
+    <div class="cards" id="y1112-cert-grid"></div>
+
+    <div class="nav-row">
+      <button class="btn" onclick="goStep(2)">← Back</button>
+      <button class="btn btn-primary" onclick="goStep(4)">View my plan →</button>
+    </div>
+  </div>
+
+  <!-- STEP 4: My Plan -->
+  <div id="step4" class="panel">
+    <div id="final-plan"></div>
+    <div class="nav-row">
+      <button class="btn" onclick="goStep(3)">← Back to edit</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn" onclick="window.print()">Print / Save PDF</button>
+        <button class="btn btn-ask" id="ask-advisor-btn">Get advisor feedback ↗</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+<script>
+/* ============================================================
+   DATA — verified against Mansfield SHS Curriculum Guides 2026
+   ============================================================ */
+
+const Y8_LANG = [
+  { id:'fr8',  name:'French',           meta:'Prereq: Year 7 French' },
+  { id:'fri8', name:'French Immersion', meta:'Program of Excellence only' },
+  { id:'jap8', name:'Japanese',         meta:'Prereq: Year 7 Japanese' }
+];
+
+const Y8_ARTS = [
+  { id:'dra8', name:'Drama',       meta:'No prereqs' },
+  { id:'med8', name:'Media Arts',  meta:'No prereqs' },
+  { id:'mus8', name:'Music',       meta:'No prereqs (Yr 7 recommended)' },
+  { id:'vis8', name:'Visual Arts', meta:'No prereqs' }
+];
+
+const Y8_TECH = [
+  { id:'des8', name:'Design Technology',  meta:'No prereqs' },
+  { id:'dig8', name:'Digital Solutions',  meta:'No prereqs' },
+  { id:'fod8', name:'Food Studies',       meta:'No prereqs' }
+];
+
+/* Y9 electives: semesters = how many slots they consume */
+const Y9 = [
+  { id:'ebs9', name:'Economics & Business', cat:'Humanities',   meta:'No prereqs',                              slots:1 },
+  { id:'geo9', name:'Geography',            cat:'Humanities',   meta:'Prereq: Year 8 Humanities (core)',         slots:1 },
+  { id:'fr9',  name:'French',               cat:'Languages',    meta:'Prereq: Yr 7–8 French',                   slots:2, needY8:'fr8' },
+  { id:'fri9', name:'French Immersion',     cat:'Languages',    meta:'Immersion program only',                  slots:2, needY8:'fri8' },
+  { id:'jap9', name:'Japanese',             cat:'Languages',    meta:'Prereq: Yr 7–8 Japanese',                 slots:2, needY8:'jap8' },
+  { id:'des9', name:'Design Technology',    cat:'Technologies', meta:'No prereqs',                              slots:1 },
+  { id:'dig9', name:'Digital Solutions',    cat:'Technologies', meta:'No prereqs',                              slots:1 },
+  { id:'eng9', name:'Engineering Principles & Systems', cat:'Technologies', meta:'No prereqs',                  slots:1 },
+  { id:'fod9', name:'Food Specialisations', cat:'Technologies', meta:'No prereqs',                              slots:1 },
+  { id:'mat9', name:'Materials & Technologies', cat:'Technologies', meta:'No prereqs',                          slots:1 },
+  { id:'dra9', name:'Drama',                cat:'Arts',         meta:'No prereqs',                              slots:1 },
+  { id:'med9', name:'Media Arts',           cat:'Arts',         meta:'No prereqs',                              slots:1 },
+  { id:'mus9', name:'Music',                cat:'Arts',         meta:'C in Yr 8 English + Yr 7 or 8 Music',    slots:1, needY8:'mus8' },
+  { id:'mue9', name:'Music Extension',      cat:'Arts',         meta:'Accelerando program only (both semesters)', slots:2, needY8:'mus8' },
+  { id:'vis9', name:'Visual Arts',          cat:'Arts',         meta:'No prereqs',                              slots:1 }
+];
+
+/* Y10 English options */
+const Y10_ENG = [
+  { id:'pee',  name:'Prep Essential English',           type:'A', meta:'By HOD invitation only — not selectable', locked:true },
+  { id:'pen',  name:'Prep English',                     type:'G', meta:'Rec: C in Yr 9 English',          minGrade:{subj:'english',g:'C'} },
+  { id:'peal', name:'Prep EAL (English as Additional Language)', type:'G', meta:'For EAL students. Rec: C in Yr 9 English', minGrade:{subj:'english',g:'C'} },
+  { id:'plit', name:'Prep Literature',                  type:'G', meta:'Rec: B in Yr 9 English',           minGrade:{subj:'english',g:'B'} }
+];
+
+/* Y10 Maths — psm is an elective add-on, not the main maths */
+const Y10_MAT = [
+  { id:'pem',  name:'Prep Essential Mathematics',       type:'A', meta:'By HOD invitation only — not selectable', locked:true },
+  { id:'pgm',  name:'Prep General Mathematics',         type:'G', meta:'Prereq: C in Yr 9 Maths',         minGrade:{subj:'maths',g:'C'} },
+  { id:'pmm',  name:'Prep Mathematical Methods',        type:'G', meta:'Prereq: B in Yr 9 Maths',          minGrade:{subj:'maths',g:'B'} },
+  { id:'psm',  name:'Prep Specialist Mathematics',      type:'G', meta:'Prereq: B in Yr 9 Maths. Elective add-on alongside main maths.', minGrade:{subj:'maths',g:'B'}, isAddon:true }
+];
+
+/* Y10 Electives — cat used for grouping */
+const Y10_ELEC = [
+  /* HPE */
+  { id:'pec',  name:'Prep Early Childhood',         cat:'HPE',     type:'A', meta:'No prereqs',                             slots:1 },
+  { id:'pfit', name:'Prep Fitness',                 cat:'HPE',     type:'A', meta:'No prereqs',                             slots:1 },
+  { id:'psr',  name:'Prep Sport & Recreation',      cat:'HPE',     type:'A', meta:'No prereqs',                             slots:1 },
+  { id:'phe',  name:'Prep Health',                  cat:'HPE',     type:'G', meta:'No prereqs',                             slots:1 },
+  { id:'ppe',  name:'Prep Physical Education',      cat:'HPE',     type:'G', meta:'No prereqs',                             slots:1 },
+  /* HASS */
+  { id:'pre',  name:'Prep Religion & Ethics',       cat:'HASS',    type:'A', meta:'No prereqs',                             slots:1 },
+  { id:'psc',  name:'Prep Social & Community Studies', cat:'HASS', type:'A', meta:'No prereqs',                             slots:1 },
+  { id:'pacc', name:'Prep Accounting',              cat:'HASS',    type:'G', meta:'No prereqs',                             slots:1 },
+  { id:'pan',  name:'Prep Ancient History',         cat:'HASS',    type:'G', meta:'No prereqs',                             slots:1 },
+  { id:'pbus', name:'Prep Business',                cat:'HASS',    type:'G', meta:'No prereqs',                             slots:1 },
+  { id:'peco', name:'Prep Economics',               cat:'HASS',    type:'G', meta:'No prereqs',                             slots:1 },
+  { id:'pgeo', name:'Prep Geography',               cat:'HASS',    type:'G', meta:'No prereqs',                             slots:1 },
+  { id:'pleg', name:'Prep Legal Studies',           cat:'HASS',    type:'G', meta:'No prereqs',                             slots:1 },
+  { id:'pmoh', name:'Prep Modern History',          cat:'HASS',    type:'G', meta:'No prereqs',                             slots:1 },
+  /* Languages — full year = 2 slots */
+  { id:'pfr',  name:'Prep French',                  cat:'Lang',    type:'G', meta:'Prereq: Yr 7–9 French',                  slots:2, needY9:'fr9'  },
+  { id:'pfri', name:'Prep French Immersion',        cat:'Lang',    type:'G', meta:'Prereq: Yr 7–9 French Immersion',        slots:2, needY9:'fri9' },
+  { id:'pjap', name:'Prep Japanese',                cat:'Lang',    type:'G', meta:'Prereq: Yr 7–9 Japanese',                slots:2, needY9:'jap9' },
+  /* Sciences */
+  { id:'psip', name:'Prep Science in Practice',     cat:'Science', type:'A', meta:'No prereqs',                             slots:1 },
+  { id:'pbio', name:'Prep Biology',                 cat:'Science', type:'G', meta:'No prereqs',                             slots:1 },
+  { id:'pche', name:'Prep Chemistry',               cat:'Science', type:'G', meta:'No prereqs',                             slots:1 },
+  { id:'pphy', name:'Prep Physics',                 cat:'Science', type:'G', meta:'No prereqs',                             slots:1 },
+  /* Technologies */
+  { id:'pfur', name:'Prep Furnishing Skills',       cat:'Tech',    type:'A', meta:'No prereqs',                             slots:1 },
+  { id:'phos', name:'Prep Hospitality Practices',   cat:'Tech',    type:'A', meta:'No prereqs',                             slots:1 },
+  { id:'pigs', name:'Prep Industrial Graphics Skills', cat:'Tech', type:'A', meta:'No prereqs',                             slots:1 },
+  { id:'pits', name:'Prep Industrial Technology Skills', cat:'Tech',type:'A',meta:'No prereqs',                             slots:1 },
+  { id:'pdes', name:'Prep Design',                  cat:'Tech',    type:'G', meta:'No prereqs',                             slots:1 },
+  { id:'pdis', name:'Prep Digital Solutions',       cat:'Tech',    type:'G', meta:'No prereqs',                             slots:1 },
+  { id:'peg',  name:'Prep Engineering',             cat:'Tech',    type:'G', meta:'Rec: C in Yr 9 Maths & Science',         slots:1 },
+  /* Arts */
+  { id:'pmap', name:'Prep Media Arts in Practice',  cat:'Arts',    type:'A', meta:'No prereqs',                             slots:1 },
+  { id:'pmip', name:'Prep Music in Practice',       cat:'Arts',    type:'A', meta:'Rec: C Yr 9 English + Yr 7/8/9 Music',   slots:1 },
+  { id:'pvap', name:'Prep Visual Arts in Practice', cat:'Arts',    type:'A', meta:'No prereqs',                             slots:1 },
+  { id:'pdra', name:'Prep Drama',                   cat:'Arts',    type:'G', meta:'No prereqs',                             slots:1 },
+  { id:'pftv', name:'Prep Film, TV & New Media',    cat:'Arts',    type:'G', meta:'No prereqs',                             slots:1 },
+  { id:'pmuc', name:'Prep Music | code',            cat:'Arts',    type:'G', meta:'Prereq: Yr 9 Music or Instrumental Music student', slots:1, needY9:['mus9','mue9'] },
+  { id:'pmue', name:'Prep Music Extension',         cat:'Arts',    type:'G', meta:'Prereq: enrolled in Prep Music + Yr 9 Music', slots:1, needY9:['mus9','mue9'] },
+  { id:'pva',  name:'Prep Visual Arts',             cat:'Arts',    type:'G', meta:'No prereqs',                             slots:1 }
+];
+
+/* ============================================================
+   Year 11–12 subjects
+   prereqFn(st) returns true if prerequisites met from Year 10 selections
+   pathFrom = Y10 subject IDs that lead here
+   ============================================================ */
+const Y1112 = [
+  /* English */
+  { id:'ene', name:'Essential English',   cat:'English', type:'A', atar:false,
+    note:'No prereqs. Applied pathway.',
+    prereqFn: st => true,
+    pathFrom:['pee','pen','peal','plit'] },
+  { id:'eng', name:'English',             cat:'English', type:'G', atar:true,
+    note:'Prereq: C in Prep English or Prep Literature.',
+    prereqFn: st => ['pen','peal','plit'].includes(st.y10eng),
+    pathFrom:['pen','peal','plit'] },
+  { id:'eal', name:'English as Additional Language', cat:'English', type:'G', atar:true,
+    note:'Parent/guardian first language not English + C in Prep English, Prep Literature, or Prep EAL.',
+    prereqFn: st => ['pen','peal','plit'].includes(st.y10eng),
+    pathFrom:['peal'] },
+  { id:'lit', name:'Literature',          cat:'English', type:'G', atar:true,
+    note:'Prereq: B in Prep English OR C in Prep Literature.',
+    prereqFn: st => st.y10eng==='plit' || st.y10eng==='pen',
+    pathFrom:['pen','plit'] },
+
+  /* Maths */
+  { id:'mae', name:'Essential Mathematics',   cat:'Maths', type:'A', atar:false,
+    note:'No prereqs.',
+    prereqFn: st => true,
+    pathFrom:['pem','pgm'] },
+  { id:'mag', name:'General Mathematics',     cat:'Maths', type:'G', atar:true,
+    note:'Prereq: C in Prep General Mathematics.',
+    prereqFn: st => st.y10mat==='pgm',
+    pathFrom:['pgm'] },
+  { id:'mam', name:'Mathematical Methods',    cat:'Maths', type:'G', atar:true,
+    note:'Prereq: C in Prep Mathematical Methods.',
+    prereqFn: st => st.y10mat==='pmm',
+    pathFrom:['pmm'] },
+  { id:'mas', name:'Specialist Mathematics',  cat:'Maths', type:'G', atar:true,
+    note:'Prereq: C in Prep Mathematical Methods AND studying senior Mathematical Methods.',
+    prereqFn: st => st.y10mat==='pmm' && st.y10elec.includes('psm'),
+    pathFrom:['psm'] },
+
+  /* Sciences */
+  { id:'scp', name:'Science in Practice',     cat:'Science', type:'A', atar:false,
+    note:'No formal prereqs.',
+    prereqFn: st => true,
+    pathFrom:['psip'] },
+  { id:'bio', name:'Biology',                 cat:'Science', type:'G', atar:true,
+    note:'Prereq: C in Prep English or Literature + C in Prep Biology, Chemistry, Physics, or Earth & Environmental Science + C in Prep General Maths or Methods.',
+    prereqFn: st => hasEngC(st) && st.y10elec.some(id=>['pbio','pche','pphy'].includes(id)) && hasMathsC(st),
+    pathFrom:['pbio','pche','pphy'] },
+  { id:'chm', name:'Chemistry',               cat:'Science', type:'G', atar:true,
+    note:'Prereq: C in Prep English or Literature + C in Prep Chemistry or Physics + >50% in Prep Mathematical Methods.',
+    prereqFn: st => hasEngC(st) && st.y10elec.some(id=>['pche','pphy'].includes(id)) && st.y10mat==='pmm',
+    pathFrom:['pche','pphy'] },
+  { id:'esc', name:'Earth & Environmental Science', cat:'Science', type:'G', atar:true,
+    note:'Prereq: C in Prep English or Literature + C in Prep Biology, Chemistry, Physics + C in Prep Methods or General Maths.',
+    prereqFn: st => hasEngC(st) && st.y10elec.some(id=>['pbio','pche','pphy'].includes(id)) && hasMathsC(st),
+    pathFrom:['pbio','pche','pphy'] },
+  { id:'phy', name:'Physics',                 cat:'Science', type:'G', atar:true,
+    note:'Prereq: C in Prep English or Literature + C in Prep Physics or Chemistry + >50% in Prep Mathematical Methods + studying senior Mathematical Methods.',
+    prereqFn: st => hasEngC(st) && st.y10elec.some(id=>['pphy','pche'].includes(id)) && st.y10mat==='pmm',
+    pathFrom:['pphy','pche'] },
+
+  /* HASS */
+  { id:'scs', name:'Social & Community Studies', cat:'HASS', type:'A', atar:false,
+    note:'No prereqs.',
+    prereqFn: st => true,
+    pathFrom:['psc','pre','pgeo','pan','pmoh'] },
+  { id:'acc', name:'Accounting',              cat:'HASS', type:'G', atar:true,
+    note:'Prereq: C in Prep English or Literature.',
+    prereqFn: st => hasEngC(st),
+    pathFrom:['pacc'] },
+  { id:'ahs', name:'Ancient History',         cat:'HASS', type:'G', atar:true,
+    note:'Prereq: C in Prep English or Literature.',
+    prereqFn: st => hasEngC(st),
+    pathFrom:['pan','pmoh','pre'] },
+  { id:'bus', name:'Business',                cat:'HASS', type:'G', atar:true,
+    note:'Prereq: C in Prep English or Literature.',
+    prereqFn: st => hasEngC(st),
+    pathFrom:['pbus','pacc','peco'] },
+  { id:'ecn', name:'Economics',               cat:'HASS', type:'G', atar:true,
+    note:'Prereq: C in Prep English or Literature.',
+    prereqFn: st => hasEngC(st),
+    pathFrom:['peco','pbus'] },
+  { id:'geg', name:'Geography',               cat:'HASS', type:'G', atar:true,
+    note:'Prereq: C in Prep English or Literature.',
+    prereqFn: st => hasEngC(st),
+    pathFrom:['pgeo'] },
+  { id:'leg', name:'Legal Studies',           cat:'HASS', type:'G', atar:true,
+    note:'Prereq: C in Prep English or Literature.',
+    prereqFn: st => hasEngC(st),
+    pathFrom:['pleg','pre','psc'] },
+  { id:'mhs', name:'Modern History',          cat:'HASS', type:'G', atar:true,
+    note:'Prereq: C in Prep English or Literature.',
+    prereqFn: st => hasEngC(st),
+    pathFrom:['pmoh','pan','pre'] },
+  { id:'dbu', name:'Diploma of Business',     cat:'HASS', type:'Cert', atar:false,
+    note:'Prereq: B in Prep English/EAL OR C in Prep Literature, AND C in Prep General Maths OR studying Prep Methods, AND satisfactory Literacy/Numeracy assessment.',
+    prereqFn: st => (st.y10eng==='pen'||st.y10eng==='peal') && hasMathsC(st),
+    pathFrom:['pacc','pbus','peco'] },
+  { id:'cju', name:'Certificate IV Justice Studies', cat:'HASS', type:'Cert', atar:false,
+    note:'No formal prereqs.',
+    prereqFn: st => true,
+    pathFrom:['pleg','psc'] },
+
+  /* Languages */
+  { id:'fre', name:'French',                  cat:'Lang', type:'G', atar:true,
+    note:'Prereq: C in Prep French.',
+    prereqFn: st => st.y10elec.includes('pfr') || st.y10elec.includes('pfri'),
+    pathFrom:['pfr','pfri'] },
+  { id:'jps', name:'Japanese',                cat:'Lang', type:'G', atar:true,
+    note:'Prereq: C in Prep Japanese.',
+    prereqFn: st => st.y10elec.includes('pjap'),
+    pathFrom:['pjap'] },
+
+  /* Technologies */
+  { id:'fur', name:'Furnishing Skills',       cat:'Tech', type:'A', atar:false,
+    note:'No formal prereqs (C in Prep English and Prep General Maths recommended).',
+    prereqFn: st => true,
+    pathFrom:['pfur'] },
+  { id:'gsk', name:'Industrial Graphics Skills', cat:'Tech', type:'A', atar:false,
+    note:'No formal prereqs (C in Prep English and Prep General Maths recommended).',
+    prereqFn: st => true,
+    pathFrom:['pigs'] },
+  { id:'isk', name:'Industrial Technology Skills', cat:'Tech', type:'A', atar:false,
+    note:'No formal prereqs (C in Prep English and Prep General Maths recommended).',
+    prereqFn: st => true,
+    pathFrom:['pits'] },
+  { id:'icj', name:'Information & Communication Technology', cat:'Tech', type:'A', atar:false,
+    note:'No formal prereqs.',
+    prereqFn: st => true,
+    pathFrom:['pdis'] },
+  { id:'des', name:'Design',                  cat:'Tech', type:'G', atar:true,
+    note:'Prereq: C in Prep General Maths + C in Prep English or Literature.',
+    prereqFn: st => hasEngC(st) && hasMathsC(st),
+    pathFrom:['pdes'] },
+  { id:'dis', name:'Digital Solutions',       cat:'Tech', type:'G', atar:true,
+    note:'Prereq: C in Prep Digital Solutions OR C in Prep English or Literature.',
+    prereqFn: st => st.y10elec.includes('pdis') || hasEngC(st),
+    pathFrom:['pdis'] },
+  { id:'egr', name:'Engineering',             cat:'Tech', type:'G', atar:true,
+    note:'Prereq: C in Prep Mathematical Methods OR A in Prep General Mathematics, AND C in Prep English or Literature.',
+    prereqFn: st => hasEngC(st) && (st.y10mat==='pmm' || st.y10mat==='pgm'),
+    pathFrom:['peg'] },
+  { id:'chp', name:'Cert II/III Hospitality', cat:'Tech', type:'Cert', atar:false,
+    note:'No formal prereqs.',
+    prereqFn: st => true,
+    pathFrom:['phos'] },
+
+  /* HPE */
+  { id:'ecs', name:'Early Childhood Studies', cat:'HPE', type:'A', atar:false,
+    note:'No formal prereqs.',
+    prereqFn: st => true,
+    pathFrom:['pec'] },
+  { id:'rec', name:'Sport & Recreation',      cat:'HPE', type:'A', atar:false,
+    note:'No formal prereqs.',
+    prereqFn: st => true,
+    pathFrom:['psr','pfit','ppe'] },
+  { id:'hea', name:'Health',                  cat:'HPE', type:'G', atar:true,
+    note:'Prereq: C in Prep English or Prep Literature.',
+    prereqFn: st => hasEngC(st),
+    pathFrom:['phe'] },
+  { id:'ped', name:'Physical Education',      cat:'HPE', type:'G', atar:true,
+    note:'Prereq: C in Prep English or Prep Literature.',
+    prereqFn: st => hasEngC(st),
+    pathFrom:['ppe'] },
+  { id:'cft', name:'Certificate III in Fitness', cat:'HPE', type:'Cert', atar:false,
+    note:'No formal prereqs.',
+    prereqFn: st => true,
+    pathFrom:['pfit','psr','ppe'] },
+
+  /* Arts */
+  { id:'map', name:'Media Arts in Practice',  cat:'Arts', type:'A', atar:false,
+    note:'No formal prereqs.',
+    prereqFn: st => true,
+    pathFrom:['pmap','pftv'] },
+  { id:'vap', name:'Visual Arts in Practice', cat:'Arts', type:'A', atar:false,
+    note:'No formal prereqs.',
+    prereqFn: st => true,
+    pathFrom:['pvap','pva'] },
+  { id:'dra', name:'Drama',                   cat:'Arts', type:'G', atar:true,
+    note:'Prereq: C in Prep English or Literature.',
+    prereqFn: st => hasEngC(st),
+    pathFrom:['pdra'] },
+  { id:'ftm', name:'Film, Television & New Media', cat:'Arts', type:'G', atar:true,
+    note:'Prereq: C in Prep English or Literature.',
+    prereqFn: st => hasEngC(st),
+    pathFrom:['pftv','pmap'] },
+  { id:'mus', name:'Music',                   cat:'Arts', type:'G', atar:true,
+    note:'Prereq: C in Prep Music | code OR audition.',
+    prereqFn: st => st.y10elec.includes('pmuc') || st.y10elec.includes('pmip') || st.y10elec.includes('pmue'),
+    pathFrom:['pmuc','pmip','pmue'] },
+  { id:'art', name:'Visual Art',              cat:'Arts', type:'G', atar:true,
+    note:'Prereq: C in Prep English or Literature.',
+    prereqFn: st => hasEngC(st),
+    pathFrom:['pva','pvap'] }
+];
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const st = {
+  year: null,
+  goal: null,
+  grades: { english:'', maths:'', science:'' },
+  y8lang: null,
+  y8arts: [],
+  y8tech: [],
+  y9elec: [],
+  y10eng: null,
+  y10mat: null,
+  y10elec: [],  /* includes psm addon if selected */
+  y1112: []
+};
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+function gradeAtLeast(grade, min) {
+  if (!grade) return true; /* no grade entered = don't block */
+  return ['A','B','C','D','E'].indexOf(grade) <= ['A','B','C','D','E'].indexOf(min);
+}
+function hasEngC(st) {
+  return ['pen','peal','plit'].includes(st.y10eng);
+}
+function hasMathsC(st) {
+  return st.y10mat==='pgm' || st.y10mat==='pmm';
+}
+function y9Used(st) {
+  return st.y9elec.reduce((acc,id)=>{ const s=Y9.find(x=>x.id===id); return acc+(s?s.slots:0); },0);
+}
+function y10ElecUsed(st) {
+  return st.y10elec.filter(id=>!Y10_MAT.find(x=>x.id===id&&x.isAddon)).reduce((acc,id)=>{
+    const s=Y10_ELEC.find(x=>x.id===id); return acc+(s?s.slots:0);
+  },0);
+}
+function y9Locked(s) {
+  if (s.needY8) return st.y8lang !== s.needY8;
+  return false;
+}
+function y10ElecLocked(s) {
+  if (s.needY9) {
+    const need = Array.isArray(s.needY9)?s.needY9:[s.needY9];
+    return !need.some(id=>st.y9elec.includes(id));
+  }
+  return false;
+}
+function canAccessY1112(s) {
+  return s.prereqFn(st);
+}
+
+/* ============================================================
+   RENDER HELPERS
+   ============================================================ */
+function badgeHTML(type, atar) {
+  let b = '';
+  if (type==='G') b += `<span class="badge badge-g">General</span>`;
+  else if (type==='A') b += `<span class="badge badge-a">Applied</span>`;
+  else if (type==='Cert') b += `<span class="badge badge-cert">Certificate</span>`;
+  if (atar) b += `<span class="badge badge-atar">ATAR</span>`;
+  return b;
+}
+
+function makeCard(opts) {
+  /* opts: {id, name, meta, badges, selected, locked, lockedReason, recommended, onclick} */
+  const div = document.createElement('div');
+  div.className = 'card';
+  if (opts.locked) div.classList.add('locked');
+  else if (opts.selected) div.classList.add('selected');
+  if (opts.recommended && !opts.selected) div.classList.add('recommended');
+  div.innerHTML = `<div class="card-name">${opts.name}</div><div class="card-meta">${opts.meta||''}</div>${opts.badges?`<div class="card-badges">${opts.badges}</div>`:''}${opts.locked&&opts.lockedReason?`<div class="locked-reason">${opts.lockedReason}</div>`:''}`;
+  if (!opts.locked && opts.onclick) div.addEventListener('click', opts.onclick);
+  return div;
+}
+
+function renderGrid(id, items) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = '';
+  items.forEach(c => el.appendChild(c));
+}
+
+function countBar(used, max, id) {
+  const pct = Math.min(100, Math.round(used/max*100));
+  const color = used>max?'var(--red)':used===max?'var(--green)':'var(--blue)';
+  return `<div class="count-bar"><span style="font-size:13px;font-weight:500">${used}/${max} slots used</span><div class="count-bar-fill"><div class="count-bar-inner" style="width:${pct}%;background:${color}"></div></div>${used>max?'<span style="font-size:12px;color:var(--red)">Over limit — remove subjects</span>':used===max?'<span style="font-size:12px;color:var(--green)">All slots filled</span>':'<span style="font-size:12px;color:var(--text2)">${max-used} remaining</span>'}</div>`.replace('${max-used}',max-used);
+}
+
+/* ============================================================
+   STEP RENDERS
+   ============================================================ */
+function renderStep0() {
+  const adv = document.getElementById('step0-advice');
+  if (!adv) return;
+  let html = '';
+  if (st.goal==='atar') {
+    html += `<div class="alert alert-info"><strong>ATAR pathway:</strong> You'll need at least 5 General (ATAR-eligible) subjects in Years 11–12, including a satisfactory result in one QCE English subject. Aim for Mathematical Methods if your maths grade allows it — it scales well and opens Science and Engineering pathways.</div>`;
+  } else if (st.goal==='vet') {
+    html += `<div class="alert alert-info"><strong>VET pathway:</strong> You can earn your QCE through Applied subjects, Certificates, and school-based apprenticeships. You still need at least one QCE English subject.</div>`;
+  } else if (st.goal==='mixed') {
+    html += `<div class="alert alert-info"><strong>Flexible pathway:</strong> A mix of General and Applied subjects lets you keep options open. You can still qualify for an ATAR with 4 General subjects + 1 Applied or Cert III.</div>`;
+  }
+  adv.innerHTML = html;
+}
+
+function renderStep1() {
+  /* Y8 Language */
+  renderGrid('y8-lang-grid', Y8_LANG.map(s=>makeCard({
+    id:s.id, name:s.name, meta:s.meta, badges:'',
+    selected:st.y8lang===s.id,
+    onclick:()=>{ st.y8lang=s.id; render(); }
+  })));
+  /* Y8 Arts */
+  renderGrid('y8-arts-grid', Y8_ARTS.map(s=>makeCard({
+    id:s.id, name:s.name, meta:s.meta, badges:'',
+    selected:st.y8arts.includes(s.id),
+    onclick:()=>{ toggle(st.y8arts,s.id,1); render(); }
+  })));
+  /* Y8 Tech */
+  renderGrid('y8-tech-grid', Y8_TECH.map(s=>makeCard({
+    id:s.id, name:s.name, meta:s.meta, badges:'',
+    selected:st.y8tech.includes(s.id),
+    onclick:()=>{ toggle(st.y8tech,s.id,1); render(); }
+  })));
+  /* Y9 count bar */
+  const used = y9Used(st);
+  document.getElementById('y9-count-bar').innerHTML = countBar(used, 4, 'y9');
+  /* Y9 warnings */
+  const warnEl = document.getElementById('y9-warnings');
+  let warns = '';
+  if (!st.y8lang) warns += `<div class="alert alert-warning">Select a Year 8 language — it's required for language continuity into Year 10 and 11–12.</div>`;
+  warnEl.innerHTML = warns;
+  /* Y9 grid */
+  renderGrid('y9-grid', Y9.map(s=>{
+    const locked = y9Locked(s);
+    const slotsLeft = 4 - used;
+    const alreadyIn = st.y9elec.includes(s.id);
+    const wouldExceed = !alreadyIn && s.slots > slotsLeft;
+    return makeCard({
+      id:s.id, name:s.name, meta:s.meta,
+      badges:`<span class="badge badge-sem">${s.cat}</span><span class="badge badge-sem">${s.slots} slot${s.slots>1?'s':''}</span>`,
+      selected:alreadyIn,
+      locked: locked || (!alreadyIn && wouldExceed),
+      lockedReason: locked ? 'Requires prior language/music study' : wouldExceed ? 'Not enough slots remaining' : '',
+      onclick:()=>{ toggleSlots(st.y9elec, s.id, 4, Y9); render(); }
+    });
+  }));
+}
+
+function renderStep2() {
+  const recs = getY10Recs();
+  /* English */
+  renderGrid('y10-eng-grid', Y10_ENG.map(s=>{
+    const gradeIssue = s.minGrade && st.grades[s.minGrade.subj] && !gradeAtLeast(st.grades[s.minGrade.subj], s.minGrade.g);
+    return makeCard({
+      id:s.id, name:s.name, meta:s.meta,
+      badges:badgeHTML(s.type,false),
+      selected:st.y10eng===s.id,
+      locked:s.locked||false,
+      lockedReason:gradeIssue?`Grade ${s.minGrade.g} in Year 9 English recommended`:'',
+      recommended:recs.y10eng===s.id,
+      onclick:()=>{ if(!s.locked){ st.y10eng=s.id; render(); } }
+    });
+  }));
+  /* Maths */
+  renderGrid('y10-mat-grid', Y10_MAT.map(s=>{
+    const gradeIssue = s.minGrade && st.grades[s.minGrade.subj] && !gradeAtLeast(st.grades[s.minGrade.subj], s.minGrade.g);
+    const isAddonSel = s.isAddon && st.y10elec.includes(s.id);
+    return makeCard({
+      id:s.id, name:s.name, meta:s.meta,
+      badges:badgeHTML(s.type,false)+(s.isAddon?'<span class="badge badge-sem">Add-on elective</span>':''),
+      selected: s.isAddon ? isAddonSel : st.y10mat===s.id,
+      locked:s.locked||false,
+      lockedReason:gradeIssue?`Grade ${s.minGrade.g} in Year 9 Maths recommended`:'',
+      recommended:recs.y10mat===s.id && !s.isAddon,
+      onclick:()=>{
+        if(!s.locked){
+          if(s.isAddon){ toggle(st.y10elec,s.id,null); }
+          else { st.y10mat=s.id; }
+          render();
+        }
+      }
+    });
+  }));
+  /* Slot bar */
+  const used = y10ElecUsed(st);
+  document.getElementById('y10-slot-bar').innerHTML = countBar(used, 8, 'y10');
+  /* Warnings */
+  let warns = '';
+  if (!st.y10eng) warns += `<div class="alert alert-warning">Select a Year 10 English subject.</div>`;
+  if (!st.y10mat) warns += `<div class="alert alert-warning">Select a Year 10 Mathematics subject.</div>`;
+  if (used > 8) warns += `<div class="alert alert-error">You have selected more than 8 elective slots. Remove some subjects.</div>`;
+  document.getElementById('y10-warnings').innerHTML = warns;
+  /* Electives by category */
+  const cats = ['HPE','HASS','Lang','Science','Tech','Arts'];
+  const gridIds = ['y10-hpe-grid','y10-hass-grid','y10-lang-grid','y10-sci-grid','y10-tech-grid','y10-arts-grid'];
+  cats.forEach((cat,i)=>{
+    const slotsLeft = 8 - used;
+    renderGrid(gridIds[i], Y10_ELEC.filter(s=>s.cat===cat).map(s=>{
+      const locked = y10ElecLocked(s);
+      const alreadyIn = st.y10elec.includes(s.id);
+      const wouldExceed = !alreadyIn && s.slots > slotsLeft;
+      return makeCard({
+        id:s.id, name:s.name, meta:s.meta,
+        badges:badgeHTML(s.type,false)+`<span class="badge badge-sem">${s.slots===2?'Full year':'1 sem'}</span>`,
+        selected:alreadyIn,
+        locked: locked||(!alreadyIn&&wouldExceed),
+        lockedReason: locked?'Requires prior subject study':wouldExceed?'Not enough slots remaining':'',
+        recommended: recs.y10elec.includes(s.id),
+        onclick:()=>{ toggleSlots(st.y10elec, s.id, 8, Y10_ELEC); render(); }
+      });
+    }));
+  });
+  /* Recs */
+  renderY10Recs(recs);
+}
+
+function renderStep3() {
+  /* Prereq alert */
+  let alerts = '';
+  if (!st.y10eng || !st.y10mat) {
+    alerts = `<div class="alert alert-warning">Complete your Year 10 selections first — prerequisites for Year 11–12 depend on them.</div>`;
+  }
+  document.getElementById('y1112-prereq-alert').innerHTML = alerts;
+  /* ATAR meter */
+  renderATARMeter();
+  /* Recs */
+  renderY1112Recs();
+  /* Subject grids */
+  const cats = ['English','Maths','Science','HASS','Lang','Tech','HPE','Arts','Cert'];
+  const gridIds = ['y1112-eng-grid','y1112-mat-grid','y1112-sci-grid','y1112-hass-grid','y1112-lang-grid','y1112-tech-grid','y1112-hpe-grid','y1112-arts-grid','y1112-cert-grid'];
+  cats.forEach((cat,i)=>{
+    const subjects = cat==='Cert' ? Y1112.filter(s=>s.type==='Cert') : Y1112.filter(s=>s.cat===cat&&s.type!=='Cert');
+    renderGrid(gridIds[i], subjects.map(s=>{
+      const canAccess = canAccessY1112(s);
+      const missingY10 = !canAccess ? getMissingY10(s) : '';
+      return makeCard({
+        id:s.id, name:s.name, meta:s.note,
+        badges:badgeHTML(s.type,s.atar),
+        selected:st.y1112.includes(s.id),
+        locked:!canAccess,
+        lockedReason:missingY10?`Need: ${missingY10}`:'',
+        recommended: isRecommended1112(s),
+        onclick:()=>{ toggle(st.y1112,s.id,null); render(); }
+      });
+    }));
+  });
+}
+
+function renderATARMeter() {
+  const el = document.getElementById('atar-meter');
+  if (!el) return;
+  const selSubj = st.y1112.map(id=>Y1112.find(s=>s.id===id)).filter(Boolean);
+  const genCount = selSubj.filter(s=>s.atar).length;
+  const appCount = selSubj.filter(s=>s.type==='A').length;
+  const hasEng = selSubj.some(s=>['ene','eng','eal','lit'].includes(s.id));
+  const hasEngG = selSubj.some(s=>['eng','eal','lit'].includes(s.id)&&s.atar);
+  const total = selSubj.length;
+  /* ATAR eligibility: best 5 General OR best 4 General + 1 Applied/Cert III */
+  const atarViable = (genCount>=5) || (genCount>=4 && (appCount>=1||selSubj.some(s=>s.type==='Cert')));
+  const pct = Math.min(100, Math.round((Math.min(genCount,5)/5)*100));
+  const barColor = pct===100?'var(--green)':pct>=60?'var(--blue)':'var(--amber)';
+
+  const checks = [
+    { label: `${genCount}/5+ General subjects`, ok: genCount>=5, warn: genCount>=4&&genCount<5 },
+    { label: `QCE English subject included`, ok: hasEng, warn: false },
+    { label: `Satisfactory English for ATAR`, ok: hasEngG, warn: hasEng&&!hasEngG },
+    { label: `5–6 total subjects`, ok: total>=5&&total<=6, warn: total>6||total===4 }
+  ];
+
+  el.innerHTML = `<div class="atar-meter">
+    <div class="atar-meter-title">ATAR eligibility tracker</div>
+    <div class="atar-bar-wrap"><div class="atar-bar" style="width:${pct}%;background:${barColor}"></div></div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:8px">${genCount} General subject${genCount===1?'':'s'} selected${atarViable?` — <strong style="color:var(--green)">ATAR eligible</strong>`:''}</div>
+    <div class="atar-checks">${checks.map(c=>`<div class="atar-check"><div class="check-dot ${c.ok?'ok':c.warn?'warn':'fail'}"></div><span style="color:var(--text2)">${c.label}</span></div>`).join('')}</div>
+  </div>`;
+}
+
+function renderY10Recs(recs) {
+  const el = document.getElementById('y10-recs');
+  if (!el) return;
+  if (!st.goal && !recs.y10elec.length) { el.innerHTML=''; return; }
+  let tips = [];
+  if (st.goal==='atar') {
+    if (!st.y10elec.some(id=>['pbio','pche','pphy'].includes(id)))
+      tips.push('Add at least one science elective (Biology, Chemistry, or Physics) — these open the competitive science pathways in Year 11–12.');
+    if (st.y10mat==='pmm' && !st.y10elec.includes('psm'))
+      tips.push('Consider adding Prep Specialist Mathematics as an elective add-on if you are aiming for Specialist Mathematics in Year 11–12.');
+    if (!st.y10elec.some(id=>['pacc','pbus','peco','pgeo','pleg','pan','pmoh'].includes(id)))
+      tips.push('Pick at least one HASS General elective — they are high-scoring ATAR subjects and most only require a C in Prep English.');
+  } else if (st.goal==='vet') {
+    if (!st.y10elec.some(id=>['phos','pfur','pits','pigs'].includes(id)))
+      tips.push('Consider a practical Technologies elective (Hospitality, Furnishing, Industrial Technology) — these lead directly to Certificate VET qualifications.');
+  }
+  if (!tips.length) { el.innerHTML=''; return; }
+  el.innerHTML = `<div class="rec-box" style="margin-top:12px"><strong>Advisor tips for your selections:</strong><ul class="rec-list">${tips.map(t=>`<li>${t}</li>`).join('')}</ul></div>`;
+}
+
+function renderY1112Recs() {
+  const el = document.getElementById('y1112-recs');
+  if (!el) return;
+  const selSubj = st.y1112.map(id=>Y1112.find(s=>s.id===id)).filter(Boolean);
+  const genCount = selSubj.filter(s=>s.atar).length;
+  let tips = [];
+  if (st.goal==='atar') {
+    if (genCount < 5) tips.push(`Select ${5-genCount} more General (ATAR-eligible) subject${5-genCount>1?'s':''} to be ATAR eligible.`);
+    if (!selSubj.some(s=>['eng','eal','lit'].includes(s.id))) tips.push('Include English, Literature, or English as an Additional Language — a satisfactory result is required for ATAR eligibility.');
+    if (!selSubj.some(s=>['mam','mag'].includes(s.id))) tips.push('Include at least one mathematics subject — Mathematical Methods and General Mathematics both contribute to your ATAR.');
+    if (st.y10mat==='pmm' && !st.y1112.includes('mam')) tips.push('You studied Prep Mathematical Methods — Mathematical Methods in Year 11–12 is a strong ATAR subject, consider adding it.');
+  }
+  if (!tips.length) { el.innerHTML=''; return; }
+  el.innerHTML = `<div class="rec-box" style="margin-top:0;margin-bottom:12px"><strong>Advisor tips:</strong><ul class="rec-list">${tips.map(t=>`<li>${t}</li>`).join('')}</ul></div>`;
+}
+
+function renderFinalPlan() {
+  const el = document.getElementById('final-plan');
+  if (!el) return;
+
+  const selSubj = st.y1112.map(id=>Y1112.find(s=>s.id===id)).filter(Boolean);
+  const genCount = selSubj.filter(s=>s.atar).length;
+  const appCount = selSubj.filter(s=>s.type==='A').length;
+  const hasEng = selSubj.some(s=>['ene','eng','eal','lit'].includes(s.id));
+  const atarElig = (genCount>=5) || (genCount>=4 && (appCount>=1||selSubj.some(s=>s.type==='Cert')));
+
+  const name = id => {
+    return Y8_LANG.find(s=>s.id===id)?.name || Y8_ARTS.find(s=>s.id===id)?.name || Y8_TECH.find(s=>s.id===id)?.name
+      || Y9.find(s=>s.id===id)?.name || Y10_ENG.find(s=>s.id===id)?.name || Y10_MAT.find(s=>s.id===id)?.name
+      || Y10_ELEC.find(s=>s.id===id)?.name || id;
+  };
+  const typeOf = id => Y1112.find(s=>s.id===id);
+
+  const y8all = [st.y8lang, ...st.y8arts, ...st.y8tech].filter(Boolean);
+  const y9all = st.y9elec;
+  const y10all = [st.y10eng, st.y10mat, ...st.y10elec].filter(Boolean);
+
+  const pillOf = (id, arr) => {
+    const s = arr.find(x=>x.id===id);
+    if (!s) return `<span class="pill">${name(id)}</span>`;
+    if (s.type==='G') return `<span class="pill g">${s.name}</span>`;
+    if (s.type==='A') return `<span class="pill a">${s.name}</span>`;
+    if (s.type==='Cert') return `<span class="pill cert">${s.name}</span>`;
+    return `<span class="pill">${s.name}</span>`;
+  };
+
+  /* Status */
+  let status = '';
+  if (!st.y10eng || !st.y10mat || !st.y1112.length) {
+    status = `<div class="alert alert-warning">Your plan is incomplete — finish selecting subjects in the earlier steps.</div>`;
+  } else if (atarElig && hasEng) {
+    status = `<div class="alert alert-success"><strong>ATAR eligible plan.</strong> You have ${genCount} General subject${genCount===1?'':'s'} and a QCE English subject. Your ATAR will be calculated from your best results.</div>`;
+  } else if (!atarElig) {
+    status = `<div class="alert alert-warning"><strong>Not yet ATAR eligible.</strong> You need at least 5 General subjects (or 4 General + 1 Applied/Cert III+) and a satisfactory English result.</div>`;
+  }
+  if (!hasEng && st.y1112.length > 0) {
+    status += `<div class="alert alert-error">You must include at least one QCE English subject to be eligible for the QCE and ATAR.</div>`;
+  }
+
+  const buildSummaryPlan = () => {
+    const planText = `Year: ${st.year||'?'} | Goal: ${st.goal||'?'}\nYear 8: ${y8all.map(name).join(', ')||'none'}\nYear 9 electives: ${y9all.map(name).join(', ')||'none'}\nYear 10 English: ${name(st.y10eng)||'none'}\nYear 10 Maths: ${name(st.y10mat)||'none'}\nYear 10 electives: ${st.y10elec.map(name).join(', ')||'none'}\nYear 11-12: ${st.y1112.map(id=>Y1112.find(s=>s.id===id)?.name||id).join(', ')||'none'}\nGeneral subjects: ${genCount} | Applied: ${appCount} | ATAR eligible: ${atarElig&&hasEng?'Yes':'No'}`;
+    return planText;
+  };
+
+  document.getElementById('ask-advisor-btn').onclick = () => {
+    alert('In the full Claude.ai version, this would send your plan for personalised advisor feedback.\n\n' + buildSummaryPlan());
+  };
+
+  el.innerHTML = `
+    <h2 style="font-size:18px;font-weight:600;margin-bottom:14px">My pathway plan</h2>
+    ${status}
+    <div class="track" style="margin-top:16px">
+      <div class="track-head"><span class="track-head-title">Year 8</span><span class="count-tag">Foundation year</span></div>
+      <div class="track-body">
+        <div class="track-row"><div class="track-row-label">Core subjects</div><div class="pills"><span class="pill">English</span><span class="pill">Mathematics</span><span class="pill">Science</span><span class="pill">Humanities</span><span class="pill">HPE (1 sem)</span></div></div>
+        <div class="track-row"><div class="track-row-label">Language (1 sem)</div><div class="pills">${st.y8lang?`<span class="pill">${name(st.y8lang)}</span>`:`<span style="font-size:13px;color:var(--text3)">Not selected</span>`}</div></div>
+        <div class="track-row"><div class="track-row-label">Electives</div><div class="pills">${[...st.y8arts,...st.y8tech].length?[...st.y8arts,...st.y8tech].map(id=>`<span class="pill">${name(id)}</span>`).join(''):`<span style="font-size:13px;color:var(--text3)">Not selected</span>`}</div></div>
+      </div>
+    </div>
+    <div class="track">
+      <div class="track-head"><span class="track-head-title">Year 9</span><span class="count-tag">${y9all.length} elective${y9all.length!==1?'s':''}</span></div>
+      <div class="track-body">
+        <div class="track-row"><div class="track-row-label">Core subjects</div><div class="pills"><span class="pill">English</span><span class="pill">Mathematics</span><span class="pill">Science</span><span class="pill">History (1 sem)</span><span class="pill">HPE (1 sem)</span></div></div>
+        <div class="track-row"><div class="track-row-label">Electives</div><div class="pills">${y9all.length?y9all.map(id=>`<span class="pill">${name(id)}</span>`).join(''):`<span style="font-size:13px;color:var(--text3)">Not selected</span>`}</div></div>
+      </div>
+    </div>
+    <div class="track">
+      <div class="track-head"><span class="track-head-title">Year 10</span><span class="count-tag">${st.y10elec.length} elective${st.y10elec.length!==1?'s':''}</span></div>
+      <div class="track-body">
+        <div class="track-row"><div class="track-row-label">English (full year)</div><div class="pills">${st.y10eng?`<span class="pill g">${name(st.y10eng)}</span>`:`<span style="font-size:13px;color:var(--text3)">Not selected</span>`}</div></div>
+        <div class="track-row"><div class="track-row-label">Mathematics (full year)</div><div class="pills">${st.y10mat?`<span class="pill g">${name(st.y10mat)}</span>`:`<span style="font-size:13px;color:var(--text3)">Not selected</span>`}</div></div>
+        <div class="track-row"><div class="track-row-label">Electives (${y10ElecUsed(st)}/8 slots)</div><div class="pills">${st.y10elec.length?st.y10elec.map(id=>{const s=Y10_ELEC.find(x=>x.id===id)||Y10_MAT.find(x=>x.id===id);return`<span class="pill ${s?.type==='G'?'g':'a'}">${name(id)}</span>`;}).join(''):`<span style="font-size:13px;color:var(--text3)">Not selected</span>`}</div></div>
+      </div>
+    </div>
+    <div class="track">
+      <div class="track-head"><span class="track-head-title">Year 11–12</span><span class="count-tag">${st.y1112.length} subject${st.y1112.length!==1?'s':''} · ${genCount} General · ${appCount} Applied</span></div>
+      <div class="track-body">
+        <div class="track-row"><div class="pills">${st.y1112.length?st.y1112.map(id=>pillOf(id,Y1112)).join(''):`<span style="font-size:13px;color:var(--text3)">Not selected</span>`}</div></div>
+        ${st.y1112.length?`<div style="margin-top:10px;font-size:12px;color:var(--text2)"><span class="pill g">General</span> ATAR-eligible &nbsp; <span class="pill a">Applied</span> practical pathway &nbsp; <span class="pill cert">Certificate</span> VET qualification</div>`:''}
+      </div>
+    </div>
+    <div style="margin-top:20px;padding:14px;background:var(--surface2);border-radius:var(--radius-lg);border:1px solid var(--border)">
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px">Assessment structure reminder</div>
+      <table class="sum-table">
+        <tr><th>Subject type</th><th>Internal</th><th>External</th><th>For ATAR?</th></tr>
+        <tr><td>General</td><td>75% (most subjects)<br>50% (Maths & Science)</td><td>25% or 50%</td><td>Yes</td></tr>
+        <tr><td>Applied</td><td>100% (4 internal tasks)</td><td>None</td><td>Can contribute 1 subject to ATAR calculation</td></tr>
+        <tr><td>Certificate VET</td><td>School/RTO assessed</td><td>None</td><td>Can substitute for 1 Applied in ATAR calc</td></tr>
+      </table>
+    </div>`;
+}
+
+/* ============================================================
+   RECOMMENDATION LOGIC
+   ============================================================ */
+function getY10Recs() {
+  const recs = { y10eng: null, y10mat: null, y10elec: [] };
+  if (st.goal==='atar' || st.goal==='mixed') {
+    const ge = st.grades.english;
+    const gm = st.grades.maths;
+    recs.y10eng = (ge && gradeAtLeast(ge,'B')) ? 'plit' : 'pen';
+    recs.y10mat = (gm && gradeAtLeast(gm,'B')) ? 'pmm' : (gm && gradeAtLeast(gm,'C')) ? 'pgm' : null;
+    recs.y10elec = ['pbio','pche','pbus','pleg','pmoh'];
+  } else if (st.goal==='vet') {
+    recs.y10eng = 'pen';
+    recs.y10mat = 'pgm';
+    recs.y10elec = ['phos','pfur','pits'];
+  }
+  return recs;
+}
+
+function isRecommended1112(s) {
+  if (!st.goal) return false;
+  if (st.goal==='atar') {
+    return ['eng','lit','mam','mag','bio','chm','phy','bus','ecn','leg','mhs','ahs','geg'].includes(s.id);
+  }
+  if (st.goal==='vet') {
+    return ['ene','mae','chp','cft','gsk','isk','icj','scs','ecs','rec'].includes(s.id);
+  }
+  return false;
+}
+
+function getMissingY10(s) {
+  if (s.pathFrom && s.pathFrom.length) {
+    const elecNames = s.pathFrom.map(id=>[...Y10_ENG,...Y10_MAT,...Y10_ELEC].find(x=>x.id===id)?.name||id);
+    return elecNames.slice(0,2).join(' or ');
+  }
+  return 'relevant Year 10 subject';
+}
+
+/* ============================================================
+   TOGGLE HELPERS
+   ============================================================ */
+function toggle(arr, id, max) {
+  const idx = arr.indexOf(id);
+  if (idx >= 0) arr.splice(idx, 1);
+  else if (!max || arr.length < max) arr.push(id);
+}
+
+function toggleSlots(arr, id, maxSlots, catalog) {
+  const idx = arr.indexOf(id);
+  if (idx >= 0) { arr.splice(idx, 1); return; }
+  const s = catalog.find(x=>x.id===id);
+  const slots = s ? (s.slots||1) : 1;
+  const used = arr.reduce((acc,aid)=>{ const x=catalog.find(y=>y.id===aid); return acc+(x?x.slots||1:1); },0);
+  if (used + slots <= maxSlots) arr.push(id);
+}
+
+/* ============================================================
+   STEP NAVIGATION
+   ============================================================ */
+let currentStep = 0;
+function goStep(n) {
+  document.querySelectorAll('.panel').forEach((p,i)=>p.classList.toggle('active',i===n));
+  document.querySelectorAll('.step-btn').forEach((b,i)=>{
+    b.classList.remove('active','done');
+    if (i===n) b.classList.add('active');
+    else if (i<n) b.classList.add('done');
+  });
+  currentStep = n;
+  render();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function pickYear(y, el) {
+  st.year = y;
+  document.querySelectorAll('.year-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+  render();
+}
+
+function pickGoal(g, el) {
+  st.goal = g;
+  document.querySelectorAll('.goal-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  render();
+}
+
+/* ============================================================
+   MASTER RENDER
+   ============================================================ */
+function render() {
+  if (currentStep===0) renderStep0();
+  if (currentStep===1) renderStep1();
+  if (currentStep===2) renderStep2();
+  if (currentStep===3) renderStep3();
+  if (currentStep===4) renderFinalPlan();
+}
+
+render();
+</script>
+</body>
+</html>
