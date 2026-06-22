@@ -425,11 +425,11 @@
   <div class="logo">VESSEL TRACKER <span>| Maritime AIS Dashboard</span></div>
   <div class="api-key-section">
     <div class="status-dot" id="statusDot"></div>
-    <input type="password" id="apiKeyInput" placeholder="Enter VesselAPI.com API key..." />
+    <input type="password" id="apiKeyInput" placeholder="API key (optional if using CF Worker)" />
     <select id="proxySelect" style="padding:6px 8px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-size:11px;">
+      <option value="cfworker" selected>Cloudflare Worker</option>
+      <option value="corsproxy">corsproxy.io</option>
       <option value="">No Proxy (local only)</option>
-      <option value="https://corsproxy.io/?" selected>corsproxy.io</option>
-      <option value="https://api.allorigins.win/raw?url=">allorigins</option>
       <option value="custom">Custom proxy...</option>
     </select>
     <button class="btn primary" id="connectBtn" onclick="connectApi()">Connect</button>
@@ -553,17 +553,35 @@ function initMap() {
 
 // ─── API Calls ────────────────────────────────────────────────────────
 async function apiCall(endpoint, params = {}) {
-  if (!API_KEY) { alert('Please enter your VesselAPI key first.'); return null; }
+  if (!API_KEY && CORS_PROXY !== 'cfworker') { alert('Please enter your VesselAPI key first.'); return null; }
   const apiUrl = new URL(`${BASE}${endpoint}`);
   Object.entries(params).forEach(([k, v]) => { if (v !== undefined && v !== null) apiUrl.searchParams.set(k, v); });
 
-  // Apply CORS proxy if configured
-  const fetchUrl = CORS_PROXY ? `${CORS_PROXY}${encodeURIComponent(apiUrl.toString())}` : apiUrl.toString();
+  // Build fetch URL and headers based on proxy mode
+  let fetchUrl, fetchOpts;
+  const rawUrl = apiUrl.toString();
+
+  if (CORS_PROXY === 'cfworker') {
+    // Your Cloudflare Worker (API key injected server-side)
+    fetchUrl = 'https://vessel-tracker.alex-9d8.workers.dev/?url=' + encodeURIComponent(rawUrl);
+    fetchOpts = API_KEY ? { headers: { 'Authorization': `Bearer ${API_KEY}` } } : {};
+  } else if (CORS_PROXY === 'corsproxy') {
+    // corsproxy.io: public fallback
+    fetchUrl = 'https://corsproxy.io/?' + encodeURIComponent(rawUrl);
+    fetchOpts = { headers: { 'Authorization': `Bearer ${API_KEY}` } };
+  } else if (CORS_PROXY && CORS_PROXY !== '') {
+    // Custom proxy (e.g. Cloudflare Worker): append raw URL
+    const sep = CORS_PROXY.includes('?') ? '' : '?url=';
+    fetchUrl = CORS_PROXY + sep + encodeURIComponent(rawUrl);
+    fetchOpts = { headers: { 'Authorization': `Bearer ${API_KEY}` } };
+  } else {
+    // Direct (no proxy) — only works from localhost / same-origin
+    fetchUrl = rawUrl;
+    fetchOpts = { headers: { 'Authorization': `Bearer ${API_KEY}` } };
+  }
 
   try {
-    const res = await fetch(fetchUrl, {
-      headers: { 'Authorization': `Bearer ${API_KEY}` }
-    });
+    const res = await fetch(fetchUrl, fetchOpts);
     if (res.status === 429) {
       alert('Rate limited. Please wait a moment and try again.');
       return null;
@@ -575,12 +593,16 @@ async function apiCall(endpoint, params = {}) {
     }
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      console.error('API Error:', err);
+      console.error('API Error:', res.status, err);
+      if (res.status === 403 || res.status === 0) {
+        alert('CORS or proxy error. Try a different proxy option or use a Cloudflare Worker.');
+      }
       return null;
     }
     return await res.json();
   } catch (e) {
     console.error('Fetch error:', e);
+    alert('Network error — likely CORS blocked. Make sure you have a proxy selected, or try the Cloudflare Worker option.');
     return null;
   }
 }
@@ -588,7 +610,8 @@ async function apiCall(endpoint, params = {}) {
 // ─── Connect ──────────────────────────────────────────────────────────
 function connectApi() {
   const key = document.getElementById('apiKeyInput').value.trim();
-  if (!key) return;
+  const proxySel = document.getElementById('proxySelect');
+  if (!key && proxySel.value !== 'cfworker') { alert('API key required unless using Cloudflare Worker with server-side key.'); return; }
   API_KEY = key;
   localStorage.setItem('vesselTrackerApiKey', key);
 
@@ -596,8 +619,8 @@ function connectApi() {
   const proxySel = document.getElementById('proxySelect');
   let proxyVal = proxySel.value;
   if (proxyVal === 'custom') {
-    proxyVal = prompt('Enter your CORS proxy URL prefix (e.g. https://your-worker.workers.dev/?url=):', '');
-    if (!proxyVal) { proxySel.value = ''; proxyVal = ''; }
+    proxyVal = prompt('Enter your Cloudflare Worker URL (e.g. https://vessel-proxy.yourname.workers.dev):', '');
+    if (!proxyVal) { proxySel.value = 'corsproxy'; proxyVal = 'corsproxy'; }
   }
   CORS_PROXY = proxyVal;
   localStorage.setItem('vesselTrackerProxy', CORS_PROXY);
