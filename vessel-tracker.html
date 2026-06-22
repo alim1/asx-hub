@@ -218,9 +218,10 @@
     position: absolute;
     bottom: 16px;
     left: 16px;
-    right: 16px;
-    max-width: 520px;
-    background: var(--bg-card);
+    max-width: 560px;
+    max-height: calc(100% - 80px);
+    overflow-y: auto;
+    background: #fff;
     border: 1px solid var(--border);
     border-radius: 10px;
     padding: 16px;
@@ -549,9 +550,8 @@ function initMap() {
     attributionControl: true
   });
 
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/voyager/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
-    subdomains: 'abcd',
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     maxZoom: 19
   }).addTo(map);
 }
@@ -690,26 +690,34 @@ async function searchVessels() {
   });
 }
 
-// ─── Select Vessel (get position + show detail) ───────────────────────
+// ─── Select Vessel (get position + ETA + details in parallel) ─────────
 async function selectVessel(vessel) {
-  // Try MMSI first, then IMO as fallback
-  let posData = null;
-  if (vessel.mmsi) {
-    posData = await apiCall(`/vessel/${vessel.mmsi}/position`, { 'filter.idType': 'mmsi' });
-  }
-  if (!posData && vessel.imo) {
-    posData = await apiCall(`/vessel/${vessel.imo}/position`, { 'filter.idType': 'imo' });
+  const id = vessel.mmsi || vessel.imo;
+  const idType = vessel.mmsi ? 'mmsi' : 'imo';
+
+  // Fetch position, ETA, and full details in parallel
+  const [posData, etaData, detailData] = await Promise.all([
+    apiCall(`/vessel/${id}/position`, { 'filter.idType': idType }),
+    apiCall(`/vessel/${id}/eta`, { 'filter.idType': idType }),
+    apiCall(`/vessel/${id}`, { 'filter.idType': idType }),
+  ]);
+
+  // Unwrap nested responses
+  const pos = posData?.vesselPosition || posData;
+  const eta = etaData?.vesselEta || etaData;
+  const detail = detailData?.vessel || detailData;
+
+  // Merge detail info into vessel object for display
+  if (detail) {
+    vessel = { ...vessel, ...detail };
   }
 
-  // Unwrap nested response: { vesselPosition: { ... } }
-  const pos = posData?.vesselPosition || posData;
   if (pos && pos.latitude != null) {
     addVesselMarker(pos);
     map.flyTo([pos.latitude, pos.longitude], 8, { duration: 1.5 });
-    showDetail(vessel, pos);
-  } else {
-    showDetail(vessel, null);
   }
+
+  showDetail(vessel, pos, eta, detail);
 }
 
 // ─── Vessel Markers ───────────────────────────────────────────────────
@@ -740,14 +748,14 @@ function addVesselMarker(pos) {
 
   marker.on('click', () => {
     const vessel = { mmsi: pos.mmsi, imo: pos.imo, name: pos.vessel_name, vessel_name: pos.vessel_name };
-    showDetail(vessel, pos);
+    selectVessel(vessel);
   });
 
   vesselMarkers[key] = marker;
 }
 
 // ─── Detail Panel ─────────────────────────────────────────────────────
-function showDetail(vessel, pos) {
+function showDetail(vessel, pos, eta, detail) {
   selectedVessel = { vessel, pos };
   const panel = document.getElementById('detailPanel');
   const name = vessel.name || vessel.vessel_name || 'Unknown Vessel';
@@ -759,21 +767,54 @@ function showDetail(vessel, pos) {
   const navStatusText = getNavStatus(pos?.nav_status);
   const navClass = getNavClass(pos?.nav_status);
 
-  grid.innerHTML = pos ? `
-    <div class="detail-cell"><div class="label">Position</div><div class="value">${pos.latitude.toFixed(4)}, ${pos.longitude.toFixed(4)}</div></div>
-    <div class="detail-cell"><div class="label">Speed (SOG)</div><div class="value">${pos.sog != null ? pos.sog.toFixed(1) + ' kn' : '—'}</div></div>
-    <div class="detail-cell"><div class="label">Course (COG)</div><div class="value">${pos.cog != null ? pos.cog.toFixed(1) + '°' : '—'}</div></div>
-    <div class="detail-cell"><div class="label">Heading</div><div class="value">${pos.heading != null ? pos.heading + '°' : '—'}</div></div>
-    <div class="detail-cell"><div class="label">Status</div><div class="value"><span class="nav-badge ${navClass}">${navStatusText}</span></div></div>
-    <div class="detail-cell"><div class="label">Updated</div><div class="value">${formatTime(pos.timestamp)}</div></div>
-  ` : '<div class="detail-cell" style="grid-column:1/-1"><div class="label">Position</div><div class="value" style="color:var(--warning)">No position in last 80 hours (vessel may be out of terrestrial AIS range)</div></div>';
+  let html = '';
+
+  // Position section
+  if (pos && pos.latitude != null) {
+    html += `
+      <div class="detail-cell"><div class="label">Position</div><div class="value">${pos.latitude.toFixed(4)}, ${pos.longitude.toFixed(4)}</div></div>
+      <div class="detail-cell"><div class="label">Speed (SOG)</div><div class="value">${pos.sog != null ? pos.sog.toFixed(1) + ' kn' : '—'}</div></div>
+      <div class="detail-cell"><div class="label">Course (COG)</div><div class="value">${pos.cog != null ? pos.cog.toFixed(1) + '°' : '—'}</div></div>
+      <div class="detail-cell"><div class="label">Heading</div><div class="value">${pos.heading != null ? pos.heading + '°' : '—'}</div></div>
+      <div class="detail-cell"><div class="label">Nav Status</div><div class="value"><span class="nav-badge ${navClass}">${navStatusText}</span></div></div>
+      <div class="detail-cell"><div class="label">Position Updated</div><div class="value">${formatTime(pos.timestamp)}</div></div>
+    `;
+  } else {
+    html += '<div class="detail-cell" style="grid-column:1/-1"><div class="label">Position</div><div class="value" style="color:var(--warning)">No position in last 80 hours</div></div>';
+  }
+
+  // ETA section
+  if (eta) {
+    html += `
+      <div class="detail-cell" style="grid-column:1/-1;margin-top:8px;border-top:1px solid var(--border);padding-top:8px"><div class="label" style="font-weight:600;color:var(--accent)">Voyage Info</div></div>
+      <div class="detail-cell"><div class="label">Destination</div><div class="value">${esc(eta.destination || '—')}</div></div>
+      <div class="detail-cell"><div class="label">ETA</div><div class="value">${eta.eta ? new Date(eta.eta).toLocaleString() : '—'}</div></div>
+      <div class="detail-cell"><div class="label">Draught</div><div class="value">${eta.draught != null ? eta.draught + ' m' : '—'}</div></div>
+    `;
+  }
+
+  // Vessel details section
+  if (detail) {
+    html += `
+      <div class="detail-cell" style="grid-column:1/-1;margin-top:8px;border-top:1px solid var(--border);padding-top:8px"><div class="label" style="font-weight:600;color:var(--accent)">Vessel Particulars</div></div>
+      <div class="detail-cell"><div class="label">Callsign</div><div class="value">${esc(detail.call_sign || '—')}</div></div>
+      <div class="detail-cell"><div class="label">Length</div><div class="value">${detail.length || '—'} m</div></div>
+      <div class="detail-cell"><div class="label">Breadth</div><div class="value">${detail.breadth || '—'} m</div></div>
+      <div class="detail-cell"><div class="label">Gross Tonnage</div><div class="value">${detail.gross_tonnage ? Number(detail.gross_tonnage).toLocaleString() : '—'}</div></div>
+      <div class="detail-cell"><div class="label">Deadweight</div><div class="value">${detail.deadweight_tonnage ? Number(detail.deadweight_tonnage).toLocaleString() + ' DWT' : '—'}</div></div>
+      <div class="detail-cell"><div class="label">Year Built</div><div class="value">${detail.year_built || '—'}</div></div>
+      <div class="detail-cell"><div class="label">Owner</div><div class="value">${esc(detail.owner_name || '—')}</div></div>
+      <div class="detail-cell"><div class="label">Manager</div><div class="value">${esc(detail.manager_name || '—')}</div></div>
+      <div class="detail-cell"><div class="label">Status</div><div class="value">${esc(detail.operating_status || '—')}</div></div>
+    `;
+  }
+
+  grid.innerHTML = html;
 
   const isTracked = fleet.some(f => (f.mmsi && f.mmsi === vessel.mmsi) || (f.imo && f.imo === vessel.imo));
   const actions = document.getElementById('detailActions');
   actions.innerHTML = `
     <button class="btn primary" onclick="trackVessel()">${isTracked ? 'Untrack' : 'Track'}</button>
-    <button class="btn" onclick="getVesselEta()">Get ETA</button>
-    <button class="btn" onclick="getVesselDetails()">Full Details</button>
   `;
 
   panel.classList.add('visible');
@@ -802,7 +843,7 @@ function trackVessel() {
   }
   localStorage.setItem('vesselTrackerFleet', JSON.stringify(fleet));
   document.getElementById('fleetCount').textContent = fleet.length;
-  showDetail(selectedVessel.vessel, selectedVessel.pos); // refresh button text
+  selectVessel(selectedVessel.vessel); // refresh panel
 }
 
 function renderFleet() {
