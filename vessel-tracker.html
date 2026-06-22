@@ -696,10 +696,12 @@ async function selectVessel(vessel) {
     posData = await apiCall(`/vessel/${vessel.imo}/position`, { 'filter.idType': 'imo' });
   }
 
-  if (posData && posData.latitude != null) {
-    addVesselMarker(posData);
-    map.flyTo([posData.latitude, posData.longitude], 8, { duration: 1.5 });
-    showDetail(vessel, posData);
+  // Unwrap nested response: { vesselPosition: { ... } }
+  const pos = posData?.vesselPosition || posData;
+  if (pos && pos.latitude != null) {
+    addVesselMarker(pos);
+    map.flyTo([pos.latitude, pos.longitude], 8, { duration: 1.5 });
+    showDetail(vessel, pos);
   } else {
     showDetail(vessel, null);
   }
@@ -850,10 +852,11 @@ async function getVesselEta() {
   const id = v.mmsi || v.imo;
   const idType = v.mmsi ? 'mmsi' : 'imo';
   const data = await apiCall(`/vessel/${id}/eta`, { 'filter.idType': idType });
-  if (data) {
-    const dest = data.destination || '—';
-    const eta = data.eta ? new Date(data.eta).toLocaleString() : '—';
-    const draught = data.draught != null ? data.draught + ' m' : '—';
+  const e = data?.vesselETA || data;
+  if (e) {
+    const dest = e.destination || '—';
+    const eta = e.eta ? new Date(e.eta).toLocaleString() : '—';
+    const draught = e.draught != null ? e.draught + ' m' : '—';
     alert(`Destination: ${dest}\nETA: ${eta}\nDraught: ${draught}`);
   } else {
     alert('No ETA data available for this vessel.');
