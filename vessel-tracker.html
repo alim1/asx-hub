@@ -8,20 +8,20 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
   :root {
-    --bg-primary: #0a0e17;
-    --bg-secondary: #111827;
-    --bg-card: #1a2235;
-    --bg-hover: #1e293b;
-    --border: #2a3a52;
-    --text-primary: #e2e8f0;
-    --text-secondary: #94a3b8;
-    --text-muted: #64748b;
-    --accent: #3b82f6;
-    --accent-hover: #2563eb;
-    --success: #22c55e;
-    --warning: #f59e0b;
-    --danger: #ef4444;
-    --cyan: #06b6d4;
+    --bg-primary: #f0f4f8;
+    --bg-secondary: #ffffff;
+    --bg-card: #f8fafc;
+    --bg-hover: #e2e8f0;
+    --border: #cbd5e1;
+    --text-primary: #1e293b;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --success: #16a34a;
+    --warning: #d97706;
+    --danger: #dc2626;
+    --cyan: #0891b2;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -48,10 +48,10 @@
   .topbar .logo {
     font-size: 16px;
     font-weight: 700;
-    color: var(--cyan);
     letter-spacing: 0.5px;
     white-space: nowrap;
   }
+  .topbar .logo { color: var(--accent); }
   .topbar .logo span { color: var(--text-muted); font-weight: 400; }
   .api-key-section {
     display: flex;
@@ -62,7 +62,7 @@
   .api-key-section input {
     width: 280px;
     padding: 6px 10px;
-    background: var(--bg-card);
+    background: #fff;
     border: 1px solid var(--border);
     border-radius: 6px;
     color: var(--text-primary);
@@ -204,11 +204,11 @@
   }
   #map { width: 100%; height: 100%; }
 
-  /* Override Leaflet dark theme */
-  .leaflet-container { background: #0a0e17; }
+  /* Leaflet overrides */
+  .leaflet-container { background: #e8ecf1; }
   .leaflet-control-zoom a {
-    background: var(--bg-card) !important;
-    color: var(--text-primary) !important;
+    background: #fff !important;
+    color: #333 !important;
     border-color: var(--border) !important;
   }
   .leaflet-control-zoom a:hover { background: var(--bg-hover) !important; }
@@ -226,7 +226,7 @@
     padding: 16px;
     z-index: 1000;
     display: none;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
   }
   .detail-panel.visible { display: block; }
   .detail-close {
@@ -292,6 +292,11 @@
   }
   .btn.primary:hover { background: var(--accent-hover); }
 
+  .api-key-section select option {
+    background: #fff;
+    color: #1e293b;
+  }
+
   /* Port Events Panel */
   .port-events-panel {
     position: absolute;
@@ -303,7 +308,7 @@
     border-radius: 10px;
     z-index: 1000;
     display: none;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
     overflow: hidden;
   }
   .port-events-panel.visible { display: flex; flex-direction: column; }
@@ -353,7 +358,7 @@
     gap: 8px;
   }
   .map-controls .btn {
-    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
     white-space: nowrap;
   }
 
@@ -379,23 +384,23 @@
 
   /* Vessel marker tooltip */
   .vessel-tooltip {
-    background: var(--bg-card) !important;
+    background: #fff !important;
     border: 1px solid var(--border) !important;
     color: var(--text-primary) !important;
     border-radius: 6px !important;
     padding: 6px 10px !important;
     font-size: 12px !important;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
   }
   .vessel-tooltip::before { border-bottom-color: var(--border) !important; }
 
   .leaflet-popup-content-wrapper {
-    background: var(--bg-card) !important;
+    background: #fff !important;
     color: var(--text-primary) !important;
     border: 1px solid var(--border) !important;
     border-radius: 8px !important;
   }
-  .leaflet-popup-tip { background: var(--bg-card) !important; }
+  .leaflet-popup-tip { background: #fff !important; }
   .leaflet-popup-close-button { color: var(--text-muted) !important; }
 
   /* Nav status badges */
@@ -544,7 +549,7 @@ function initMap() {
     attributionControl: true
   });
 
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/voyager/{z}/{x}/{y}{r}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
     subdomains: 'abcd',
     maxZoom: 19
@@ -709,12 +714,12 @@ async function selectVessel(vessel) {
 
 // ─── Vessel Markers ───────────────────────────────────────────────────
 function createVesselIcon(heading, sog) {
-  const color = sog > 0.5 ? '#22c55e' : '#f59e0b';
+  const color = sog > 0.5 ? '#16a34a' : '#d97706';
   const rotation = heading != null ? heading : 0;
   return L.divIcon({
     className: 'vessel-marker',
-    html: `<svg width="24" height="24" viewBox="0 0 24 24" style="transform: rotate(${rotation}deg)">
-      <path d="M12 2 L18 20 L12 16 L6 20 Z" fill="${color}" stroke="#000" stroke-width="0.5" opacity="0.9"/>
+    html: `<svg width="26" height="26" viewBox="0 0 24 24" style="transform: rotate(${rotation}deg); filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3))">
+      <path d="M12 2 L18 20 L12 16 L6 20 Z" fill="${color}" stroke="#fff" stroke-width="1" opacity="0.95"/>
     </svg>`,
     iconSize: [24, 24],
     iconAnchor: [12, 12]
@@ -852,7 +857,7 @@ async function getVesselEta() {
   const id = v.mmsi || v.imo;
   const idType = v.mmsi ? 'mmsi' : 'imo';
   const data = await apiCall(`/vessel/${id}/eta`, { 'filter.idType': idType });
-  const e = data?.vesselETA || data;
+  const e = data?.vesselEta || data;
   if (e) {
     const dest = e.destination || '—';
     const eta = e.eta ? new Date(e.eta).toLocaleString() : '—';
