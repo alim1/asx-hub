@@ -591,6 +591,10 @@ async function apiCall(endpoint, params = {}) {
       alert('Invalid API key.');
       return null;
     }
+    if (res.status === 404) {
+      // Expected for vessels with no recent position data
+      return null;
+    }
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       console.error('API Error:', res.status, err);
@@ -683,17 +687,20 @@ async function searchVessels() {
 
 // ─── Select Vessel (get position + show detail) ───────────────────────
 async function selectVessel(vessel) {
-  const id = vessel.mmsi || vessel.imo;
-  const idType = vessel.mmsi ? 'mmsi' : 'imo';
+  // Try MMSI first, then IMO as fallback
+  let posData = null;
+  if (vessel.mmsi) {
+    posData = await apiCall(`/vessel/${vessel.mmsi}/position`, { 'filter.idType': 'mmsi' });
+  }
+  if (!posData && vessel.imo) {
+    posData = await apiCall(`/vessel/${vessel.imo}/position`, { 'filter.idType': 'imo' });
+  }
 
-  // Get position
-  const posData = await apiCall(`/vessel/${id}/position`, { 'filter.idType': idType });
   if (posData && posData.latitude != null) {
     addVesselMarker(posData);
     map.flyTo([posData.latitude, posData.longitude], 8, { duration: 1.5 });
     showDetail(vessel, posData);
   } else {
-    // Show detail without position
     showDetail(vessel, null);
   }
 }
@@ -752,7 +759,7 @@ function showDetail(vessel, pos) {
     <div class="detail-cell"><div class="label">Heading</div><div class="value">${pos.heading != null ? pos.heading + '°' : '—'}</div></div>
     <div class="detail-cell"><div class="label">Status</div><div class="value"><span class="nav-badge ${navClass}">${navStatusText}</span></div></div>
     <div class="detail-cell"><div class="label">Updated</div><div class="value">${formatTime(pos.timestamp)}</div></div>
-  ` : '<div class="detail-cell" style="grid-column:1/-1"><div class="label">Position</div><div class="value">No recent position data</div></div>';
+  ` : '<div class="detail-cell" style="grid-column:1/-1"><div class="label">Position</div><div class="value" style="color:var(--warning)">No position in last 80 hours (vessel may be out of terrestrial AIS range)</div></div>';
 
   const isTracked = fleet.some(f => (f.mmsi && f.mmsi === vessel.mmsi) || (f.imo && f.imo === vessel.imo));
   const actions = document.getElementById('detailActions');
