@@ -426,6 +426,12 @@
   <div class="api-key-section">
     <div class="status-dot" id="statusDot"></div>
     <input type="password" id="apiKeyInput" placeholder="Enter VesselAPI.com API key..." />
+    <select id="proxySelect" style="padding:6px 8px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-size:11px;">
+      <option value="">No Proxy (local only)</option>
+      <option value="https://corsproxy.io/?" selected>corsproxy.io</option>
+      <option value="https://api.allorigins.win/raw?url=">allorigins</option>
+      <option value="custom">Custom proxy...</option>
+    </select>
     <button class="btn primary" id="connectBtn" onclick="connectApi()">Connect</button>
     <span class="quota-badge" id="quotaBadge"></span>
   </div>
@@ -522,6 +528,7 @@
 <script>
 // ─── State ────────────────────────────────────────────────────────────
 let API_KEY = '';
+let CORS_PROXY = '';
 let map, vesselMarkers = {}, portMarkers = {};
 let fleet = JSON.parse(localStorage.getItem('vesselTrackerFleet') || '[]');
 let selectedVessel = null;
@@ -547,11 +554,14 @@ function initMap() {
 // ─── API Calls ────────────────────────────────────────────────────────
 async function apiCall(endpoint, params = {}) {
   if (!API_KEY) { alert('Please enter your VesselAPI key first.'); return null; }
-  const url = new URL(`${BASE}${endpoint}`);
-  Object.entries(params).forEach(([k, v]) => { if (v !== undefined && v !== null) url.searchParams.set(k, v); });
+  const apiUrl = new URL(`${BASE}${endpoint}`);
+  Object.entries(params).forEach(([k, v]) => { if (v !== undefined && v !== null) apiUrl.searchParams.set(k, v); });
+
+  // Apply CORS proxy if configured
+  const fetchUrl = CORS_PROXY ? `${CORS_PROXY}${encodeURIComponent(apiUrl.toString())}` : apiUrl.toString();
 
   try {
-    const res = await fetch(url, {
+    const res = await fetch(fetchUrl, {
       headers: { 'Authorization': `Bearer ${API_KEY}` }
     });
     if (res.status === 429) {
@@ -581,6 +591,17 @@ function connectApi() {
   if (!key) return;
   API_KEY = key;
   localStorage.setItem('vesselTrackerApiKey', key);
+
+  // Read proxy setting
+  const proxySel = document.getElementById('proxySelect');
+  let proxyVal = proxySel.value;
+  if (proxyVal === 'custom') {
+    proxyVal = prompt('Enter your CORS proxy URL prefix (e.g. https://your-worker.workers.dev/?url=):', '');
+    if (!proxyVal) { proxySel.value = ''; proxyVal = ''; }
+  }
+  CORS_PROXY = proxyVal;
+  localStorage.setItem('vesselTrackerProxy', CORS_PROXY);
+
   setConnected(true);
   // Test with a simple search
   apiCall('/search/vessels', { 'filter.name': 'EVER', 'pagination.limit': 1 }).then(data => {
@@ -1014,8 +1035,16 @@ function getNavClass(code) {
 initMap();
 document.getElementById('fleetCount').textContent = fleet.length;
 
-// Restore API key
+// Restore API key and proxy
 const savedKey = localStorage.getItem('vesselTrackerApiKey');
+const savedProxy = localStorage.getItem('vesselTrackerProxy');
+if (savedProxy) {
+  CORS_PROXY = savedProxy;
+  const proxySel = document.getElementById('proxySelect');
+  const matchOpt = [...proxySel.options].find(o => o.value === savedProxy);
+  if (matchOpt) proxySel.value = savedProxy;
+  else { proxySel.value = 'custom'; }
+}
 if (savedKey) {
   document.getElementById('apiKeyInput').value = savedKey;
   API_KEY = savedKey;
