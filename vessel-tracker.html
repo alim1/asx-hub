@@ -616,7 +616,6 @@ function connectApi() {
   localStorage.setItem('vesselTrackerApiKey', key);
 
   // Read proxy setting
-  const proxySel = document.getElementById('proxySelect');
   let proxyVal = proxySel.value;
   if (proxyVal === 'custom') {
     proxyVal = prompt('Enter your Cloudflare Worker URL (e.g. https://vessel-proxy.yourname.workers.dev):', '');
