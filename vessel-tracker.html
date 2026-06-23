@@ -642,7 +642,7 @@ async function selectVessel(vessel) {
         if (retry?.ports?.length) {
           // Try to match country code
           const cc = parts[0].toLowerCase();
-          destPort = retry.ports.find(p => p.country?.toLowerCase()?.startsWith(cc) || p.unlo_code?.toLowerCase()?.startsWith(cc)) || retry.ports[0];
+          destPort = retry.ports.find(p => String(p.country || '').toLowerCase().startsWith(cc) || String(p.unlo_code || '').toLowerCase().startsWith(cc)) || retry.ports[0];
         }
       }
     }
