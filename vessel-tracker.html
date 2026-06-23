@@ -446,25 +446,20 @@
   .upload-log-item.done { color: var(--success); }
   .upload-log-item.err { color: var(--danger); }
 
-  /* Results overlay table */
-  .results-overlay {
-    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.5); z-index: 2000; display: none;
-    align-items: center; justify-content: center;
+  /* Results full-page view */
+  .results-view {
+    display: none; flex-direction: column; height: 100vh;
   }
-  .results-overlay.visible { display: flex; }
-  .results-box {
-    background: #fff; border-radius: 12px; width: 95vw; max-height: 90vh;
-    display: flex; flex-direction: column; box-shadow: 0 8px 40px rgba(0,0,0,0.25);
-    overflow: hidden;
-  }
+  .results-view.visible { display: flex; }
+  .results-view.visible ~ .topbar, .results-view.visible ~ .main { display: none; }
   .results-header {
-    padding: 12px 16px; border-bottom: 1px solid var(--border);
+    height: 48px; padding: 0 16px; background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
     display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
   }
   .results-header h3 { font-size: 15px; font-weight: 600; }
   .results-header .btn-group { display: flex; gap: 8px; }
-  .results-table-wrap { flex: 1; overflow: auto; }
+  .results-table-wrap { flex: 1; overflow: auto; background: #fff; }
   .results-table {
     width: 100%; border-collapse: collapse; font-size: 12px; white-space: nowrap;
   }
@@ -472,6 +467,7 @@
     position: sticky; top: 0; background: var(--bg-card); padding: 8px 10px;
     text-align: left; font-weight: 600; font-size: 11px; text-transform: uppercase;
     letter-spacing: 0.3px; color: var(--text-secondary); border-bottom: 2px solid var(--border);
+    z-index: 1;
   }
   .results-table td {
     padding: 6px 10px; border-bottom: 1px solid var(--border); color: var(--text-primary);
@@ -607,19 +603,17 @@
   </div>
 </div>
 
-<!-- Results Overlay -->
-<div class="results-overlay" id="resultsOverlay">
-  <div class="results-box">
-    <div class="results-header">
-      <h3 id="resultsTitle">Enriched Vehicle Data</h3>
-      <div class="btn-group">
-        <button class="btn" onclick="exportResults()">&#128190; Export CSV</button>
-        <button class="btn" onclick="closeResults()">&times; Close</button>
-      </div>
+<!-- Results Full Page View -->
+<div class="results-view" id="resultsView">
+  <div class="results-header">
+    <h3 id="resultsTitle">Enriched Vehicle Data</h3>
+    <div class="btn-group">
+      <button class="btn" onclick="exportResults()">&#128190; Export Excel</button>
+      <button class="btn primary" onclick="closeResults()">&#9664; Back to Dashboard</button>
     </div>
-    <div class="results-table-wrap">
-      <table class="results-table" id="resultsTable"></table>
-    </div>
+  </div>
+  <div class="results-table-wrap">
+    <table class="results-table" id="resultsTable"></table>
   </div>
 </div>
 
@@ -1181,20 +1175,30 @@ function stripVesselSuffix(name) {
 }
 
 async function enrichRows(rows) {
+  // Detect B/L column (flexible naming)
+  const blColName = Object.keys(rows[0] || {}).find(k => /^b[\/_\-\.]?l/i.test(k.trim()));
+  const hasBL = !!blColName;
+  if (hasBL) log(`Found B/L column: "${blColName}"`);
+
   // Collect unique vessel names
   const uniqueRaw = [...new Set(rows.map(r => r.Vessel).filter(Boolean))];
-  const vesselLookup = {}; // raw name → { loadPort, lastDischargePort, eta, nextDest }
+  const vesselLookup = {}; // raw name → vessel-level data
 
-  log(`Looking up ${uniqueRaw.length} unique vessels via API...`);
-  setProgress(0, `Processing 0 / ${uniqueRaw.length} vessels...`);
+  // Collect unique B/L numbers
+  const uniqueBL = hasBL ? [...new Set(rows.map(r => r[blColName]).filter(Boolean))] : [];
+  const blLookup = {}; // B/L number → K-Line cargo data
+
+  const totalSteps = uniqueRaw.length + uniqueBL.length;
+  log(`Looking up ${uniqueRaw.length} vessels + ${uniqueBL.length} B/Ls...`);
+  setProgress(0, `Processing 0 / ${totalSteps}...`);
 
   for (let i = 0; i < uniqueRaw.length; i++) {
     const rawName = uniqueRaw[i];
     const cleanName = stripVesselSuffix(rawName);
     log(`Searching: ${cleanName}...`);
-    setProgress(Math.round(((i) / uniqueRaw.length) * 100), `Processing ${i + 1} / ${uniqueRaw.length}: ${cleanName}`);
+    setProgress(Math.round(((i) / totalSteps) * 100), `Vessel ${i + 1} / ${uniqueRaw.length}: ${cleanName}`);
 
-    const info = { loadPort: '—', lastDischargePort: '—', eta: '—', nextDest: '—' };
+    const info = { lastPortCall: '—', lastPortEvent: '—', aisDestination: '—', vesselEta: '—' };
 
     try {
       // 1. Search for vessel to get MMSI
@@ -1222,28 +1226,24 @@ async function enrichRows(rows) {
       const eta = etaData?.vesselEta || etaData;
       const pe = portData?.portEvent || portData;
 
-      // Last port event = load port (departure) or last discharge port (arrival)
+      // Last port event (vessel-level — where the ship last called)
       if (pe && pe.port) {
         const pName = titleCase(pe.port.name || '') + ', ' + titleCase(String(pe.port.country || ''));
         const pCode = pe.port.unlo_code ? ' (' + pe.port.unlo_code.toUpperCase() + ')' : '';
-        if ((pe.event || '').toLowerCase() === 'departure') {
-          info.loadPort = pName + pCode;
-        } else {
-          info.lastDischargePort = pName + pCode;
-        }
-        log(`  Port event: ${pe.event} — ${pName}`);
+        info.lastPortCall = pName + pCode;
+        info.lastPortEvent = titleCase(pe.event || '') + ' — ' + formatTime(pe.timestamp);
+        log(`  Port: ${pe.event} — ${pName}`);
       }
 
-      // ETA and destination
+      // AIS destination and vessel ETA
       if (eta) {
-        if (eta.eta) info.eta = new Date(eta.eta).toLocaleString();
+        if (eta.eta) info.vesselEta = new Date(eta.eta).toLocaleString();
         if (eta.destination) {
-          info.nextDest = eta.destination;
-          // Try resolving destination to a port name
+          info.aisDestination = eta.destination;
           const resolved = await resolveDestination(eta.destination);
-          if (resolved) info.nextDest = resolved;
+          if (resolved) info.aisDestination = eta.destination + ' → ' + resolved;
         }
-        log(`  ETA: ${info.eta} → ${info.nextDest}`);
+        log(`  ETA: ${info.vesselEta} → ${info.aisDestination}`);
       }
 
       log(`  ✓ ${cleanName} done`, 'done');
@@ -1254,29 +1254,109 @@ async function enrichRows(rows) {
     vesselLookup[rawName] = info;
   }
 
-  setProgress(100, `Done — ${uniqueRaw.length} vessels processed.`);
+  // B/L lookups via K-Line
+  for (let i = 0; i < uniqueBL.length; i++) {
+    const bl = uniqueBL[i];
+    const step = uniqueRaw.length + i;
+    log(`K-Line B/L: ${bl}...`);
+    setProgress(Math.round((step / totalSteps) * 100), `B/L ${i + 1} / ${uniqueBL.length}: ${bl}`);
+
+    try {
+      const result = await lookupBL(bl);
+      if (result) {
+        blLookup[bl] = result;
+        log(`  ✓ ${bl}: ${result.loadPort} → ${result.dischargePort}`, 'done');
+      } else {
+        log(`  ✗ ${bl}: not found on K-Line`, 'err');
+      }
+    } catch (err) {
+      log(`  ✗ ${bl}: ${err.message}`, 'err');
+    }
+  }
+
+  setProgress(100, `Done — ${uniqueRaw.length} vessels + ${uniqueBL.length} B/Ls processed.`);
   log('All lookups complete. Building table...', 'done');
 
   // Build enriched rows
-  enrichedData = rows.map(r => ({
-    'Vehicle Model': r['Vehicle Model'] || '',
-    'Batch': r['Batch'] || '',
-    'Plant': r['Plant'] || '',
-    'Customer': r['Customer'] || '',
-    'Vehicle Identification Number': r['Vehicle Identification Number'] || '',
-    'Availability': r['Availability'] || '',
-    'Inbound': r['Inbound'] || '',
-    'Shipment': r['Shipment'] || '',
-    'REC_ID': r['REC_ID'] || '',
-    'Vessel': r['Vessel'] || '',
-    'Invoice': r['Invoice'] || '',
-    'Load Port': vesselLookup[r.Vessel]?.loadPort || '—',
-    'Last Discharge Port': vesselLookup[r.Vessel]?.lastDischargePort || '—',
-    'ETA at Last Discharge Port': vesselLookup[r.Vessel]?.eta || '—',
-    'Next Destination': vesselLookup[r.Vessel]?.nextDest || '—',
-  }));
+  enrichedData = rows.map(r => {
+    const vInfo = vesselLookup[r.Vessel] || {};
+    const blNum = hasBL ? (r[blColName] || '') : '';
+    const bInfo = blLookup[blNum] || {};
+    return {
+      'Vehicle Model': r['Vehicle Model'] || '',
+      'Batch': r['Batch'] || '',
+      'Plant': r['Plant'] || '',
+      'Customer': r['Customer'] || '',
+      'VIN': r['Vehicle Identification Number'] || '',
+      'Availability': r['Availability'] || '',
+      'Inbound': r['Inbound'] || '',
+      'Shipment': r['Shipment'] || '',
+      'REC_ID': r['REC_ID'] || '',
+      'Vessel': r['Vessel'] || '',
+      'Invoice': r['Invoice'] || '',
+      'B/L': blNum,
+      'Load Port (B/L)': bInfo.loadPort || '—',
+      'Load Date': bInfo.loadDate || '—',
+      'Discharge Port (B/L)': bInfo.dischargePort || '—',
+      'Discharge ETA (B/L)': bInfo.dischargeEta || '—',
+      'Discharge Status': bInfo.dischargeStatus || '—',
+      'Last Port Call (AIS)': vInfo.lastPortCall || '—',
+      'AIS Destination': vInfo.aisDestination || '—',
+      'Vessel ETA (AIS)': vInfo.vesselEta || '—',
+    };
+  });
 
   showResultsTable(enrichedData);
+}
+
+// ─── K-Line B/L Lookup ────────────────────────────────────────────────
+const KLINE_BASE = 'https://apps.klineglobalroro.com/tracking/api';
+
+async function klineFetch(url) {
+  const fetchUrl = `${WORKER}/?url=${encodeURIComponent(url)}`;
+  try {
+    const res = await fetch(fetchUrl);
+    if (!res.ok) return null;
+    const text = await res.text();
+    if (!text) return null;
+    return JSON.parse(text);
+  } catch (e) {
+    console.error('K-Line fetch error:', e);
+    return null;
+  }
+}
+
+async function lookupBL(blNumber) {
+  // blNumber like "KKLUMUN260099" or "MUN260099"
+  const clean = blNumber.trim().toUpperCase();
+
+  // Step 1: suggestion API to get prefix, blNum, bookingNum
+  const suggestions = await klineFetch(`${KLINE_BASE}/suggestion?inputValue=${encodeURIComponent(clean)}`);
+  if (!suggestions || !suggestions.length) return null;
+
+  const s = suggestions[0];
+  const prefix = s.BlPrefixCd;
+  const blNum = s.BlNum;
+  const booking = s.BookingNum;
+
+  // Step 2: B/L detail API
+  const detail = await klineFetch(`${KLINE_BASE}/bl/${prefix}/${blNum}/${booking}`);
+  if (!detail || !detail.Itinerary) return null;
+
+  // Extract load port and last discharge port from itinerary
+  const loadLeg = detail.Itinerary.find(l => l.MovementTypeCd === 'POL');
+  const dischargeLeg = detail.Itinerary.find(l => l.MovementTypeCd === 'POD');
+
+  return {
+    loadPort: loadLeg ? `${titleCase(loadLeg.LocationDsc)}, ${loadLeg.CountryCd} (${loadLeg.LocationCd})` : '—',
+    loadDate: loadLeg?.MovementDt || '—',
+    loadStatus: loadLeg?.MovementStatusDsc || '—',
+    dischargePort: dischargeLeg ? `${titleCase(dischargeLeg.LocationDsc)}, ${dischargeLeg.CountryCd} (${dischargeLeg.LocationCd})` : '—',
+    dischargeEta: dischargeLeg?.MovementDt || '—',
+    dischargeStatus: dischargeLeg?.MovementStatusDsc || '—',
+    vessel: loadLeg?.VesselName || '—',
+    voyage: loadLeg?.VoyageNum || '—',
+  };
 }
 
 async function resolveDestination(dest) {
@@ -1314,23 +1394,29 @@ function titleCase(s) {
 function showResultsTable(data) {
   if (!data.length) return;
   const cols = Object.keys(data[0]);
-  const newCols = ['Load Port', 'Last Discharge Port', 'ETA at Last Discharge Port', 'Next Destination'];
+  const newCols = ['B/L', 'Load Port (B/L)', 'Load Date', 'Discharge Port (B/L)', 'Discharge ETA (B/L)', 'Discharge Status', 'Last Port Call (AIS)', 'AIS Destination', 'Vessel ETA (AIS)'];
   let html = '<thead><tr>';
   cols.forEach(c => { html += `<th class="${newCols.includes(c) ? 'new-col' : ''}">${esc(c)}</th>`; });
   html += '</tr></thead><tbody>';
   data.forEach(row => {
     html += '<tr>';
-    cols.forEach(c => { html += `<td class="${newCols.includes(c) ? 'new-col' : ''}">${esc(String(row[c] || ''))}</td>`; });
+    cols.forEach(c => {
+      html += `<td class="${newCols.includes(c) ? 'new-col' : ''}">${esc(String(row[c] || ''))}</td>`;
+    });
     html += '</tr>';
   });
   html += '</tbody>';
   document.getElementById('resultsTable').innerHTML = html;
   document.getElementById('resultsTitle').textContent = `Enriched Vehicle Data (${data.length} rows)`;
-  document.getElementById('resultsOverlay').classList.add('visible');
+  document.getElementById('resultsView').classList.add('visible');
+  document.querySelector('.topbar').style.display = 'none';
+  document.querySelector('.main').style.display = 'none';
 }
 
 function closeResults() {
-  document.getElementById('resultsOverlay').classList.remove('visible');
+  document.getElementById('resultsView').classList.remove('visible');
+  document.querySelector('.topbar').style.display = '';
+  document.querySelector('.main').style.display = '';
 }
 
 function exportResults() {
