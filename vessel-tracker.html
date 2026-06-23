@@ -430,16 +430,8 @@
 <div class="topbar">
   <div class="logo">VESSEL TRACKER <span>| Maritime AIS Dashboard</span></div>
   <div class="api-key-section">
-    <div class="status-dot" id="statusDot"></div>
-    <input type="password" id="apiKeyInput" placeholder="API key (optional if using CF Worker)" />
-    <select id="proxySelect" style="padding:6px 8px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-size:11px;">
-      <option value="cfworker" selected>Cloudflare Worker</option>
-      <option value="corsproxy">corsproxy.io</option>
-      <option value="">No Proxy (local only)</option>
-      <option value="custom">Custom proxy...</option>
-    </select>
-    <button class="btn primary" id="connectBtn" onclick="connectApi()">Connect</button>
-    <span class="quota-badge" id="quotaBadge"></span>
+    <div class="status-dot connected" id="statusDot"></div>
+    <span class="quota-badge">VesselAPI Connected</span>
   </div>
 </div>
 
@@ -533,12 +525,11 @@
 
 <script>
 // ─── State ────────────────────────────────────────────────────────────
-let API_KEY = '';
-let CORS_PROXY = '';
 let map, vesselMarkers = {}, portMarkers = {};
 let fleet = JSON.parse(localStorage.getItem('vesselTrackerFleet') || '[]');
 let selectedVessel = null;
 
+const WORKER = 'https://vessel-tracker.alex-9d8.workers.dev';
 const BASE = 'https://api.vesselapi.com/v1';
 
 // ─── Map Init ─────────────────────────────────────────────────────────
@@ -558,95 +549,20 @@ function initMap() {
 
 // ─── API Calls ────────────────────────────────────────────────────────
 async function apiCall(endpoint, params = {}) {
-  if (!API_KEY && CORS_PROXY !== 'cfworker') { alert('Please enter your VesselAPI key first.'); return null; }
   const apiUrl = new URL(`${BASE}${endpoint}`);
   Object.entries(params).forEach(([k, v]) => { if (v !== undefined && v !== null) apiUrl.searchParams.set(k, v); });
-
-  // Build fetch URL and headers based on proxy mode
-  let fetchUrl, fetchOpts;
-  const rawUrl = apiUrl.toString();
-
-  if (CORS_PROXY === 'cfworker') {
-    // Your Cloudflare Worker (API key injected server-side)
-    fetchUrl = 'https://vessel-tracker.alex-9d8.workers.dev/?url=' + encodeURIComponent(rawUrl);
-    fetchOpts = API_KEY ? { headers: { 'Authorization': `Bearer ${API_KEY}` } } : {};
-  } else if (CORS_PROXY === 'corsproxy') {
-    // corsproxy.io: public fallback
-    fetchUrl = 'https://corsproxy.io/?' + encodeURIComponent(rawUrl);
-    fetchOpts = { headers: { 'Authorization': `Bearer ${API_KEY}` } };
-  } else if (CORS_PROXY && CORS_PROXY !== '') {
-    // Custom proxy (e.g. Cloudflare Worker): append raw URL
-    const sep = CORS_PROXY.includes('?') ? '' : '?url=';
-    fetchUrl = CORS_PROXY + sep + encodeURIComponent(rawUrl);
-    fetchOpts = { headers: { 'Authorization': `Bearer ${API_KEY}` } };
-  } else {
-    // Direct (no proxy) — only works from localhost / same-origin
-    fetchUrl = rawUrl;
-    fetchOpts = { headers: { 'Authorization': `Bearer ${API_KEY}` } };
-  }
+  const fetchUrl = `${WORKER}/?url=${encodeURIComponent(apiUrl.toString())}`;
 
   try {
-    const res = await fetch(fetchUrl, fetchOpts);
-    if (res.status === 429) {
-      alert('Rate limited. Please wait a moment and try again.');
-      return null;
-    }
-    if (res.status === 401) {
-      setConnected(false);
-      alert('Invalid API key.');
-      return null;
-    }
-    if (res.status === 404) {
-      // Expected for vessels with no recent position data
-      return null;
-    }
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      console.error('API Error:', res.status, err);
-      if (res.status === 403 || res.status === 0) {
-        alert('CORS or proxy error. Try a different proxy option or use a Cloudflare Worker.');
-      }
-      return null;
-    }
+    const res = await fetch(fetchUrl);
+    if (res.status === 404) return null;
+    if (res.status === 429) { console.warn('Rate limited'); return null; }
+    if (!res.ok) { console.error('API Error:', res.status); return null; }
     return await res.json();
   } catch (e) {
     console.error('Fetch error:', e);
-    alert('Network error — likely CORS blocked. Make sure you have a proxy selected, or try the Cloudflare Worker option.');
     return null;
   }
-}
-
-// ─── Connect ──────────────────────────────────────────────────────────
-function connectApi() {
-  const key = document.getElementById('apiKeyInput').value.trim();
-  const proxySel = document.getElementById('proxySelect');
-  if (!key && proxySel.value !== 'cfworker') { alert('API key required unless using Cloudflare Worker with server-side key.'); return; }
-  API_KEY = key;
-  localStorage.setItem('vesselTrackerApiKey', key);
-
-  // Read proxy setting
-  let proxyVal = proxySel.value;
-  if (proxyVal === 'custom') {
-    proxyVal = prompt('Enter your Cloudflare Worker URL (e.g. https://vessel-proxy.yourname.workers.dev):', '');
-    if (!proxyVal) { proxySel.value = 'corsproxy'; proxyVal = 'corsproxy'; }
-  }
-  CORS_PROXY = proxyVal;
-  localStorage.setItem('vesselTrackerProxy', CORS_PROXY);
-
-  setConnected(true);
-  // Test with a simple search
-  apiCall('/search/vessels', { 'filter.name': 'EVER', 'pagination.limit': 1 }).then(data => {
-    if (data) {
-      setConnected(true);
-    } else {
-      setConnected(false);
-    }
-  });
-}
-
-function setConnected(connected) {
-  document.getElementById('statusDot').classList.toggle('connected', connected);
-  document.getElementById('quotaBadge').textContent = connected ? 'Connected' : 'Disconnected';
 }
 
 // ─── Tab Switching ────────────────────────────────────────────────────
@@ -695,17 +611,42 @@ async function selectVessel(vessel) {
   const id = vessel.mmsi || vessel.imo;
   const idType = vessel.mmsi ? 'mmsi' : 'imo';
 
-  // Fetch position, ETA, and full details in parallel
-  const [posData, etaData, detailData] = await Promise.all([
+  // Fetch position, ETA, details, and last port event in parallel
+  const [posData, etaData, detailData, portData] = await Promise.all([
     apiCall(`/vessel/${id}/position`, { 'filter.idType': idType }),
     apiCall(`/vessel/${id}/eta`, { 'filter.idType': idType }),
     apiCall(`/vessel/${id}`, { 'filter.idType': idType }),
+    apiCall(`/portevents/vessel/${id}/last`, { 'filter.idType': idType }),
   ]);
 
   // Unwrap nested responses
   const pos = posData?.vesselPosition || posData;
   const eta = etaData?.vesselEta || etaData;
   const detail = detailData?.vessel || detailData;
+  const portEvent = portData?.portEvent || portData;
+
+  // Resolve AIS destination to port name (e.g. "CN SHA" → "Shanghai")
+  let destPort = null;
+  if (eta?.destination) {
+    const raw = eta.destination.trim();
+    // Try to look up as a port search
+    const portSearch = await apiCall('/search/ports', { 'filter.name': raw.replace(/\s+/g, ''), 'pagination.limit': 1 });
+    if (portSearch?.ports?.length) {
+      destPort = portSearch.ports[0];
+    } else {
+      // Try without country prefix (e.g. "CN SHA" → "SHA")
+      const parts = raw.split(/\s+/);
+      if (parts.length > 1) {
+        const shortName = parts[parts.length - 1];
+        const retry = await apiCall('/search/ports', { 'filter.name': shortName, 'pagination.limit': 3 });
+        if (retry?.ports?.length) {
+          // Try to match country code
+          const cc = parts[0].toLowerCase();
+          destPort = retry.ports.find(p => p.country?.toLowerCase()?.startsWith(cc) || p.unlo_code?.toLowerCase()?.startsWith(cc)) || retry.ports[0];
+        }
+      }
+    }
+  }
 
   // Merge detail info into vessel object for display
   if (detail) {
@@ -717,7 +658,7 @@ async function selectVessel(vessel) {
     map.flyTo([pos.latitude, pos.longitude], 8, { duration: 1.5 });
   }
 
-  showDetail(vessel, pos, eta, detail);
+  showDetail(vessel, pos, eta, detail, portEvent, destPort);
 }
 
 // ─── Vessel Markers ───────────────────────────────────────────────────
@@ -755,7 +696,7 @@ function addVesselMarker(pos) {
 }
 
 // ─── Detail Panel ─────────────────────────────────────────────────────
-function showDetail(vessel, pos, eta, detail) {
+function showDetail(vessel, pos, eta, detail, portEvent, destPort) {
   selectedVessel = { vessel, pos };
   const panel = document.getElementById('detailPanel');
   const name = vessel.name || vessel.vessel_name || 'Unknown Vessel';
@@ -783,14 +724,31 @@ function showDetail(vessel, pos, eta, detail) {
     html += '<div class="detail-cell" style="grid-column:1/-1"><div class="label">Position</div><div class="value" style="color:var(--warning)">No position in last 80 hours</div></div>';
   }
 
-  // ETA section
-  if (eta) {
-    html += `
-      <div class="detail-cell" style="grid-column:1/-1;margin-top:8px;border-top:1px solid var(--border);padding-top:8px"><div class="label" style="font-weight:600;color:var(--accent)">Voyage Info</div></div>
-      <div class="detail-cell"><div class="label">Destination</div><div class="value">${esc(eta.destination || '—')}</div></div>
-      <div class="detail-cell"><div class="label">ETA</div><div class="value">${eta.eta ? new Date(eta.eta).toLocaleString() : '—'}</div></div>
-      <div class="detail-cell"><div class="label">Draught</div><div class="value">${eta.draught != null ? eta.draught + ' m' : '—'}</div></div>
-    `;
+  // Voyage & Port section
+  if (eta || portEvent) {
+    html += `<div class="detail-cell" style="grid-column:1/-1;margin-top:8px;border-top:1px solid var(--border);padding-top:8px"><div class="label" style="font-weight:600;color:var(--accent)">Voyage Info</div></div>`;
+
+    if (portEvent) {
+      const pe = portEvent;
+      const portName = pe.port ? `${(pe.port.name || '').replace(/\b\w/g, c => c.toUpperCase())}, ${(pe.port.country || '').replace(/\b\w/g, c => c.toUpperCase())}` : '—';
+      const portCode = pe.port?.unlo_code ? ` (${pe.port.unlo_code.toUpperCase()})` : '';
+      html += `
+        <div class="detail-cell"><div class="label">Last Port (${esc(pe.event || 'Event')})</div><div class="value">${esc(portName)}${esc(portCode)}</div></div>
+        <div class="detail-cell"><div class="label">Port Event Time</div><div class="value">${formatTime(pe.timestamp)}</div></div>
+      `;
+    }
+
+    if (eta) {
+      const rawDest = eta.destination || '—';
+      const resolvedName = destPort ? `${(destPort.name || '').replace(/\b\w/g, c => c.toUpperCase())}, ${(destPort.country || '').replace(/\b\w/g, c => c.toUpperCase())}` : null;
+      const destCode = destPort?.unlo_code ? ` (${destPort.unlo_code.toUpperCase()})` : '';
+      html += `
+        <div class="detail-cell"><div class="label">AIS Destination</div><div class="value">${esc(rawDest)}</div></div>
+        ${resolvedName ? `<div class="detail-cell"><div class="label">Matched Port</div><div class="value">${esc(resolvedName)}${esc(destCode)}</div></div>` : ''}
+        <div class="detail-cell"><div class="label">ETA</div><div class="value">${eta.eta ? new Date(eta.eta).toLocaleString() : '—'}</div></div>
+        <div class="detail-cell"><div class="label">Draught</div><div class="value">${eta.draught != null ? eta.draught + ' m' : '—'}</div></div>
+      `;
+    }
   }
 
   // Vessel details section
@@ -1113,21 +1071,9 @@ function getNavClass(code) {
 initMap();
 document.getElementById('fleetCount').textContent = fleet.length;
 
-// Restore API key and proxy
-const savedKey = localStorage.getItem('vesselTrackerApiKey');
-const savedProxy = localStorage.getItem('vesselTrackerProxy');
-if (savedProxy) {
-  CORS_PROXY = savedProxy;
-  const proxySel = document.getElementById('proxySelect');
-  const matchOpt = [...proxySel.options].find(o => o.value === savedProxy);
-  if (matchOpt) proxySel.value = savedProxy;
-  else { proxySel.value = 'custom'; }
-}
-if (savedKey) {
-  document.getElementById('apiKeyInput').value = savedKey;
-  API_KEY = savedKey;
-  setConnected(true);
-}
+// Show ready status (no API ping on load — conserve quota)
+document.getElementById('statusDot').classList.add('connected');
+document.querySelector('.quota-badge').textContent = 'Ready';
 </script>
 </body>
 </html>
