@@ -6,6 +6,7 @@
 <title>Maritime Vessel Tracker</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root {
     --bg-primary: #f0f4f8;
@@ -417,6 +418,68 @@
   .nav-badge.moored { background: rgba(59,130,246,0.15); color: var(--accent); }
   .nav-badge.unknown { background: rgba(100,116,139,0.15); color: var(--text-muted); }
 
+  /* Upload tab */
+  .upload-section { padding: 12px; }
+  .upload-drop {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    border: 2px dashed var(--border); border-radius: 10px; padding: 24px 12px;
+    cursor: pointer; transition: all 0.2s; background: var(--bg-card); text-align: center;
+  }
+  .upload-drop:hover, .upload-drop.dragover { border-color: var(--accent); background: rgba(37,99,235,0.04); }
+  .upload-icon { font-size: 28px; margin-bottom: 6px; }
+  .upload-text { font-size: 13px; font-weight: 500; color: var(--text-secondary); }
+  .upload-hint { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+  .upload-status {
+    padding: 8px 12px; font-size: 12px; color: var(--text-secondary);
+    border-bottom: 1px solid var(--border); background: var(--bg-card);
+  }
+  .upload-status .progress-bar {
+    height: 4px; background: var(--border); border-radius: 2px; margin-top: 6px; overflow: hidden;
+  }
+  .upload-status .progress-fill {
+    height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.3s;
+  }
+  .upload-log-item {
+    padding: 6px 12px; font-size: 11px; color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+  }
+  .upload-log-item.done { color: var(--success); }
+  .upload-log-item.err { color: var(--danger); }
+
+  /* Results overlay table */
+  .results-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5); z-index: 2000; display: none;
+    align-items: center; justify-content: center;
+  }
+  .results-overlay.visible { display: flex; }
+  .results-box {
+    background: #fff; border-radius: 12px; width: 95vw; max-height: 90vh;
+    display: flex; flex-direction: column; box-shadow: 0 8px 40px rgba(0,0,0,0.25);
+    overflow: hidden;
+  }
+  .results-header {
+    padding: 12px 16px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+  }
+  .results-header h3 { font-size: 15px; font-weight: 600; }
+  .results-header .btn-group { display: flex; gap: 8px; }
+  .results-table-wrap { flex: 1; overflow: auto; }
+  .results-table {
+    width: 100%; border-collapse: collapse; font-size: 12px; white-space: nowrap;
+  }
+  .results-table th {
+    position: sticky; top: 0; background: var(--bg-card); padding: 8px 10px;
+    text-align: left; font-weight: 600; font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.3px; color: var(--text-secondary); border-bottom: 2px solid var(--border);
+  }
+  .results-table td {
+    padding: 6px 10px; border-bottom: 1px solid var(--border); color: var(--text-primary);
+  }
+  .results-table tr:hover td { background: var(--bg-hover); }
+  .results-table .new-col { background: rgba(37,99,235,0.05); }
+  .results-table th.new-col { background: rgba(37,99,235,0.12); color: var(--accent); }
+
   /* Responsive */
   @media (max-width: 768px) {
     .sidebar { width: 100%; position: absolute; z-index: 999; height: 50%; bottom: 0; }
@@ -443,6 +506,7 @@
       <div class="tab active" onclick="switchTab('search')">Search</div>
       <div class="tab" onclick="switchTab('fleet')">Fleet</div>
       <div class="tab" onclick="switchTab('ports')">Ports</div>
+      <div class="tab" onclick="switchTab('upload')">Upload</div>
     </div>
 
     <!-- Search Tab -->
@@ -492,6 +556,26 @@
         </div>
       </div>
     </div>
+
+    <!-- Upload Tab -->
+    <div class="tab-content" id="tab-upload">
+      <div class="upload-section">
+        <label class="upload-drop" id="uploadDrop">
+          <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" style="display:none" />
+          <div class="upload-icon">&#128196;</div>
+          <div class="upload-text">Drop Excel file here or click to browse</div>
+          <div class="upload-hint">.xlsx / .xls / .csv</div>
+        </label>
+      </div>
+      <div id="uploadStatus" class="upload-status" style="display:none"></div>
+      <div class="list-area" id="uploadLog">
+        <div class="empty-state">
+          <div class="icon">&#128203;</div>
+          Upload a vehicle shipment file to enrich with vessel tracking data.<br>
+          <small>Looks up Load Port, Last Discharge Port, ETA, and Destination for each vessel.</small>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Map -->
@@ -519,6 +603,22 @@
         <button class="detail-close" onclick="closePortEvents()">&times;</button>
       </div>
       <div class="port-events-list" id="portEventsList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Results Overlay -->
+<div class="results-overlay" id="resultsOverlay">
+  <div class="results-box">
+    <div class="results-header">
+      <h3 id="resultsTitle">Enriched Vehicle Data</h3>
+      <div class="btn-group">
+        <button class="btn" onclick="exportResults()">&#128190; Export CSV</button>
+        <button class="btn" onclick="closeResults()">&times; Close</button>
+      </div>
+    </div>
+    <div class="results-table-wrap">
+      <table class="results-table" id="resultsTable"></table>
     </div>
   </div>
 </div>
@@ -568,7 +668,7 @@ async function apiCall(endpoint, params = {}) {
 // ─── Tab Switching ────────────────────────────────────────────────────
 function switchTab(tab) {
   document.querySelectorAll('.tab').forEach((t, i) => {
-    t.classList.toggle('active', ['search', 'fleet', 'ports'][i] === tab);
+    t.classList.toggle('active', ['search', 'fleet', 'ports', 'upload'][i] === tab);
   });
   document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
   document.getElementById(`tab-${tab}`).classList.add('active');
@@ -1030,6 +1130,217 @@ function closePortEvents() {
   document.getElementById('portEventsPanel').classList.remove('visible');
 }
 
+// ─── Upload & Enrich ──────────────────────────────────────────────────
+let enrichedData = []; // store for CSV export
+
+function setupUpload() {
+  const drop = document.getElementById('uploadDrop');
+  const input = document.getElementById('fileInput');
+
+  drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('dragover'); });
+  drop.addEventListener('dragleave', () => drop.classList.remove('dragover'));
+  drop.addEventListener('drop', e => {
+    e.preventDefault(); drop.classList.remove('dragover');
+    if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+  });
+  input.addEventListener('change', () => { if (input.files.length) handleFile(input.files[0]); });
+}
+
+function handleFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(ws);
+    if (!rows.length) { alert('No data found in file.'); return; }
+    log('Parsed ' + rows.length + ' rows, ' + new Set(rows.map(r => r.Vessel)).size + ' unique vessels.');
+    enrichRows(rows);
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function log(msg, cls) {
+  const el = document.getElementById('uploadLog');
+  // Clear empty state on first log
+  if (el.querySelector('.empty-state')) el.innerHTML = '';
+  const div = document.createElement('div');
+  div.className = 'upload-log-item' + (cls ? ' ' + cls : '');
+  div.textContent = msg;
+  el.prepend(div);
+}
+
+function setProgress(pct, text) {
+  const st = document.getElementById('uploadStatus');
+  st.style.display = 'block';
+  st.innerHTML = `${esc(text)}<div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>`;
+}
+
+function stripVesselSuffix(name) {
+  // "ORION HIGHWAY(K-L)" → "ORION HIGHWAY"
+  return (name || '').replace(/\s*\([^)]*\)\s*$/, '').trim();
+}
+
+async function enrichRows(rows) {
+  // Collect unique vessel names
+  const uniqueRaw = [...new Set(rows.map(r => r.Vessel).filter(Boolean))];
+  const vesselLookup = {}; // raw name → { loadPort, lastDischargePort, eta, nextDest }
+
+  log(`Looking up ${uniqueRaw.length} unique vessels via API...`);
+  setProgress(0, `Processing 0 / ${uniqueRaw.length} vessels...`);
+
+  for (let i = 0; i < uniqueRaw.length; i++) {
+    const rawName = uniqueRaw[i];
+    const cleanName = stripVesselSuffix(rawName);
+    log(`Searching: ${cleanName}...`);
+    setProgress(Math.round(((i) / uniqueRaw.length) * 100), `Processing ${i + 1} / ${uniqueRaw.length}: ${cleanName}`);
+
+    const info = { loadPort: '—', lastDischargePort: '—', eta: '—', nextDest: '—' };
+
+    try {
+      // 1. Search for vessel to get MMSI
+      const searchData = await apiCall('/search/vessels', { 'filter.name': cleanName, 'pagination.limit': 5 });
+      const vessels = searchData?.vessels || [];
+      // Pick best match (exact or first)
+      const match = vessels.find(v => (v.name || '').toUpperCase() === cleanName.toUpperCase()) || vessels[0];
+
+      if (!match) {
+        log(`  ✗ Not found: ${cleanName}`, 'err');
+        vesselLookup[rawName] = info;
+        continue;
+      }
+
+      const id = match.mmsi || match.imo;
+      const idType = match.mmsi ? 'mmsi' : 'imo';
+      log(`  Found: ${match.name} (${idType}: ${id})`);
+
+      // 2. Fetch ETA + last port event in parallel
+      const [etaData, portData] = await Promise.all([
+        apiCall(`/vessel/${id}/eta`, { 'filter.idType': idType }),
+        apiCall(`/portevents/vessel/${id}/last`, { 'filter.idType': idType }),
+      ]);
+
+      const eta = etaData?.vesselEta || etaData;
+      const pe = portData?.portEvent || portData;
+
+      // Last port event = load port (departure) or last discharge port (arrival)
+      if (pe && pe.port) {
+        const pName = titleCase(pe.port.name || '') + ', ' + titleCase(String(pe.port.country || ''));
+        const pCode = pe.port.unlo_code ? ' (' + pe.port.unlo_code.toUpperCase() + ')' : '';
+        if ((pe.event || '').toLowerCase() === 'departure') {
+          info.loadPort = pName + pCode;
+        } else {
+          info.lastDischargePort = pName + pCode;
+        }
+        log(`  Port event: ${pe.event} — ${pName}`);
+      }
+
+      // ETA and destination
+      if (eta) {
+        if (eta.eta) info.eta = new Date(eta.eta).toLocaleString();
+        if (eta.destination) {
+          info.nextDest = eta.destination;
+          // Try resolving destination to a port name
+          const resolved = await resolveDestination(eta.destination);
+          if (resolved) info.nextDest = resolved;
+        }
+        log(`  ETA: ${info.eta} → ${info.nextDest}`);
+      }
+
+      log(`  ✓ ${cleanName} done`, 'done');
+    } catch (err) {
+      log(`  ✗ Error for ${cleanName}: ${err.message}`, 'err');
+    }
+
+    vesselLookup[rawName] = info;
+  }
+
+  setProgress(100, `Done — ${uniqueRaw.length} vessels processed.`);
+  log('All lookups complete. Building table...', 'done');
+
+  // Build enriched rows
+  enrichedData = rows.map(r => ({
+    'Vehicle Model': r['Vehicle Model'] || '',
+    'Batch': r['Batch'] || '',
+    'Plant': r['Plant'] || '',
+    'Customer': r['Customer'] || '',
+    'Vehicle Identification Number': r['Vehicle Identification Number'] || '',
+    'Availability': r['Availability'] || '',
+    'Inbound': r['Inbound'] || '',
+    'Shipment': r['Shipment'] || '',
+    'REC_ID': r['REC_ID'] || '',
+    'Vessel': r['Vessel'] || '',
+    'Invoice': r['Invoice'] || '',
+    'Load Port': vesselLookup[r.Vessel]?.loadPort || '—',
+    'Last Discharge Port': vesselLookup[r.Vessel]?.lastDischargePort || '—',
+    'ETA at Last Discharge Port': vesselLookup[r.Vessel]?.eta || '—',
+    'Next Destination': vesselLookup[r.Vessel]?.nextDest || '—',
+  }));
+
+  showResultsTable(enrichedData);
+}
+
+async function resolveDestination(dest) {
+  const raw = (dest || '').trim();
+  if (!raw || raw === '—') return null;
+  // Try concatenated search first
+  let data = await apiCall('/search/ports', { 'filter.name': raw.replace(/\s+/g, ''), 'pagination.limit': 1 });
+  if (data?.ports?.length) return formatPort(data.ports[0]);
+  // Try last token with country prefix matching
+  const parts = raw.split(/\s+/);
+  if (parts.length > 1) {
+    const shortName = parts[parts.length - 1];
+    data = await apiCall('/search/ports', { 'filter.name': shortName, 'pagination.limit': 3 });
+    if (data?.ports?.length) {
+      const cc = parts[0].toLowerCase();
+      const match = data.ports.find(p => String(p.country || '').toLowerCase().startsWith(cc) || String(p.unlo_code || '').toLowerCase().startsWith(cc)) || data.ports[0];
+      return formatPort(match);
+    }
+  }
+  return null;
+}
+
+function formatPort(p) {
+  if (!p) return null;
+  const name = titleCase(p.name || p.port_name || '');
+  const country = titleCase(String(p.country || p.country_name || ''));
+  const code = p.unlo_code || p.unlocode || '';
+  return name + (country ? ', ' + country : '') + (code ? ' (' + code.toUpperCase() + ')' : '');
+}
+
+function titleCase(s) {
+  return String(s || '').replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function showResultsTable(data) {
+  if (!data.length) return;
+  const cols = Object.keys(data[0]);
+  const newCols = ['Load Port', 'Last Discharge Port', 'ETA at Last Discharge Port', 'Next Destination'];
+  let html = '<thead><tr>';
+  cols.forEach(c => { html += `<th class="${newCols.includes(c) ? 'new-col' : ''}">${esc(c)}</th>`; });
+  html += '</tr></thead><tbody>';
+  data.forEach(row => {
+    html += '<tr>';
+    cols.forEach(c => { html += `<td class="${newCols.includes(c) ? 'new-col' : ''}">${esc(String(row[c] || ''))}</td>`; });
+    html += '</tr>';
+  });
+  html += '</tbody>';
+  document.getElementById('resultsTable').innerHTML = html;
+  document.getElementById('resultsTitle').textContent = `Enriched Vehicle Data (${data.length} rows)`;
+  document.getElementById('resultsOverlay').classList.add('visible');
+}
+
+function closeResults() {
+  document.getElementById('resultsOverlay').classList.remove('visible');
+}
+
+function exportResults() {
+  if (!enrichedData.length) return;
+  const ws = XLSX.utils.json_to_sheet(enrichedData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Enriched');
+  XLSX.writeFile(wb, 'enriched_vehicles.xlsx');
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────
 function esc(s) {
   const d = document.createElement('div');
@@ -1069,6 +1380,7 @@ function getNavClass(code) {
 
 // ─── Init ─────────────────────────────────────────────────────────────
 initMap();
+setupUpload();
 document.getElementById('fleetCount').textContent = fleet.length;
 
 // Show ready status (no API ping on load — conserve quota)
