@@ -673,9 +673,14 @@ function switchTab(tab) {
   document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
   document.getElementById(`tab-${tab}`).classList.add('active');
   if (tab === 'fleet') renderFleet();
-  // Show/hide results table in map area
+  // Show/hide results table and map controls
   const rta = document.getElementById('resultsTableArea');
-  if (rta) rta.style.display = (tab === 'results' && enrichedData.length) ? 'block' : 'none';
+  const showResults = tab === 'results' && enrichedData.length;
+  if (rta) rta.style.display = showResults ? 'block' : 'none';
+  // Hide map controls and Leaflet zoom when results overlay is visible
+  const mapControls = document.querySelector('.map-controls');
+  if (mapControls) mapControls.style.display = showResults ? 'none' : '';
+  document.querySelectorAll('.leaflet-control-zoom').forEach(el => el.style.display = showResults ? 'none' : '');
 }
 
 // ─── Vessel Search ────────────────────────────────────────────────────
@@ -1184,39 +1189,51 @@ async function enrichRows(rows) {
   const hasBL = !!blColName;
 
   if (!hasBL) {
-    log('No B/L column found in Excel. Add a column named "B/L" with K-Line B/L numbers.', 'err');
+    log('No B/L column found in Excel. Add a column named "B/L" with K-Line or MOL B/L numbers.', 'err');
     setProgress(100, 'No B/L column — nothing to look up.');
     return;
   }
 
   log(`Found B/L column: "${blColName}"`);
 
-  // Collect unique B/L numbers
-  const uniqueBL = [...new Set(rows.map(r => r[blColName]).filter(Boolean))];
-  const blLookup = {}; // B/L number → K-Line cargo data
+  // Detect Vessel column for carrier hints
+  const vesselColName = Object.keys(rows[0] || {}).find(k => /^vessel$/i.test(k.trim())) || '';
 
-  log(`Looking up ${uniqueBL.length} B/Ls on K-Line...`);
+  // Collect unique B/L numbers and detect carrier for each
+  const uniqueBL = [...new Set(rows.map(r => r[blColName]).filter(Boolean))];
+  const blCarrier = {};
+  uniqueBL.forEach(bl => {
+    const row = rows.find(r => r[blColName] === bl);
+    blCarrier[bl] = detectCarrier(bl, row?.[vesselColName] || '');
+  });
+
+  const klineCount = uniqueBL.filter(bl => blCarrier[bl] === 'KLINE').length;
+  const molCount = uniqueBL.filter(bl => blCarrier[bl] === 'MOL').length;
+  log(`${uniqueBL.length} unique B/Ls: ${klineCount} K-Line, ${molCount} MOL`);
+
+  const blLookup = {};
   setProgress(0, `Processing 0 / ${uniqueBL.length} B/Ls...`);
 
   for (let i = 0; i < uniqueBL.length; i++) {
     const bl = uniqueBL[i];
-    log(`K-Line B/L: ${bl}...`);
+    const carrier = blCarrier[bl];
+    log(`[${carrier}] B/L: ${bl}...`);
     setProgress(Math.round((i / uniqueBL.length) * 100), `B/L ${i + 1} / ${uniqueBL.length}: ${bl}`);
 
     try {
-      const result = await lookupBL(bl);
+      const result = carrier === 'MOL' ? await lookupMOL(bl) : await lookupBL(bl);
       if (result) {
         blLookup[bl] = result;
         log(`  ✓ ${bl}: ${result.loadPort} → ${result.dischargePort}`, 'done');
       } else {
-        log(`  ✗ ${bl}: not found on K-Line`, 'err');
+        log(`  ✗ ${bl}: not found on ${carrier}`, 'err');
       }
     } catch (err) {
       log(`  ✗ ${bl}: ${err.message}`, 'err');
     }
   }
 
-  setProgress(100, `Done — ${uniqueBL.length} B/Ls processed.`);
+  setProgress(100, `Done — ${uniqueBL.length} B/Ls processed (${klineCount} K-Line, ${molCount} MOL).`);
   log('All lookups complete. Building table...', 'done');
 
   // Build enriched rows
@@ -1248,6 +1265,51 @@ async function enrichRows(rows) {
   showResultsTable(enrichedData);
   // Auto-switch to Results tab
   switchTab('results');
+}
+
+// ─── Carrier Detection ───────────────────────────────────────────────
+function detectCarrier(blNumber, vesselName) {
+  const bl = (blNumber || '').trim().toUpperCase();
+  const vessel = (vesselName || '').toUpperCase();
+  // Check B/L prefix first
+  if (bl.startsWith('MOLU') || vessel.includes('(MOL)')) return 'MOL';
+  if (bl.startsWith('KKLU') || bl.startsWith('KK') || vessel.includes('(K-L)')) return 'KLINE';
+  // Default: try K-Line (more common in the dataset)
+  return 'KLINE';
+}
+
+// ─── MOL B/L Lookup (via CF Worker session proxy) ────────────────────
+async function lookupMOL(blNumber) {
+  const clean = blNumber.replace(/^MOLU/i, '').trim();
+  const fetchUrl = `${WORKER}/?mol_bl=${encodeURIComponent(clean)}`;
+  try {
+    const res = await fetch(fetchUrl);
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data.error) return null;
+
+    // Map to same structure as K-Line result
+    return {
+      loadPort: data.pol || '—',
+      loadDate: data.atdEtd || '—',
+      loadStatus: data.atdEtd ? (isPastDate(data.atdEtd) ? 'Completed' : 'Scheduled') : '—',
+      dischargePort: data.pod || '—',
+      dischargeEta: data.ataEta || '—',
+      dischargeStatus: data.ataEta ? (isPastDate(data.ataEta) ? 'Completed' : 'Scheduled') : '—',
+      vessel: data.itinerary?.[0]?.vessel || '—',
+      voyage: data.itinerary?.[0]?.voyage || '—',
+      carrier: 'MOL',
+    };
+  } catch (e) {
+    console.error('MOL fetch error:', e);
+    return null;
+  }
+}
+
+function isPastDate(dateStr) {
+  try {
+    return new Date(dateStr) < new Date();
+  } catch { return false; }
 }
 
 // ─── K-Line B/L Lookup ────────────────────────────────────────────────
