@@ -446,20 +446,18 @@
   .upload-log-item.done { color: var(--success); }
   .upload-log-item.err { color: var(--danger); }
 
-  /* Results full-page view */
-  .results-view {
-    display: none; flex-direction: column; height: 100vh;
+  /* Results tab */
+  .results-toolbar {
+    padding: 8px 12px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 12px; color: var(--text-muted); background: var(--bg-card);
   }
-  .results-view.visible { display: flex; }
-  .results-view.visible ~ .topbar, .results-view.visible ~ .main { display: none; }
-  .results-header {
-    height: 48px; padding: 0 16px; background: var(--bg-secondary);
-    border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+  .results-table-wrap-sidebar { flex: 1; overflow: auto; }
+  .results-table-fullarea {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: #fff; z-index: 900; overflow: auto;
   }
-  .results-header h3 { font-size: 15px; font-weight: 600; }
-  .results-header .btn-group { display: flex; gap: 8px; }
-  .results-table-wrap { flex: 1; overflow: auto; background: #fff; }
+  .results-table-scroll { min-width: 100%; }
   .results-table {
     width: 100%; border-collapse: collapse; font-size: 12px; white-space: nowrap;
   }
@@ -503,6 +501,7 @@
       <div class="tab" onclick="switchTab('fleet')">Fleet</div>
       <div class="tab" onclick="switchTab('ports')">Ports</div>
       <div class="tab" onclick="switchTab('upload')">Upload</div>
+      <div class="tab" onclick="switchTab('results')">Results</div>
     </div>
 
     <!-- Search Tab -->
@@ -572,11 +571,32 @@
         </div>
       </div>
     </div>
+
+    <!-- Results Tab (sidebar portion — just toolbar) -->
+    <div class="tab-content" id="tab-results">
+      <div class="results-toolbar">
+        <span id="resultsInfo">No data yet — upload an Excel file first.</span>
+        <button class="btn" onclick="exportResults()" id="exportBtn" style="display:none">&#128190; Export</button>
+      </div>
+      <div class="results-table-wrap-sidebar">
+        <div class="empty-state" id="resultsEmpty">
+          <div class="icon">&#128203;</div>
+          Upload a file in the Upload tab, then results appear here.
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Map -->
   <div class="map-container">
     <div id="map"></div>
+
+    <!-- Results Table (shown when Results tab active) -->
+    <div class="results-table-fullarea" id="resultsTableArea" style="display:none">
+      <div class="results-table-scroll">
+        <table class="results-table" id="resultsTable"></table>
+      </div>
+    </div>
 
     <div class="map-controls">
       <button class="btn" onclick="searchArea()">&#128269; Search This Area</button>
@@ -600,20 +620,6 @@
       </div>
       <div class="port-events-list" id="portEventsList"></div>
     </div>
-  </div>
-</div>
-
-<!-- Results Full Page View -->
-<div class="results-view" id="resultsView">
-  <div class="results-header">
-    <h3 id="resultsTitle">Enriched Vehicle Data</h3>
-    <div class="btn-group">
-      <button class="btn" onclick="exportResults()">&#128190; Export Excel</button>
-      <button class="btn primary" onclick="closeResults()">&#9664; Back to Dashboard</button>
-    </div>
-  </div>
-  <div class="results-table-wrap">
-    <table class="results-table" id="resultsTable"></table>
   </div>
 </div>
 
@@ -662,11 +668,14 @@ async function apiCall(endpoint, params = {}) {
 // ─── Tab Switching ────────────────────────────────────────────────────
 function switchTab(tab) {
   document.querySelectorAll('.tab').forEach((t, i) => {
-    t.classList.toggle('active', ['search', 'fleet', 'ports', 'upload'][i] === tab);
+    t.classList.toggle('active', ['search', 'fleet', 'ports', 'upload', 'results'][i] === tab);
   });
   document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
   document.getElementById(`tab-${tab}`).classList.add('active');
   if (tab === 'fleet') renderFleet();
+  // Show/hide results table in map area
+  const rta = document.getElementById('resultsTableArea');
+  if (rta) rta.style.display = (tab === 'results' && enrichedData.length) ? 'block' : 'none';
 }
 
 // ─── Vessel Search ────────────────────────────────────────────────────
@@ -1169,97 +1178,30 @@ function setProgress(pct, text) {
   st.innerHTML = `${esc(text)}<div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>`;
 }
 
-function stripVesselSuffix(name) {
-  // "ORION HIGHWAY(K-L)" → "ORION HIGHWAY"
-  return (name || '').replace(/\s*\([^)]*\)\s*$/, '').trim();
-}
-
 async function enrichRows(rows) {
   // Detect B/L column (flexible naming)
   const blColName = Object.keys(rows[0] || {}).find(k => /^b[\/_\-\.]?l/i.test(k.trim()));
   const hasBL = !!blColName;
-  if (hasBL) log(`Found B/L column: "${blColName}"`);
 
-  // Collect unique vessel names
-  const uniqueRaw = [...new Set(rows.map(r => r.Vessel).filter(Boolean))];
-  const vesselLookup = {}; // raw name → vessel-level data
-
-  // Collect unique B/L numbers
-  const uniqueBL = hasBL ? [...new Set(rows.map(r => r[blColName]).filter(Boolean))] : [];
-  const blLookup = {}; // B/L number → K-Line cargo data
-
-  const totalSteps = uniqueRaw.length + uniqueBL.length;
-  log(`Looking up ${uniqueRaw.length} vessels + ${uniqueBL.length} B/Ls...`);
-  setProgress(0, `Processing 0 / ${totalSteps}...`);
-
-  for (let i = 0; i < uniqueRaw.length; i++) {
-    const rawName = uniqueRaw[i];
-    const cleanName = stripVesselSuffix(rawName);
-    log(`Searching: ${cleanName}...`);
-    setProgress(Math.round(((i) / totalSteps) * 100), `Vessel ${i + 1} / ${uniqueRaw.length}: ${cleanName}`);
-
-    const info = { lastPortCall: '—', lastPortEvent: '—', aisDestination: '—', vesselEta: '—' };
-
-    try {
-      // 1. Search for vessel to get MMSI
-      const searchData = await apiCall('/search/vessels', { 'filter.name': cleanName, 'pagination.limit': 5 });
-      const vessels = searchData?.vessels || [];
-      // Pick best match (exact or first)
-      const match = vessels.find(v => (v.name || '').toUpperCase() === cleanName.toUpperCase()) || vessels[0];
-
-      if (!match) {
-        log(`  ✗ Not found: ${cleanName}`, 'err');
-        vesselLookup[rawName] = info;
-        continue;
-      }
-
-      const id = match.mmsi || match.imo;
-      const idType = match.mmsi ? 'mmsi' : 'imo';
-      log(`  Found: ${match.name} (${idType}: ${id})`);
-
-      // 2. Fetch ETA + last port event in parallel
-      const [etaData, portData] = await Promise.all([
-        apiCall(`/vessel/${id}/eta`, { 'filter.idType': idType }),
-        apiCall(`/portevents/vessel/${id}/last`, { 'filter.idType': idType }),
-      ]);
-
-      const eta = etaData?.vesselEta || etaData;
-      const pe = portData?.portEvent || portData;
-
-      // Last port event (vessel-level — where the ship last called)
-      if (pe && pe.port) {
-        const pName = titleCase(pe.port.name || '') + ', ' + titleCase(String(pe.port.country || ''));
-        const pCode = pe.port.unlo_code ? ' (' + pe.port.unlo_code.toUpperCase() + ')' : '';
-        info.lastPortCall = pName + pCode;
-        info.lastPortEvent = titleCase(pe.event || '') + ' — ' + formatTime(pe.timestamp);
-        log(`  Port: ${pe.event} — ${pName}`);
-      }
-
-      // AIS destination and vessel ETA
-      if (eta) {
-        if (eta.eta) info.vesselEta = new Date(eta.eta).toLocaleString();
-        if (eta.destination) {
-          info.aisDestination = eta.destination;
-          const resolved = await resolveDestination(eta.destination);
-          if (resolved) info.aisDestination = eta.destination + ' → ' + resolved;
-        }
-        log(`  ETA: ${info.vesselEta} → ${info.aisDestination}`);
-      }
-
-      log(`  ✓ ${cleanName} done`, 'done');
-    } catch (err) {
-      log(`  ✗ Error for ${cleanName}: ${err.message}`, 'err');
-    }
-
-    vesselLookup[rawName] = info;
+  if (!hasBL) {
+    log('No B/L column found in Excel. Add a column named "B/L" with K-Line B/L numbers.', 'err');
+    setProgress(100, 'No B/L column — nothing to look up.');
+    return;
   }
 
-  // B/L lookups via K-Line
+  log(`Found B/L column: "${blColName}"`);
+
+  // Collect unique B/L numbers
+  const uniqueBL = [...new Set(rows.map(r => r[blColName]).filter(Boolean))];
+  const blLookup = {}; // B/L number → K-Line cargo data
+
+  log(`Looking up ${uniqueBL.length} B/Ls on K-Line...`);
+  setProgress(0, `Processing 0 / ${uniqueBL.length} B/Ls...`);
+
   for (let i = 0; i < uniqueBL.length; i++) {
     const bl = uniqueBL[i];
-    const step = uniqueRaw.length + i;
     log(`K-Line B/L: ${bl}...`);
-    setProgress(Math.round((step / totalSteps) * 100), `B/L ${i + 1} / ${uniqueBL.length}: ${bl}`);
+    setProgress(Math.round((i / uniqueBL.length) * 100), `B/L ${i + 1} / ${uniqueBL.length}: ${bl}`);
 
     try {
       const result = await lookupBL(bl);
@@ -1274,13 +1216,12 @@ async function enrichRows(rows) {
     }
   }
 
-  setProgress(100, `Done — ${uniqueRaw.length} vessels + ${uniqueBL.length} B/Ls processed.`);
+  setProgress(100, `Done — ${uniqueBL.length} B/Ls processed.`);
   log('All lookups complete. Building table...', 'done');
 
   // Build enriched rows
   enrichedData = rows.map(r => {
-    const vInfo = vesselLookup[r.Vessel] || {};
-    const blNum = hasBL ? (r[blColName] || '') : '';
+    const blNum = r[blColName] || '';
     const bInfo = blLookup[blNum] || {};
     return {
       'Vehicle Model': r['Vehicle Model'] || '',
@@ -1295,18 +1236,18 @@ async function enrichRows(rows) {
       'Vessel': r['Vessel'] || '',
       'Invoice': r['Invoice'] || '',
       'B/L': blNum,
-      'Load Port (B/L)': bInfo.loadPort || '—',
+      'Load Port': bInfo.loadPort || '—',
       'Load Date': bInfo.loadDate || '—',
-      'Discharge Port (B/L)': bInfo.dischargePort || '—',
-      'Discharge ETA (B/L)': bInfo.dischargeEta || '—',
+      'Load Status': bInfo.loadStatus || '—',
+      'Discharge Port': bInfo.dischargePort || '—',
+      'Discharge ETA': bInfo.dischargeEta || '—',
       'Discharge Status': bInfo.dischargeStatus || '—',
-      'Last Port Call (AIS)': vInfo.lastPortCall || '—',
-      'AIS Destination': vInfo.aisDestination || '—',
-      'Vessel ETA (AIS)': vInfo.vesselEta || '—',
     };
   });
 
   showResultsTable(enrichedData);
+  // Auto-switch to Results tab
+  switchTab('results');
 }
 
 // ─── K-Line B/L Lookup ────────────────────────────────────────────────
@@ -1359,34 +1300,6 @@ async function lookupBL(blNumber) {
   };
 }
 
-async function resolveDestination(dest) {
-  const raw = (dest || '').trim();
-  if (!raw || raw === '—') return null;
-  // Try concatenated search first
-  let data = await apiCall('/search/ports', { 'filter.name': raw.replace(/\s+/g, ''), 'pagination.limit': 1 });
-  if (data?.ports?.length) return formatPort(data.ports[0]);
-  // Try last token with country prefix matching
-  const parts = raw.split(/\s+/);
-  if (parts.length > 1) {
-    const shortName = parts[parts.length - 1];
-    data = await apiCall('/search/ports', { 'filter.name': shortName, 'pagination.limit': 3 });
-    if (data?.ports?.length) {
-      const cc = parts[0].toLowerCase();
-      const match = data.ports.find(p => String(p.country || '').toLowerCase().startsWith(cc) || String(p.unlo_code || '').toLowerCase().startsWith(cc)) || data.ports[0];
-      return formatPort(match);
-    }
-  }
-  return null;
-}
-
-function formatPort(p) {
-  if (!p) return null;
-  const name = titleCase(p.name || p.port_name || '');
-  const country = titleCase(String(p.country || p.country_name || ''));
-  const code = p.unlo_code || p.unlocode || '';
-  return name + (country ? ', ' + country : '') + (code ? ' (' + code.toUpperCase() + ')' : '');
-}
-
 function titleCase(s) {
   return String(s || '').replace(/\b\w/g, c => c.toUpperCase());
 }
@@ -1394,7 +1307,7 @@ function titleCase(s) {
 function showResultsTable(data) {
   if (!data.length) return;
   const cols = Object.keys(data[0]);
-  const newCols = ['B/L', 'Load Port (B/L)', 'Load Date', 'Discharge Port (B/L)', 'Discharge ETA (B/L)', 'Discharge Status', 'Last Port Call (AIS)', 'AIS Destination', 'Vessel ETA (AIS)'];
+  const newCols = ['B/L', 'Load Port', 'Load Date', 'Load Status', 'Discharge Port', 'Discharge ETA', 'Discharge Status'];
   let html = '<thead><tr>';
   cols.forEach(c => { html += `<th class="${newCols.includes(c) ? 'new-col' : ''}">${esc(c)}</th>`; });
   html += '</tr></thead><tbody>';
@@ -1407,16 +1320,12 @@ function showResultsTable(data) {
   });
   html += '</tbody>';
   document.getElementById('resultsTable').innerHTML = html;
-  document.getElementById('resultsTitle').textContent = `Enriched Vehicle Data (${data.length} rows)`;
-  document.getElementById('resultsView').classList.add('visible');
-  document.querySelector('.topbar').style.display = 'none';
-  document.querySelector('.main').style.display = 'none';
-}
-
-function closeResults() {
-  document.getElementById('resultsView').classList.remove('visible');
-  document.querySelector('.topbar').style.display = '';
-  document.querySelector('.main').style.display = '';
+  document.getElementById('resultsInfo').textContent = `${data.length} rows enriched`;
+  document.getElementById('exportBtn').style.display = '';
+  // Hide empty state, show table area
+  const empty = document.getElementById('resultsEmpty');
+  if (empty) empty.style.display = 'none';
+  document.getElementById('resultsTableArea').style.display = 'block';
 }
 
 function exportResults() {
