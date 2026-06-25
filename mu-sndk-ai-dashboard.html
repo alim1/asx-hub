@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Micron vs SanDisk AI Infrastructure Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <style>
+    :root {
+      --bg:#0f1115; --surface:#151922; --surface2:#1b2130; --surface3:#232c3e; --text:#edf2ff; --muted:#aeb8cc;
+      --line:#2c3852; --blue:#4ea1ff; --teal:#18c9b9; --amber:#ffb84d; --green:#63d471; --red:#ff6b7a; --purple:#b08cff;
+      --shadow:0 12px 30px rgba(0,0,0,.28); --radius:18px;
+    }
+    *{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,sans-serif;background:linear-gradient(180deg,#0d1017,#121826 35%,#0f1115);color:var(--text)}
+    .wrap{max-width:1440px;margin:0 auto;padding:24px}
+    .top{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:18px}
+    .title h1{margin:0;font-size:clamp(28px,4vw,44px);line-height:1.02}
+    .title p{margin:10px 0 0;color:var(--muted);max-width:900px}
+    .badge{display:inline-flex;gap:8px;align-items:center;padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.03);color:var(--muted);font-size:13px}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.015));border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+    .span-12{grid-column:span 12}.span-8{grid-column:span 8}.span-7{grid-column:span 7}.span-6{grid-column:span 6}.span-5{grid-column:span 5}.span-4{grid-column:span 4}.span-3{grid-column:span 3}
+    h2{margin:0 0 10px;font-size:18px} h3{margin:0 0 10px;font-size:14px;color:#d7deee;text-transform:uppercase;letter-spacing:.08em}
+    .sub{color:var(--muted);font-size:13px;margin-bottom:14px}
+    .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.kpi{padding:14px;border-radius:14px;background:var(--surface);border:1px solid var(--line)}
+    .kpi .v{font-size:28px;font-weight:800;margin:6px 0 2px}.kpi .l{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+    .stack{display:grid;gap:10px}
+    .lane{padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+    .lane strong{display:block;margin-bottom:6px}
+    table{width:100%;border-collapse:collapse;font-size:13px} th,td{padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:top} th{text-align:left;color:var(--muted);font-weight:600}
+    .pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:700}
+    .mu{background:rgba(78,161,255,.15);color:#8fc2ff}.sndk{background:rgba(24,201,185,.15);color:#7be8dd}.risk{background:rgba(255,107,122,.14);color:#ff97a2}.up{background:rgba(99,212,113,.14);color:#99ebb0}.warn{background:rgba(255,184,77,.14);color:#ffc978}
+    .matrix{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:10px}.cell{padding:14px;border-radius:14px;border:1px solid var(--line);background:var(--surface)}
+    .axis{font-size:12px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.08em}
+    .tiny{font-size:12px;color:var(--muted)}
+    .footer{margin-top:16px;color:#93a0b8;font-size:12px;line-height:1.5}
+    .bar{height:10px;border-radius:999px;background:#20283a;overflow:hidden}.bar > span{display:block;height:100%}
+    .legend{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:8px}
+    .legend i{display:inline-block;width:10px;height:10px;border-radius:999px;margin-right:6px;vertical-align:middle}
+    @media (max-width:1100px){.span-8,.span-7,.span-6,.span-5,.span-4,.span-3{grid-column:span 12}.kpis{grid-template-columns:repeat(2,1fr)}.matrix{grid-template-columns:1fr}}
+    @media (max-width:700px){.top{flex-direction:column}.kpis{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="title">
+      <div class="badge">AI Infrastructure Comparison · Micron (MU) vs SanDisk (SNDK)</div>
+      <h1>Memory for compute<br>vs storage for scale</h1>
+      <p>This dashboard maps Micron’s DRAM/HBM-heavy stack against SanDisk’s NAND/SSD-heavy stack and frames how each aligns to AI training, inference, and mass-storage buildouts across 2026-2027.</p>
+    </div>
+    <div class="card" style="min-width:260px">
+      <h3>2026 setup</h3>
+      <div class="tiny">Micron is tied more directly to accelerator-attached memory bottlenecks, while SanDisk is tied more directly to capacity storage, enterprise SSD qualification, and data-lake growth.</div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <section class="card span-12">
+      <h2>Positioning summary</h2>
+      <div class="kpis">
+        <div class="kpi"><div class="l">Micron FQ2'26 revenue</div><div class="v">$23.9B</div><div class="tiny">DRAM 79%, NAND 21%; non-GAAP GM 74.9%</div></div>
+        <div class="kpi"><div class="l">SanDisk FQ1'26 revenue</div><div class="v">$2.3B</div><div class="tiny">Non-GAAP GM 29.9%; datacenter revenue $269M</div></div>
+        <div class="kpi"><div class="l">Compute-leverage score</div><div class="v">MU 9/10</div><div class="tiny">HBM4 volume shipments; DRAM-first mix</div></div>
+        <div class="kpi"><div class="l">Storage-leverage score</div><div class="v">SNDK 8/10</div><div class="tiny">BiCS8 SSD/NAND capacity exposure</div></div>
+      </div>
+    </section>
+
+    <section class="card span-7">
+      <h2>Technology stack mapped to AI workloads</h2>
+      <div class="matrix">
+        <div class="cell">
+          <div class="axis">Workload / requirement</div>
+          <strong>Training clusters</strong>
+          <div class="tiny">Need extreme memory bandwidth, low latency, local working-set fit, high power efficiency near GPUs.</div><br>
+          <strong>Inference clusters</strong>
+          <div class="tiny">Mix of accelerator memory, DDR/LP memory, KV cache, and fast SSD tiers for offload/retrieval.</div><br>
+          <strong>Mass storage / data lake</strong>
+          <div class="tiny">Need capacity, endurance, $/TB, rack density, and throughput per watt more than nanosecond-class latency.</div>
+        </div>
+        <div class="cell">
+          <div class="axis">Micron (MU)</div>
+          <span class="pill mu">HBM / DRAM / enterprise SSD</span>
+          <p class="tiny">Best aligned to training and high-performance inference. HBM4 is shipping in volume, LP DRAM and DDR support inference architectures, and Micron also participates in data-center SSDs.</p>
+        </div>
+        <div class="cell">
+          <div class="axis">SanDisk (SNDK)</div>
+          <span class="pill sndk">NAND / SSD / capacity flash</span>
+          <p class="tiny">Best aligned to storage-heavy inference, vector databases, data lakes, and enterprise capacity tiers. Less exposed to accelerator-side scarcity, more exposed to storage scaling and SSD qualification cycles.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="card span-5">
+      <h2>AI infrastructure requirements</h2>
+      <div class="stack">
+        <div class="lane"><strong>Compute memory</strong><span class="pill mu">Micron advantaged</span><div class="tiny">Primary bottlenecks: bandwidth, latency, power, package integration, and supply trade ratio. HBM and advanced DRAM sit closest to AI accelerator economics.</div></div>
+        <div class="lane"><strong>Storage fabric</strong><span class="pill sndk">SanDisk advantaged</span><div class="tiny">Primary bottlenecks: capacity, endurance, throughput per watt, cost/TB, and qualification with hyperscalers/OEMs. Enterprise SSDs feed retrieval, checkpointing, vector DB, and archival tiers.</div></div>
+        <div class="lane"><strong>Inference shift</strong><span class="pill warn">Shared</span><div class="tiny">As inference broadens, DRAM still matters for token economics and active memory, while NAND/SSD matters more for cache offload, model repositories, and data gravity.</div></div>
+      </div>
+    </section>
+
+    <section class="card span-6">
+      <h2>Historical performance metrics</h2>
+      <div id="perfChart" style="height:330px"></div>
+      <div class="legend">
+        <span><i style="background:var(--blue)"></i>Micron revenue</span>
+        <span><i style="background:var(--teal)"></i>SanDisk revenue</span>
+        <span><i style="background:var(--amber)"></i>Micron gross margin</span>
+        <span><i style="background:var(--green)"></i>SanDisk gross margin</span>
+      </div>
+    </section>
+
+    <section class="card span-6">
+      <h2>Market-share concentration</h2>
+      <div id="shareChart" style="height:330px"></div>
+      <div class="tiny">Illustrative concentration uses 2026 industry structure discussed in current market coverage: HBM is highly concentrated among Samsung, SK hynix, and Micron, while NAND remains concentrated among Samsung, Kioxia/WD-SanDisk, SK group, and Micron.</div>
+    </section>
+
+    <section class="card span-8">
+      <h2>Current company data points</h2>
+      <table>
+        <thead><tr><th>Dimension</th><th>Micron</th><th>SanDisk</th></tr></thead>
+        <tbody>
+          <tr><td>AI-linked product emphasis</td><td>HBM4, DDR/LP DRAM, G9 NAND, PCIe Gen6 SSD, 122TB SSD</td><td>BiCS8-based NAND, high-capacity and power-efficient SSDs, Stargate storage line</td></tr>
+          <tr><td>Datacenter signal</td><td>Data-center NAND revenue more than doubled sequentially; HBM4 volume shipments started in CQ1'26</td><td>Datacenter revenue $269M in Q1'26, up 26% sequentially; hyperscaler qualifications underway</td></tr>
+          <tr><td>Revenue mix</td><td>79% DRAM / 21% NAND in FQ2'26</td><td>Pure-play NAND/SSD business after spin separation</td></tr>
+          <tr><td>2026 capex posture</td><td>FY26 capex above $25B; FY27 to step up meaningfully for HBM/DRAM and cleanroom buildout</td><td>Majority of FY26 capex supports BiCS8 technology; gross capex 16.8% of Q1 revenue</td></tr>
+          <tr><td>Supply visibility</td><td>Strategic customer agreements including first five-year SCA</td><td>JV with Kioxia, long-duration supply structure, qualification-led volume ramp</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card span-4">
+      <h2>Exposure bars</h2>
+      <div class="tiny">Relative economic sensitivity to AI-spend categories.</div><br>
+      <div class="tiny">Accelerator-attached memory · Micron</div><div class="bar"><span style="width:92%;background:var(--blue)"></span></div><br>
+      <div class="tiny">Accelerator-attached memory · SanDisk</div><div class="bar"><span style="width:18%;background:var(--teal)"></span></div><br>
+      <div class="tiny">Capacity storage / data lake · Micron</div><div class="bar"><span style="width:48%;background:var(--amber)"></span></div><br>
+      <div class="tiny">Capacity storage / data lake · SanDisk</div><div class="bar"><span style="width:88%;background:var(--green)"></span></div>
+    </section>
+
+    <section class="card span-12">
+      <h2>2026-2027 risk / reward scenario analysis</h2>
+      <table>
+        <thead><tr><th>Scenario</th><th>Spend shift</th><th>Micron outcome</th><th>SanDisk outcome</th></tr></thead>
+        <tbody>
+          <tr><td><span class="pill up">Bull</span> Compute remains constrained</td><td>Hyperscalers keep prioritizing accelerator clusters, HBM content rises, inference still memory-heavy</td><td>Upside strongest. HBM/DRAM pricing power, high margins, and multi-year visibility persist into 2027.</td><td>Positive but second-order. SSD demand rises, yet value accrues less directly than to HBM suppliers.</td></tr>
+          <tr><td><span class="pill warn">Base</span> Broader stack buildout</td><td>Training moderates; inference, vector DB, checkpointing, and enterprise SSD deployments broaden</td><td>Still strong through DRAM plus SSD, but incremental upside narrows as compute scarcity eases.</td><td>Best relative setup. Storage share of wallet expands as AI moves from build to utilization and retention.</td></tr>
+          <tr><td><span class="pill risk">Bear</span> Capex digestion</td><td>Cloud capex shifts from front-end accelerators to optimization; memory and NAND pricing soften</td><td>Larger downside if HBM tightness breaks, because current earnings are highly leverage to premium memory pricing.</td><td>Also vulnerable, especially if enterprise SSD qualifications lag or NAND oversupply returns, but lower attachment to HBM exuberance reduces single-factor risk.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card span-12">
+      <h2>Interpretation for 2026-2027</h2>
+      <div class="stack">
+        <div class="lane"><strong>Micron</strong><div class="tiny">Higher-beta AI infrastructure name. Reward is largest if AI capex remains compute-first and HBM stays supply-constrained. Risk is that a shift from training buildout to storage/network/utilization optimization compresses premium memory economics before new capacity fully earns through.</div></div>
+        <div class="lane"><strong>SanDisk</strong><div class="tiny">More of a picks-and-shovels storage expression on AI. Reward improves if 2027 spending broadens from accelerators into retention, checkpointing, RAG, vector search, and large capacity SSD fleets. Risk sits in classic NAND cyclicality, JV execution, and slower-than-expected hyperscaler qualification ramps.</div></div>
+        <div class="lane"><strong>Portfolio framing</strong><div class="tiny">MU is the sharper instrument for AI training / premium compute memory; SNDK is the cleaner instrument for flash capacity growth and storage intensity. Together they cover opposite sides of the same AI infrastructure stack.</div></div>
+      </div>
+      <div class="footer">
+        Sources embedded in the dashboard narrative come from Micron FQ2 2026 results presentation, SanDisk fiscal Q1 2026 results presentation, and current 2026 market coverage on HBM/NAND concentration and AI datacenter investment trends.
+      </div>
+    </section>
+  </div>
+</div>
+<script>
+  const perfX = ['MU FQ2\'25','MU FQ1\'26','MU FQ2\'26','SNDK Q4\'25','SNDK Q1\'26','SNDK Q2\'26 guide'];
+  Plotly.newPlot('perfChart', [
+    {x:['MU FQ2\'25','MU FQ1\'26','MU FQ2\'26'], y:[8.053,13.643,23.860], type:'bar', name:'Micron revenue ($B)', marker:{color:'#4ea1ff'}},
+    {x:['SNDK Q4\'25','SNDK Q1\'26','SNDK Q2\'26 guide'], y:[1.901,2.308,2.600], type:'bar', name:'SanDisk revenue ($B)', marker:{color:'#18c9b9'}},
+    {x:['MU FQ2\'25','MU FQ1\'26','MU FQ2\'26'], y:[38,57,74.9], type:'scatter', mode:'lines+markers', yaxis:'y2', name:'Micron GM %', line:{color:'#ffb84d',width:3}},
+    {x:['SNDK Q4\'25','SNDK Q1\'26','SNDK Q2\'26 guide'], y:[26.4,29.9,42], type:'scatter', mode:'lines+markers', yaxis:'y2', name:'SanDisk GM %', line:{color:'#63d471',width:3}}
+  ], {
+    paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)', margin:{l:40,r:40,t:10,b:40},
+    font:{color:'#dfe7f7',family:'Inter, sans-serif'}, barmode:'group',
+    xaxis:{gridcolor:'#243049'}, yaxis:{title:'Revenue ($B)',gridcolor:'#243049'}, yaxis2:{title:'Gross margin %',overlaying:'y',side:'right',range:[0,90]}
+  }, {displayModeBar:false, responsive:true});
+
+  Plotly.newPlot('shareChart', [
+    {type:'pie', labels:['SK hynix','Samsung','Micron'], values:[55,25,20], name:'HBM', hole:.55, domain:{x:[0,0.48],y:[0,1]}, textinfo:'label+percent', marker:{colors:['#18c9b9','#b08cff','#4ea1ff']}},
+    {type:'pie', labels:['Samsung','Kioxia/SanDisk','SK group','Micron','Others'], values:[31,26,20,13,10], name:'NAND', hole:.55, domain:{x:[0.52,1],y:[0,1]}, textinfo:'label+percent', marker:{colors:['#b08cff','#18c9b9','#63d471','#4ea1ff','#ffb84d']}}
+  ], {
+    paper_bgcolor:'rgba(0,0,0,0)', font:{color:'#dfe7f7',family:'Inter, sans-serif'}, margin:{l:10,r:10,t:10,b:10},
+    annotations:[
+      {text:'HBM market',x:0.24,y:0.5,showarrow:false,font:{size:16,color:'#dfe7f7'}},
+      {text:'NAND market',x:0.76,y:0.5,showarrow:false,font:{size:16,color:'#dfe7f7'}}
+    ]
+  }, {displayModeBar:false, responsive:true});
+</script>
+</body>
+</html>
