@@ -728,11 +728,11 @@ function buildSeries() {
   STATE.series.wilshire = wilshire.map(d => ({ date: d.date, ms: d.ms, v: d.close }));
   STATE.series.gdp = wilshire.map(d => ({ date: d.date, ms: d.ms, v: gdpOn(d.date) }));
 
-  // Macro Pulse — yields are index/10
+  // Macro Pulse — Yahoo's ^IRX/^FVX/^TNX close values are already in percent
   const { y13, y5, y10 } = STATE.raw;
-  const y13pct = y13.map(d => ({ date: d.date, ms: d.ms, close: d.close * 0.1 }));
-  const y5pct  = y5.map(d => ({ date: d.date, ms: d.ms, close: d.close * 0.1 }));
-  const y10pct = y10.map(d => ({ date: d.date, ms: d.ms, close: d.close * 0.1 }));
+  const y13pct = y13.map(d => ({ date: d.date, ms: d.ms, close: d.close }));
+  const y5pct  = y5.map(d => ({ date: d.date, ms: d.ms, close: d.close }));
+  const y10pct = y10.map(d => ({ date: d.date, ms: d.ms, close: d.close }));
   const quad = joinFour(dxy, y13pct, y5pct, y10pct);
   STATE.series.dxy   = quad.map(d => ({ date: d.date, ms: d.ms, v: d.a }));
   STATE.series.y13   = quad.map(d => ({ date: d.date, ms: d.ms, v: d.b }));
