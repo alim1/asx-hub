@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Quant Screen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  background: #0a0a0a;
+  color: #00ff41;
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  -webkit-font-smoothing: antialiased;
+  font-size: 12px;
+}
+
+/* ── LAYOUT ─────────────────────────── */
+.page { max-width: 1600px; margin: 0 auto; padding: 16px 20px; }
+
+.header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-bottom: 12px; margin-bottom: 12px;
+  border-bottom: 1px solid #1a3a1a;
+}
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo svg { width: 24px; height: 24px; }
+.logo-text h1 {
+  margin: 0; font-size: 16px; font-weight: 700;
+  color: #00ff41; letter-spacing: 0.12em;
+}
+.logo-text .sub {
+  font-size: 10px; color: #338833; letter-spacing: 0.15em;
+  margin-top: 1px;
+}
+.header-right {
+  display: flex; align-items: center; gap: 14px;
+  font-size: 11px;
+}
+
+.pulse-dot {
+  display: inline-block; width: 7px; height: 7px;
+  background: #00ff41; border-radius: 50%;
+  box-shadow: 0 0 6px #00ff41;
+  animation: pulse 2s ease-in-out infinite;
+  margin-right: 4px;
+}
+@keyframes pulse {
+  0%,100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.btn {
+  background: transparent; border: 1px solid #1a3a1a;
+  color: #00ff41; font-family: inherit; font-size: 11px;
+  padding: 5px 12px; cursor: pointer; letter-spacing: 0.1em;
+  transition: border-color 0.15s, color 0.15s;
+}
+.btn:hover { border-color: #00ff41; color: #33ff66; }
+.btn.active { border-color: #00ff41; background: #0a1f0a; }
+
+/* ── CONTROLS ─────────────────────── */
+.controls {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px; gap: 12px; flex-wrap: wrap;
+}
+.control-group {
+  display: flex; align-items: center; gap: 8px;
+}
+.control-group label {
+  color: #338833; font-size: 10px; letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+.sector-btn {
+  background: transparent; border: 1px solid #1a3a1a;
+  color: #338833; font-family: inherit; font-size: 10px;
+  padding: 3px 8px; cursor: pointer; letter-spacing: 0.08em;
+}
+.sector-btn:hover { color: #00ff41; border-color: #1a3a1a; }
+.sector-btn.active { color: #00ff41; border-color: #00ff41; background: #0a1f0a; }
+
+input[type="range"] {
+  -webkit-appearance: none; appearance: none;
+  width: 180px; height: 4px; background: #1a3a1a;
+  border-radius: 2px; outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 10px; height: 10px; border-radius: 50%;
+  background: #00ff41; cursor: pointer;
+  box-shadow: 0 0 4px #00ff41;
+}
+input[type="text"], select {
+  background: #0a0a0a; border: 1px solid #1a3a1a;
+  color: #00ff41; font-family: inherit; font-size: 11px;
+  padding: 4px 8px; outline: none; width: 60px;
+}
+input[type="text"]:focus, select:focus { border-color: #00ff41; }
+select { width: auto; cursor: pointer; }
+
+/* ── PANELS ──────────────────────── */
+.panel {
+  border: 1px solid #1a3a1a;
+  margin-bottom: 12px;
+  background: #0a0a0a;
+}
+.panel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid #0d1f0d;
+  font-size: 11px;
+}
+.panel-title {
+  color: #ff4444; font-weight: 700;
+  letter-spacing: 0.12em; font-size: 11px;
+}
+.panel-meta { color: #338833; font-size: 10px; letter-spacing: 0.08em; }
+.panel-body { padding: 12px; min-height: 100px; position: relative; }
+.panel-body.tall { min-height: 350px; }
+
+.empty-msg {
+  color: #338833; text-align: center; padding: 40px 20px;
+  font-size: 11px; letter-spacing: 0.08em;
+}
+
+/* ── GRID ────────────────────────── */
+.row { display: flex; gap: 12px; }
+.row > .panel { flex: 1; min-width: 0; }
+.col-65 { flex: 0 0 64% !important; }
+.col-35 { flex: 0 0 calc(36% - 12px) !important; }
+
+/* ── SCATTER CHART (Canvas) ──────── */
+canvas { display: block; width: 100%; }
+
+/* ── TABLE ────────────────────────── */
+.data-table {
+  width: 100%; border-collapse: collapse;
+  font-size: 11px;
+}
+.data-table th {
+  color: #338833; font-weight: 500; text-align: left;
+  padding: 6px 8px; border-bottom: 1px solid #1a3a1a;
+  letter-spacing: 0.08em; font-size: 10px;
+  cursor: pointer; user-select: none;
+  white-space: nowrap;
+}
+.data-table th:hover { color: #00ff41; }
+.data-table th.sort-asc::after { content: ' ▲'; }
+.data-table th.sort-desc::after { content: ' ▼'; }
+.data-table td {
+  padding: 5px 8px; border-bottom: 1px solid #0d1f0d;
+  color: #00ff41; white-space: nowrap;
+}
+.data-table tr:hover td { background: #0a1f0a; }
+.data-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+.data-table .pos { color: #00ff41; }
+.data-table .neg { color: #ff4444; }
+.data-table .ticker { color: #33ff66; font-weight: 600; }
+.data-table .name-col { color: #338833; max-width: 160px; overflow: hidden; text-overflow: ellipsis; }
+
+/* ── FOOTER ──────────────────────── */
+.footer {
+  display: flex; justify-content: space-between;
+  padding: 8px 0; margin-top: 8px;
+  border-top: 1px solid #1a3a1a;
+  color: #338833; font-size: 10px; letter-spacing: 0.1em;
+}
+
+/* ── LOADING ─────────────────────── */
+.loading {
+  display: flex; align-items: center; justify-content: center;
+  gap: 8px; color: #338833; font-size: 11px;
+  position: absolute; inset: 0;
+}
+.spinner {
+  width: 14px; height: 14px; border: 2px solid #1a3a1a;
+  border-top-color: #00ff41; border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── MODAL (View Query) ──────────── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.8); z-index: 100;
+  align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: #0a0a0a; border: 1px solid #1a3a1a;
+  padding: 20px; max-width: 600px; width: 90%;
+  max-height: 80vh; overflow-y: auto;
+}
+.modal pre {
+  color: #00ff41; font-size: 11px; white-space: pre-wrap;
+  margin: 0;
+}
+.modal h3 { color: #ff4444; margin: 0 0 12px; font-size: 12px; letter-spacing: 0.1em; }
+
+/* ── BOX PLOT (SVG) ──────────────── */
+.box-plot-container { width: 100%; overflow-x: auto; }
+
+/* ── MARKET TOGGLE ───────────────── */
+.market-toggle {
+  display: flex; gap: 0;
+}
+.market-toggle .btn {
+  border-radius: 0;
+}
+.market-toggle .btn:first-child { border-right: none; }
+.market-toggle .btn:last-child { border-left: none; }
+
+/* ── TOOLTIP ─────────────────────── */
+.chart-tooltip {
+  display: none; position: absolute;
+  background: #0d1f0d; border: 1px solid #00ff41;
+  padding: 8px 10px; font-size: 10px;
+  color: #00ff41; pointer-events: none;
+  z-index: 50; max-width: 220px;
+  box-shadow: 0 0 10px rgba(0,255,65,0.2);
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#00ff41" stroke-width="1.5">
+        <polyline points="4 20 8 12 12 16 16 8 20 4"/>
+        <line x1="4" y1="20" x2="20" y2="20" stroke="#1a3a1a"/>
+        <line x1="4" y1="4" x2="4" y2="20" stroke="#1a3a1a"/>
+      </svg>
+      <div class="logo-text">
+        <h1>THE QUANT SCREEN</h1>
+        <div class="sub">SECTOR VALUATION EXPLORER</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="market-toggle">
+        <button class="btn active" data-market="US" onclick="setMarket('US')">US</button>
+        <button class="btn" data-market="ASX" onclick="setMarket('ASX')">ASX</button>
+        <button class="btn" data-market="ALL" onclick="setMarket('ALL')">ALL</button>
+      </div>
+      <span><span class="pulse-dot" id="statusDot"></span><span id="statusText">IDLE</span></span>
+      <button class="btn" onclick="showQuery()">⊞ VIEW QUERY</button>
+      <button class="btn" onclick="refreshData()">↻ REFRESH</button>
+    </div>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="controls">
+    <div class="control-group">
+      <label>SECTORS</label>
+      <div id="sectorBtns">
+        <button class="sector-btn active" data-sector="ALL" onclick="toggleSector('ALL')">ALL</button>
+      </div>
+    </div>
+    <div class="control-group">
+      <label>MIN MARKET CAP</label>
+      <input type="range" id="mcapSlider" min="7" max="12" step="0.5" value="8"
+             oninput="updateMcapLabel()" onchange="applyFilters()">
+      <span id="mcapLabel" style="color:#00ff41;min-width:40px">$100M</span>
+      <label style="margin-left:16px">MAX P/S</label>
+      <input type="text" id="maxPS" value="any" onchange="applyFilters()" style="width:50px">
+    </div>
+  </div>
+
+  <!-- SECTOR P/E DISTRIBUTION -->
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">SECTOR P/E DISTRIBUTION</span>
+      <span class="panel-meta">box = IQR · whisker = p5–p95 · log scale</span>
+    </div>
+    <div class="panel-body" id="boxPlotArea" style="min-height:120px; overflow-x:auto;">
+      <div class="empty-msg" id="boxPlotEmpty">no sectors match the current filter</div>
+    </div>
+  </div>
+
+  <!-- VALUE VS QUALITY + CHEAP QUALITY -->
+  <div class="row">
+    <div class="panel col-65">
+      <div class="panel-header">
+        <span class="panel-title">VALUE VS QUALITY</span>
+        <span class="panel-meta" id="scatterMeta">0 names · size = mkt cap</span>
+      </div>
+      <div class="panel-body tall" style="position:relative;">
+        <canvas id="scatterCanvas" height="380"></canvas>
+        <div class="chart-tooltip" id="scatterTooltip"></div>
+        <div id="scatterLabels" style="position:absolute;bottom:8px;right:12px;font-size:9px;color:#338833;letter-spacing:0.1em;">
+          <span style="color:#ff4444">EXPENSIVE GROWTH ▶</span>
+        </div>
+        <div style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);font-size:9px;color:#338833;letter-spacing:0.1em;">
+          NET MARGIN ▶
+        </div>
+        <div style="position:absolute;left:8px;top:8px;font-size:9px;color:#338833;letter-spacing:0.1em;writing-mode:vertical-rl;transform:rotate(180deg);">
+          P/E ▲
+        </div>
+        <div style="position:absolute;bottom:8px;right:12px;font-size:9px;color:#338833;letter-spacing:0.1em;">
+          <span style="color:#00ff41">CHEAP &amp; PROFITABLE ▶</span>
+        </div>
+      </div>
+    </div>
+    <div class="panel col-35">
+      <div class="panel-header">
+        <span class="panel-title">CHEAP-QUALITY SCREEN</span>
+        <span class="panel-meta">top 15 by upside</span>
+      </div>
+      <div class="panel-body" id="cheapQualityArea">
+        <div class="empty-msg" id="cheapQualityEmpty">no cheap-quality names match — loosen the filters</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONVICTION LEADERBOARD -->
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">CONVICTION LEADERBOARD</span>
+      <span class="panel-meta">names with ≥15 analysts, sorted by upside to target</span>
+    </div>
+    <div class="panel-body" id="convictionArea">
+      <div class="empty-msg" id="convictionEmpty">no names with ≥15 analysts in this filter</div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span id="footerLeft">UNIVERSE 0 · FILTER MATCH 0 · PLOTTED 0</span>
+    <span id="footerRight">MKT MED P/E 0.0 · NM 0.0% 0ms</span>
+  </div>
+
+</div>
+
+<!-- VIEW QUERY MODAL -->
+<div class="modal-overlay" id="queryModal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal">
+    <h3>CURRENT QUERY</h3>
+    <pre id="queryPre"></pre>
+    <br><button class="btn" onclick="document.getElementById('queryModal').classList.remove('open')">CLOSE</button>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════
+// CONFIG
+// ════════════════════════════════════════════════════════════
+const PROXY = 'https://quant-screen-proxy.alex-9d8.workers.dev';
+
+const SECTORS = [
+  'Technology','Healthcare','Financial Services','Consumer Cyclical',
+  'Communication Services','Industrials','Consumer Defensive',
+  'Energy','Basic Materials','Real Estate','Utilities'
+];
+
+// ════════════════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════════════════
+const S = {
+  market: 'US',
+  sector: 'ALL',
+  minMcap: 1e8,       // $100M default
+  maxPS: Infinity,
+  universe: [],        // raw from API
+  filtered: [],        // after filters
+  fetchMs: 0,
+  loading: false,
+};
+
+// ════════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  buildSectorButtons();
+  updateMcapLabel();
+  refreshData();
+});
+
+function buildSectorButtons() {
+  const wrap = document.getElementById('sectorBtns');
+  wrap.innerHTML = '<button class="sector-btn active" data-sector="ALL" onclick="toggleSector(\'ALL\')">ALL</button>';
+  SECTORS.forEach(s => {
+    const short = sectorShort(s);
+    wrap.innerHTML += `<button class="sector-btn" data-sector="${s}" onclick="toggleSector('${s}')">${short}</button>`;
+  });
+}
+
+function sectorShort(s) {
+  const map = {
+    'Technology': 'TECH', 'Healthcare': 'HEALTH', 'Financial Services': 'FINS',
+    'Consumer Cyclical': 'CYCLICAL', 'Communication Services': 'COMMS',
+    'Industrials': 'INDUST', 'Consumer Defensive': 'STAPLES',
+    'Energy': 'ENERGY', 'Basic Materials': 'MATLS', 'Real Estate': 'REIT',
+    'Utilities': 'UTILS',
+  };
+  return map[s] || s.slice(0, 6).toUpperCase();
+}
+
+// ════════════════════════════════════════════════════════════
+// CONTROLS
+// ════════════════════════════════════════════════════════════
+function setMarket(m) {
+  S.market = m;
+  document.querySelectorAll('.market-toggle .btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.market === m);
+  });
+  refreshData();
+}
+
+function toggleSector(sec) {
+  S.sector = sec;
+  document.querySelectorAll('#sectorBtns .sector-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.sector === sec);
+  });
+  applyFilters();
+}
+
+function updateMcapLabel() {
+  const v = parseFloat(document.getElementById('mcapSlider').value);
+  S.minMcap = Math.pow(10, v);
+  const label = S.minMcap >= 1e9 ? `$${(S.minMcap / 1e9).toFixed(0)}B` : `$${(S.minMcap / 1e6).toFixed(0)}M`;
+  document.getElementById('mcapLabel').textContent = label;
+}
+
+// ════════════════════════════════════════════════════════════
+// DATA FETCH
+// ════════════════════════════════════════════════════════════
+async function refreshData() {
+  if (S.loading) return;
+  S.loading = true;
+  setStatus('loading');
+  const t0 = performance.now();
+
+  try {
+    // Use screener to get universe
+    const body = {
+      minMarketCap: S.minMcap,
+    };
+    if (S.market !== 'ALL') body.exchange = S.market;
+
+    const resp = await fetch(`${PROXY}/screener`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await resp.json();
+
+    if (data.error) throw new Error(data.error);
+
+    // Get full quote data for all symbols (screener returns limited fields)
+    const symbols = (data.quotes || []).map(q => q.symbol);
+
+    if (symbols.length > 0) {
+      // Batch in groups of 100
+      const batches = [];
+      for (let i = 0; i < symbols.length; i += 100) {
+        batches.push(symbols.slice(i, i + 100));
+      }
+
+      const allQuotes = [];
+      for (const batch of batches) {
+        const qResp = await fetch(`${PROXY}/quote?symbols=${batch.join(',')}`);
+        const qData = await qResp.json();
+        if (qData.quotes) allQuotes.push(...qData.quotes);
+      }
+      S.universe = allQuotes;
+    } else {
+      S.universe = [];
+    }
+
+    S.fetchMs = Math.round(performance.now() - t0);
+    setStatus('live');
+    applyFilters();
+
+  } catch (err) {
+    console.error('Fetch error:', err);
+    setStatus('error');
+    S.fetchMs = Math.round(performance.now() - t0);
+
+    // Load demo data for development
+    loadDemoData();
+  }
+
+  S.loading = false;
+}
+
+function loadDemoData() {
+  // Demo data for testing without the Worker deployed
+  const sectors = SECTORS;
+  const names = [];
+  const tickers_us = ['AAPL','MSFT','GOOGL','AMZN','NVDA','META','TSLA','BRK-B','JPM','V',
+    'JNJ','UNH','PG','MA','HD','MRK','ABBV','PEP','COST','AVGO','KO','WMT','TMO','CSCO',
+    'MCD','ACN','CRM','LIN','ABT','DHR','TXN','ADBE','NEE','AMGN','PM','UNP','RTX','LOW',
+    'INTC','IBM','GE','CAT','SYK','BA','MDLZ','GILD','ISRG','ADP','BLK','MMC','SHW','PLD',
+    'ADI','REGN','VRTX','LRCX','PANW','KLAC','SNPS','CDNS','MRVL','FTNT','DDOG','ZS',
+    'CRWD','NET','SNOW','MDB','VEEV','BILL','HUBS','TTD','OKTA','U','PATH','PLTR'];
+  const tickers_asx = ['BHP.AX','CBA.AX','CSL.AX','NAB.AX','WBC.AX','ANZ.AX','WES.AX',
+    'MQG.AX','FMG.AX','TLS.AX','WOW.AX','RIO.AX','ALL.AX','REA.AX','COL.AX','STO.AX',
+    'WDS.AX','TCL.AX','GMG.AX','AMC.AX','QBE.AX','SUN.AX','ORG.AX','MIN.AX','S32.AX',
+    'NST.AX','NEM.AX','CPU.AX','JHX.AX','XRO.AX'];
+
+  const pool = S.market === 'ASX' ? tickers_asx : S.market === 'US' ? tickers_us : [...tickers_us, ...tickers_asx];
+
+  S.universe = pool.map((sym, i) => {
+    const sec = sectors[i % sectors.length];
+    const mcap = (Math.random() * 900 + 1) * 1e9;
+    const pe = Math.random() > 0.1 ? 5 + Math.random() * 80 : null;
+    const nm = Math.random() > 0.15 ? (Math.random() * 0.5 - 0.05) : null;
+    const ps = pe ? pe * (nm || 0.1) : Math.random() * 15;
+    const price = 10 + Math.random() * 500;
+    const analysts = Math.floor(Math.random() * 30);
+    const target = price * (0.8 + Math.random() * 0.6);
+    return {
+      symbol: sym,
+      shortName: sym.replace('.AX', '') + ' Corp',
+      exchange: sym.includes('.AX') ? 'ASX' : 'NMS',
+      sector: sec,
+      industry: sec + ' Sub',
+      marketCap: mcap,
+      trailingPE: pe,
+      forwardPE: pe ? pe * 0.9 : null,
+      priceToSalesTrailing12Months: ps > 0 ? ps : null,
+      profitMargins: nm,
+      regularMarketPrice: price,
+      regularMarketChangePercent: (Math.random() - 0.5) * 10,
+      numberOfAnalystOpinions: analysts,
+      targetMeanPrice: target,
+      fiftyTwoWeekHigh: price * 1.2,
+      fiftyTwoWeekLow: price * 0.7,
+    };
+  });
+  applyFilters();
+}
+
+// ════════════════════════════════════════════════════════════
+// FILTERS
+// ════════════════════════════════════════════════════════════
+function applyFilters() {
+  updateMcapLabel();
+  const maxPSraw = document.getElementById('maxPS').value.trim().toLowerCase();
+  S.maxPS = (maxPSraw === 'any' || maxPSraw === '') ? Infinity : parseFloat(maxPSraw);
+
+  S.filtered = S.universe.filter(q => {
+    if (q.marketCap && q.marketCap < S.minMcap) return false;
+    if (S.sector !== 'ALL' && q.sector !== S.sector) return false;
+    if (S.maxPS !== Infinity && q.priceToSalesTrailing12Months != null && q.priceToSalesTrailing12Months > S.maxPS) return false;
+    return true;
+  });
+
+  renderAll();
+}
+
+// ════════════════════════════════════════════════════════════
+// RENDER ALL
+// ════════════════════════════════════════════════════════════
+function renderAll() {
+  renderBoxPlot();
+  renderScatter();
+  renderCheapQuality();
+  renderConviction();
+  renderFooter();
+}
+
+// ════════════════════════════════════════════════════════════
+// BOX PLOT
+// ════════════════════════════════════════════════════════════
+function renderBoxPlot() {
+  const area = document.getElementById('boxPlotArea');
+  const empty = document.getElementById('boxPlotEmpty');
+
+  // Group by sector
+  const bySector = {};
+  S.filtered.forEach(q => {
+    if (!q.sector || q.trailingPE == null || q.trailingPE <= 0) return;
+    if (!bySector[q.sector]) bySector[q.sector] = [];
+    bySector[q.sector].push(q.trailingPE);
+  });
+
+  const sectorNames = Object.keys(bySector).filter(s => bySector[s].length >= 3).sort();
+  if (sectorNames.length === 0) {
+    empty.style.display = 'block';
+    const oldSvg = area.querySelector('svg');
+    if (oldSvg) oldSvg.remove();
+    return;
+  }
+  empty.style.display = 'none';
+
+  const W = Math.max(sectorNames.length * 70, 600);
+  const H = 100;
+  const pad = { top: 10, bottom: 25, left: 40, right: 10 };
+
+  // Compute stats
+  const stats = sectorNames.map(s => {
+    const arr = bySector[s].sort((a, b) => a - b);
+    const n = arr.length;
+    const p = (f) => arr[Math.floor(f * (n - 1))];
+    return { name: sectorShort(s), p5: p(0.05), q1: p(0.25), med: p(0.5), q3: p(0.75), p95: p(0.95), n };
+  });
+
+  // Log scale
+  const allVals = stats.flatMap(s => [s.p5, s.p95]);
+  const minV = Math.max(Math.min(...allVals) * 0.8, 1);
+  const maxV = Math.max(...allVals) * 1.2;
+  const logMin = Math.log10(minV);
+  const logMax = Math.log10(maxV);
+  const yScale = (v) => pad.top + (1 - (Math.log10(Math.max(v, 1)) - logMin) / (logMax - logMin)) * (H - pad.top - pad.bottom);
+  const barW = Math.min(30, (W - pad.left - pad.right) / sectorNames.length * 0.6);
+
+  let svg = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="display:block">`;
+
+  // Y-axis ticks
+  const ticks = [5, 10, 20, 50, 100, 200].filter(t => t >= minV && t <= maxV);
+  ticks.forEach(t => {
+    const y = yScale(t);
+    svg += `<line x1="${pad.left}" y1="${y}" x2="${W - pad.right}" y2="${y}" stroke="#0d1f0d" stroke-dasharray="2,4"/>`;
+    svg += `<text x="${pad.left - 4}" y="${y + 3}" fill="#338833" font-size="8" font-family="IBM Plex Mono" text-anchor="end">${t}</text>`;
+  });
+
+  stats.forEach((s, i) => {
+    const cx = pad.left + (i + 0.5) * ((W - pad.left - pad.right) / sectorNames.length);
+
+    // Whisker line
+    svg += `<line x1="${cx}" y1="${yScale(s.p95)}" x2="${cx}" y2="${yScale(s.p5)}" stroke="#338833" stroke-width="1"/>`;
+    // Whisker caps
+    svg += `<line x1="${cx - barW/4}" y1="${yScale(s.p95)}" x2="${cx + barW/4}" y2="${yScale(s.p95)}" stroke="#338833"/>`;
+    svg += `<line x1="${cx - barW/4}" y1="${yScale(s.p5)}" x2="${cx + barW/4}" y2="${yScale(s.p5)}" stroke="#338833"/>`;
+    // Box
+    const boxTop = yScale(s.q3);
+    const boxBot = yScale(s.q1);
+    svg += `<rect x="${cx - barW/2}" y="${boxTop}" width="${barW}" height="${boxBot - boxTop}" fill="#0a1f0a" stroke="#00ff41" stroke-width="1"/>`;
+    // Median
+    svg += `<line x1="${cx - barW/2}" y1="${yScale(s.med)}" x2="${cx + barW/2}" y2="${yScale(s.med)}" stroke="#ff4444" stroke-width="1.5"/>`;
+    // Label
+    svg += `<text x="${cx}" y="${H - 4}" fill="#338833" font-size="8" font-family="IBM Plex Mono" text-anchor="middle">${s.name}</text>`;
+  });
+
+  svg += `<text x="4" y="10" fill="#338833" font-size="8" font-family="IBM Plex Mono">P/E ▲</text>`;
+  svg += '</svg>';
+
+  const oldSvg = area.querySelector('svg');
+  if (oldSvg) oldSvg.remove();
+  area.insertAdjacentHTML('beforeend', svg);
+}
+
+// ════════════════════════════════════════════════════════════
+// SCATTER: VALUE VS QUALITY
+// ════════════════════════════════════════════════════════════
+function renderScatter() {
+  const canvas = document.getElementById('scatterCanvas');
+  const ctx = canvas.getContext('2d');
+  const tooltip = document.getElementById('scatterTooltip');
+
+  // Only stocks with both P/E and net margin
+  const pts = S.filtered.filter(q =>
+    q.trailingPE != null && q.trailingPE > 0 && q.trailingPE < 200 &&
+    q.profitMargins != null
+  ).map(q => ({
+    x: q.profitMargins * 100,  // net margin %
+    y: q.trailingPE,
+    r: Math.max(3, Math.min(18, Math.sqrt((q.marketCap || 1e9) / 1e9) * 2)),
+    sym: q.symbol,
+    name: q.shortName,
+    mcap: q.marketCap,
+    pe: q.trailingPE,
+    nm: q.profitMargins * 100,
+  }));
+
+  document.getElementById('scatterMeta').textContent = `${pts.length} names · size = mkt cap`;
+
+  // Canvas sizing
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  const W = rect.width - 24;
+  const H = 360;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.scale(dpr, dpr);
+
+  const pad = { top: 20, right: 20, bottom: 30, left: 40 };
+  const plotW = W - pad.left - pad.right;
+  const plotH = H - pad.top - pad.bottom;
+
+  // Clear
+  ctx.clearRect(0, 0, W, H);
+
+  if (pts.length === 0) return;
+
+  // Scales
+  const xMin = Math.min(-5, Math.min(...pts.map(p => p.x)) - 2);
+  const xMax = Math.max(60, Math.max(...pts.map(p => p.x)) + 2);
+  const yMin = 0;
+  const yMax = Math.min(200, Math.max(...pts.map(p => p.y)) * 1.1);
+
+  const sx = (v) => pad.left + ((v - xMin) / (xMax - xMin)) * plotW;
+  const sy = (v) => pad.top + (1 - (v - yMin) / (yMax - yMin)) * plotH;
+
+  // Grid
+  ctx.strokeStyle = '#0d1f0d';
+  ctx.lineWidth = 0.5;
+  // X gridlines
+  for (let x = 0; x <= xMax; x += 10) {
+    ctx.beginPath(); ctx.moveTo(sx(x), pad.top); ctx.lineTo(sx(x), pad.top + plotH); ctx.stroke();
+  }
+  // Y gridlines
+  for (let y = 0; y <= yMax; y += 20) {
+    ctx.beginPath(); ctx.moveTo(pad.left, sy(y)); ctx.lineTo(pad.left + plotW, sy(y)); ctx.stroke();
+  }
+
+  // Axis labels
+  ctx.fillStyle = '#338833';
+  ctx.font = '9px IBM Plex Mono';
+  ctx.textAlign = 'center';
+  for (let x = 0; x <= xMax; x += 10) {
+    ctx.fillText(x + '%', sx(x), H - 6);
+  }
+  ctx.textAlign = 'right';
+  for (let y = 0; y <= yMax; y += 20) {
+    if (y === 0) continue;
+    ctx.fillText(y.toFixed(0), pad.left - 4, sy(y) + 3);
+  }
+
+  // Draw bubbles
+  pts.forEach(p => {
+    const px = sx(p.x);
+    const py = sy(p.y);
+    ctx.beginPath();
+    ctx.arc(px, py, p.r, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(0, 255, 65, 0.25)';
+    ctx.fill();
+    ctx.strokeStyle = '#00ff41';
+    ctx.lineWidth = 0.8;
+    ctx.stroke();
+  });
+
+  // Store points for hover
+  canvas._pts = pts.map(p => ({ ...p, px: sx(p.x), py: sy(p.y) }));
+
+  // Hover handler
+  canvas.onmousemove = (e) => {
+    const cr = canvas.getBoundingClientRect();
+    const mx = e.clientX - cr.left;
+    const my = e.clientY - cr.top;
+    let hit = null;
+    let minD = Infinity;
+    for (const p of canvas._pts) {
+      const d = Math.hypot(p.px - mx, p.py - my);
+      if (d < p.r + 4 && d < minD) { hit = p; minD = d; }
+    }
+    if (hit) {
+      tooltip.style.display = 'block';
+      tooltip.style.left = (hit.px + 14) + 'px';
+      tooltip.style.top = (hit.py - 10) + 'px';
+      tooltip.innerHTML = `<b>${hit.sym}</b><br>${hit.name}<br>P/E: ${hit.pe.toFixed(1)}<br>NM: ${hit.nm.toFixed(1)}%<br>Mkt Cap: ${fmtMcap(hit.mcap)}`;
+    } else {
+      tooltip.style.display = 'none';
+    }
+  };
+  canvas.onmouseleave = () => { tooltip.style.display = 'none'; };
+}
+
+// ════════════════════════════════════════════════════════════
+// CHEAP-QUALITY SCREEN
+// ════════════════════════════════════════════════════════════
+function renderCheapQuality() {
+  const area = document.getElementById('cheapQualityArea');
+  const empty = document.getElementById('cheapQualityEmpty');
+
+  // Criteria: P/E < sector median, net margin > 10%, has analyst target
+  const withData = S.filtered.filter(q =>
+    q.trailingPE != null && q.trailingPE > 0 && q.trailingPE < 50 &&
+    q.profitMargins != null && q.profitMargins > 0.10 &&
+    q.targetMeanPrice != null && q.regularMarketPrice != null &&
+    q.targetMeanPrice > q.regularMarketPrice
+  );
+
+  // Sort by upside to target
+  withData.forEach(q => {
+    q._upside = ((q.targetMeanPrice - q.regularMarketPrice) / q.regularMarketPrice) * 100;
+  });
+  withData.sort((a, b) => b._upside - a._upside);
+  const top = withData.slice(0, 15);
+
+  if (top.length === 0) {
+    empty.style.display = 'block';
+    const oldTbl = area.querySelector('table');
+    if (oldTbl) oldTbl.remove();
+    return;
+  }
+  empty.style.display = 'none';
+
+  let html = `<table class="data-table">
+    <thead><tr>
+      <th>TICKER</th><th>NAME</th><th class="num">P/E</th>
+      <th class="num">NM%</th><th class="num">MCAP</th><th class="num">UPSIDE</th>
+    </tr></thead><tbody>`;
+
+  top.forEach(q => {
+    html += `<tr>
+      <td class="ticker">${q.symbol}</td>
+      <td class="name-col">${q.shortName}</td>
+      <td class="num">${q.trailingPE.toFixed(1)}</td>
+      <td class="num">${(q.profitMargins * 100).toFixed(1)}%</td>
+      <td class="num">${fmtMcap(q.marketCap)}</td>
+      <td class="num pos">+${q._upside.toFixed(1)}%</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+
+  const oldTbl = area.querySelector('table');
+  if (oldTbl) oldTbl.remove();
+  area.insertAdjacentHTML('beforeend', html);
+}
+
+// ════════════════════════════════════════════════════════════
+// CONVICTION LEADERBOARD
+// ════════════════════════════════════════════════════════════
+function renderConviction() {
+  const area = document.getElementById('convictionArea');
+  const empty = document.getElementById('convictionEmpty');
+
+  const withAnalysts = S.filtered.filter(q =>
+    q.numberOfAnalystOpinions != null && q.numberOfAnalystOpinions >= 15 &&
+    q.targetMeanPrice != null && q.regularMarketPrice != null
+  );
+
+  withAnalysts.forEach(q => {
+    q._upside = ((q.targetMeanPrice - q.regularMarketPrice) / q.regularMarketPrice) * 100;
+  });
+  withAnalysts.sort((a, b) => b._upside - a._upside);
+
+  if (withAnalysts.length === 0) {
+    empty.style.display = 'block';
+    const oldTbl = area.querySelector('table');
+    if (oldTbl) oldTbl.remove();
+    return;
+  }
+  empty.style.display = 'none';
+
+  let html = `<table class="data-table">
+    <thead><tr>
+      <th>TICKER</th><th>NAME</th><th class="num">PRICE</th><th class="num">TARGET</th>
+      <th class="num">UPSIDE</th><th class="num">P/E</th><th class="num">NM%</th>
+      <th class="num">MCAP</th><th class="num">ANALYSTS</th>
+    </tr></thead><tbody>`;
+
+  withAnalysts.forEach(q => {
+    const upsideClass = q._upside >= 0 ? 'pos' : 'neg';
+    const upsideStr = q._upside >= 0 ? `+${q._upside.toFixed(1)}%` : `${q._upside.toFixed(1)}%`;
+    html += `<tr>
+      <td class="ticker">${q.symbol}</td>
+      <td class="name-col">${q.shortName}</td>
+      <td class="num">$${q.regularMarketPrice.toFixed(2)}</td>
+      <td class="num">$${q.targetMeanPrice.toFixed(2)}</td>
+      <td class="num ${upsideClass}">${upsideStr}</td>
+      <td class="num">${q.trailingPE != null ? q.trailingPE.toFixed(1) : '—'}</td>
+      <td class="num">${q.profitMargins != null ? (q.profitMargins * 100).toFixed(1) + '%' : '—'}</td>
+      <td class="num">${fmtMcap(q.marketCap)}</td>
+      <td class="num">${q.numberOfAnalystOpinions}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+
+  const oldTbl = area.querySelector('table');
+  if (oldTbl) oldTbl.remove();
+  area.insertAdjacentHTML('beforeend', html);
+}
+
+// ════════════════════════════════════════════════════════════
+// FOOTER
+// ════════════════════════════════════════════════════════════
+function renderFooter() {
+  const plotted = S.filtered.filter(q => q.trailingPE != null && q.profitMargins != null).length;
+  document.getElementById('footerLeft').textContent =
+    `UNIVERSE ${S.universe.length} · FILTER MATCH ${S.filtered.length} · PLOTTED ${plotted}`;
+
+  const pes = S.filtered.filter(q => q.trailingPE > 0).map(q => q.trailingPE).sort((a,b) => a-b);
+  const nms = S.filtered.filter(q => q.profitMargins != null).map(q => q.profitMargins * 100).sort((a,b) => a-b);
+  const medPE = pes.length ? pes[Math.floor(pes.length / 2)].toFixed(1) : '0.0';
+  const medNM = nms.length ? nms[Math.floor(nms.length / 2)].toFixed(1) + '%' : '0.0%';
+
+  document.getElementById('footerRight').textContent =
+    `MKT MED P/E ${medPE} · NM ${medNM}  ${S.fetchMs}ms`;
+}
+
+// ════════════════════════════════════════════════════════════
+// VIEW QUERY
+// ════════════════════════════════════════════════════════════
+function showQuery() {
+  const q = {
+    market: S.market,
+    sector: S.sector,
+    minMarketCap: S.minMcap,
+    maxPS: S.maxPS === Infinity ? 'any' : S.maxPS,
+    universeSize: S.universe.length,
+    filteredSize: S.filtered.length,
+    proxyUrl: PROXY,
+    screenerBody: {
+      minMarketCap: S.minMcap,
+      exchange: S.market !== 'ALL' ? S.market : undefined,
+      sector: S.sector !== 'ALL' ? S.sector : undefined,
+    },
+  };
+  document.getElementById('queryPre').textContent = JSON.stringify(q, null, 2);
+  document.getElementById('queryModal').classList.add('open');
+}
+
+// ════════════════════════════════════════════════════════════
+// STATUS
+// ════════════════════════════════════════════════════════════
+function setStatus(s) {
+  const dot = document.getElementById('statusDot');
+  const text = document.getElementById('statusText');
+  if (s === 'live') {
+    dot.className = 'pulse-dot';
+    text.textContent = 'LIVE';
+  } else if (s === 'loading') {
+    dot.className = 'pulse-dot';
+    dot.style.background = '#F0B429';
+    dot.style.boxShadow = '0 0 6px #F0B429';
+    text.textContent = 'LOADING...';
+  } else if (s === 'error') {
+    dot.className = 'pulse-dot';
+    dot.style.background = '#ff4444';
+    dot.style.boxShadow = '0 0 6px #ff4444';
+    text.textContent = 'DEMO DATA';
+  } else {
+    dot.className = 'pulse-dot';
+    text.textContent = 'IDLE';
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+// UTILS
+// ════════════════════════════════════════════════════════════
+function fmtMcap(v) {
+  if (v == null) return '—';
+  if (v >= 1e12) return '$' + (v / 1e12).toFixed(1) + 'T';
+  if (v >= 1e9) return '$' + (v / 1e9).toFixed(1) + 'B';
+  if (v >= 1e6) return '$' + (v / 1e6).toFixed(0) + 'M';
+  return '$' + v.toFixed(0);
+}
+</script>
+</body>
+</html>
