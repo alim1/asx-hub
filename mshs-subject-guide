@@ -1,0 +1,2353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MSHS Subject Guide</title>
+<style>
+:root{
+  --bg:#0f172a; --panel:#1a2338; --panel2:#212c44; --line:#37425c;
+  --text:#e2e8f0; --meta:#94a3b8; --dim:#64748b;
+  --accent:#7eb8d4; --head:#60a5fa;
+  --gen:#2563eb; --app:#7c3aed; --vet:#c2410c; --core:#0f766e; --elec:#4d7c0f;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);
+  font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 20px 70px}
+h1{font-size:26px;margin:0 0 4px;letter-spacing:-.01em}
+.sub{color:var(--meta);font-size:14px;margin:0 0 22px}
+
+.howto{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);
+  border-radius:8px;padding:14px 16px;margin:0 0 22px}
+.howto h2{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--head);margin:0 0 8px}
+.howto p{margin:0 0 7px;font-size:14px;color:var(--text)}
+.howto p:last-child{margin:0}
+.howto b{color:var(--text)}
+
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 8px}
+#q{flex:1 1 240px;min-width:200px;background:var(--panel);border:1px solid var(--line);
+  color:var(--text);padding:10px 13px;border-radius:7px;font-size:14px}
+#q::placeholder{color:var(--meta)}
+#q:focus{outline:none;border-color:var(--accent)}
+.seg{display:flex;gap:5px;flex-wrap:wrap}
+.seg button{background:var(--panel);border:1px solid var(--line);color:var(--meta);
+  padding:9px 14px;border-radius:7px;font-size:13px;cursor:pointer;font-weight:600}
+.seg button:hover{color:var(--text);border-color:var(--dim)}
+.seg button.on{background:var(--accent);border-color:var(--accent);color:#0b1220}
+.areas{display:flex;gap:5px;flex-wrap:wrap;margin:10px 0 6px}
+.areas button{background:transparent;border:1px solid var(--line);color:var(--meta);
+  padding:6px 11px;border-radius:20px;font-size:12.5px;cursor:pointer}
+.areas button:hover{color:var(--text)}
+.areas button.on{background:var(--panel2);border-color:var(--accent);color:var(--accent)}
+.count{color:var(--meta);font-size:13px;margin:12px 0 14px}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(272px,1fr));gap:13px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:15px;
+  cursor:pointer;transition:border-color .12s,transform .12s}
+.card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.card h3{margin:0 0 9px;font-size:15.5px;line-height:1.3}
+.card p{margin:0;color:var(--meta);font-size:13.5px}
+.badges{display:flex;gap:5px;flex-wrap:wrap;margin:0 0 9px}
+.b{font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  padding:3px 8px;border-radius:4px;color:#fff}
+.b.GEN{background:var(--gen)} .b.APP{background:var(--app)} .b.VET{background:var(--vet)}
+.b.CORE{background:var(--core)} .b.ELECTIVE{background:var(--elec)}
+.b\.PREP-GEN,.b.PREP-GEN{background:var(--gen)} .b.PREP-APP{background:var(--app)}
+.b.yr{background:#4c5f82}
+.b.cost{background:#b45309} .b.inv{background:#9333ea}
+/* scaling badges are DASHED OUTLINE, never solid fill, so they read as estimate not fact */
+.sb{font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  padding:2px 8px;border-radius:4px;background:transparent;border:1px dashed currentColor}
+.sb.up{color:#5eead4} .sb.neutral{color:#a5b4cf} .sb.down{color:#fbbf6e} .sb.capped{color:#d8b4fe}
+.estwarn{background:#3a2a12;border:1px solid #7c5314;border-left:3px solid #fbbf6e;
+  border-radius:8px;padding:13px 15px;margin:0 0 22px}
+.estwarn h2{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:#fbbf6e;margin:0 0 7px}
+.estwarn p{margin:0 0 7px;font-size:13.5px;color:#fcd9a0}
+.estwarn p:last-child{margin:0}
+.estwarn b{color:#ffe9c4}
+.modal .estnote{margin:14px 0 0;background:#3a2a12;border:1px solid #7c5314;border-radius:7px;
+  padding:11px 13px;font-size:13px;color:#fcd9a0}
+.empty{color:var(--meta);padding:40px 0;text-align:center}
+
+.ov{position:fixed;inset:0;background:rgba(6,10,20,.78);display:none;
+  align-items:flex-start;justify-content:center;padding:40px 18px;z-index:50;overflow-y:auto}
+.ov.open{display:flex}
+.modal{background:var(--panel);border:1px solid var(--line);border-radius:11px;
+  max-width:560px;width:100%;padding:24px}
+.modal h2{margin:0 0 10px;font-size:21px;line-height:1.25}
+.modal .sec{margin:17px 0 0}
+.modal .sec h4{margin:0 0 5px;font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--head)}
+.modal .sec p{margin:0;font-size:14.5px;color:var(--text)}
+.warn{margin:17px 0 0;background:#3a2a12;border:1px solid #7c5314;border-radius:7px;
+  padding:11px 13px;font-size:13.5px;color:#fcd9a0}
+.close{margin:22px 0 0;width:100%;background:var(--panel2);border:1px solid var(--line);
+  color:var(--text);padding:11px;border-radius:7px;font-size:14px;cursor:pointer;font-weight:600}
+.close:hover{border-color:var(--accent)}
+/* tabs */
+.tabs{display:flex;gap:6px;margin:0 0 20px;border-bottom:1px solid var(--line);padding-bottom:0}
+.tabs button{background:transparent;border:none;border-bottom:2px solid transparent;
+  color:var(--meta);padding:10px 16px;font-size:14.5px;font-weight:600;cursor:pointer}
+.tabs button:hover{color:var(--text)}
+.tabs button.on{color:var(--accent);border-bottom-color:var(--accent)}
+.panel{display:none} .panel.on{display:block}
+
+/* pathway map */
+.pwbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 6px}
+.pwbar label{font-size:13px;color:var(--meta);font-weight:600}
+select.pwsel{background:var(--panel);border:1px solid var(--line);color:var(--text);
+  padding:9px 12px;border-radius:7px;font-size:14px;min-width:250px;max-width:100%}
+select.pwsel:focus{outline:none;border-color:var(--accent)}
+.pwhint{color:var(--meta);font-size:13px;margin:12px 0 16px}
+.pwstage{position:relative}
+#pwlines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
+.pw-cols{position:relative;z-index:1;display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
+.pw-col h5{margin:0 0 10px;font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--head);font-weight:700}
+.pw-col .pwcount{color:var(--meta);font-size:12px;font-weight:400;text-transform:none;letter-spacing:0}
+.pw-node{background:var(--panel);border:1px solid var(--line);border-radius:7px;
+  padding:9px 11px;margin:0 0 8px;cursor:pointer;font-size:13.5px;line-height:1.35;
+  transition:border-color .12s,background .12s}
+.pw-node:hover{border-color:var(--accent)}
+.pw-node.root{border-color:var(--accent);background:var(--panel2);font-weight:600}
+.pw-node.first{border-color:#60a5fa}
+.pw-node.first .pwt{color:#60a5fa}
+.pw-node .pwt{display:block;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--meta);margin-top:3px;font-weight:600}
+.pw-node.gap{border-style:dashed;border-color:#7c5314;background:#3a2a12}
+.pw-node.gap .pwt{color:#fbbf6e}
+.pw-empty{color:var(--meta);font-size:13px;padding:8px 0}
+.pw-direct{margin:22px 0 0;background:var(--panel);border:1px solid var(--line);
+  border-left:3px solid var(--accent);border-radius:8px;padding:14px 16px}
+.pw-direct h5{margin:0 0 8px;font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--head)}
+.pw-direct p{margin:0 0 9px;font-size:13.5px;color:var(--text)}
+.pw-direct .chips{display:flex;flex-wrap:wrap;gap:6px}
+.pw-direct .chips button{background:var(--panel2);border:1px solid var(--line);color:var(--text);
+  font-size:12.5px;padding:5px 10px;border-radius:16px;cursor:pointer}
+.pw-direct .chips button:hover{border-color:var(--accent)}
+@media(max-width:820px){.pw-cols{grid-template-columns:1fr;gap:18px}#pwlines{display:none}}
+
+.foot{margin:34px 0 0;padding:15px 0 0;border-top:1px solid var(--line);
+  color:var(--meta);font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Mansfield SHS Subject Guide</h1>
+  <p class="sub">Every subject on offer for Year 9, Year 10 and Year 11-12, in plain English.</p>
+
+  <div class="tabs">
+    <button id="tabBrowse" class="on">Browse subjects</button>
+    <button id="tabPath">Pathways</button>
+  </div>
+
+  <div class="panel on" id="panelBrowse">
+  <div class="estwarn">
+    <h2>Read this before you look at the scaling labels</h2>
+    <p><b>The scaling labels in this tool are an estimate. They are not official data.</b></p>
+    <p>QTAC does not publish scaling figures for individual Queensland subjects. Unlike New South Wales and Victoria, there is no published table to look up. QTAC also recalculates scaling every year from that year's actual cohort, so no fixed number per subject exists even in principle.</p>
+    <p>These labels are a reasoned guess based on who typically takes each subject. They are not from QTAC, QCAA or the school, and nobody has verified them. Each one shows its reasoning when you open the subject, so you can judge it yourself rather than trust it.</p>
+    <p><b>Do not choose a subject because of its scaling label.</b> Picking a hard subject you dislike to chase scaling usually backfires, because your result in it drops. Choose subjects you are good at and will keep working at, then talk to a Guidance Officer.</p>
+  </div>
+
+  <div class="howto">
+    <h2>How to read this</h2>
+    <p><b>General</b> subjects have an external exam and count towards an ATAR. Pick these if university is the plan.</p>
+    <p><b>Applied</b> subjects are assessed internally and count towards your QCE, but normally only one Applied subject can count in an ATAR calculation.</p>
+    <p><b>VET</b> subjects give you a nationally recognised qualification alongside school. They often have fees and are run with an outside training organisation.</p>
+    <p><b>Preparatory</b> Year 10 subjects are the lead-in to the matching senior subject. Year 9 subjects are either Core (everyone does them) or Electives.</p>
+    <p><b>Scaling labels</b> (dashed outline, Year 11-12 only) read as: <span class="sb up">Tends up</span> <span class="sb neutral">Mid</span> <span class="sb down">Tends down</span> <span class="sb capped">Capped</span>. "Capped" means an Applied or VET subject, where the real constraint is that normally only one Applied subject counts towards an ATAR at all.</p>
+    <p style="color:var(--meta)">Click any subject to see what you actually do in it and who it tends to suit. Search matches subject names and descriptions.</p>
+  </div>
+
+  <div class="controls">
+    <input id="q" type="search" placeholder="Search subjects, e.g. physics, cooking, coding, law">
+    <div class="seg" id="yearSeg"></div>
+  </div>
+  <div class="areas" id="areaSeg"></div>
+  <div class="areas" id="scaleSeg"></div>
+  <div class="count" id="count"></div>
+  <div class="grid" id="grid"></div>
+  </div><!-- /panelBrowse -->
+
+  <div class="panel" id="panelPath">
+    <div class="howto">
+      <h2>How the pathway map works</h2>
+      <p>Pick a subject and the map shows what it connects to. <b>Forward</b> starts from a Year 9 subject and shows the Year 10 then Year 11-12 options it opens up. <b>Backwards</b> starts from a senior subject and shows what you would need in Year 10 and Year 9.</p>
+      <p>Links come from the pathways the curriculum guides actually state. Click any box to open that subject's detail.</p>
+      <p style="color:var(--meta)">The three guides are different editions. Year 9 and Year 10 are 2027 guides, the senior guide is 2026-27. A Year 9 student in 2027 reaches Year 11 in 2029, so the senior offering may change before they get there. Treat the far right column as indicative.</p>
+    </div>
+    <div class="pwbar">
+      <label for="pwMode">Direction</label>
+      <div class="seg" id="pwModeSeg"></div>
+    </div>
+    <div class="pwbar" style="margin-top:10px">
+      <label for="pwPick" id="pwPickLabel">Subject</label>
+      <select class="pwsel" id="pwPick"></select>
+    </div>
+    <p class="pwhint" id="pwHint"></p>
+    <div class="pwstage">
+      <svg id="pwlines" aria-hidden="true"></svg>
+      <div class="pw-cols" id="pwCols"></div>
+    </div>
+    <div id="pwDirect"></div>
+  </div><!-- /panelPath -->
+
+  <div class="foot">
+    Source: MSHS Year 9 Curriculum Guide 2027, Year 10 Curriculum Guide 2027, Year 11-12 Curriculum Guide 2026-2027.
+    Subject availability depends on staffing, timetabling and minimum enrolment numbers. The
+    "who it suits" notes and all scaling labels are interpretive guidance, not school advice.
+    Scaling labels are an unverified estimate and are not published by QTAC. Always confirm with the
+    relevant Head of Department or a Guidance Officer before locking in a selection.
+  </div>
+</div>
+
+<div class="ov" id="ov"><div class="modal" id="modal"></div></div>
+
+<script>
+const SUBJECTS_Y9_Y10 = [
+  {
+    id: "y9-eng",
+    name: "English",
+    year: "Y9",
+    area: "English",
+    type: "CORE",
+    whatYouDo: "You read novels, films and articles, then write analytical, creative and multimodal pieces across four units. Assessment is written assignments, presentations and in-class exams.",
+    whoItSuits: "Everyone takes it. You'll get more out of it if you don't mind reading and can put together a written argument.",
+    leadsTo: "Preparatory Essential English (by invitation), Preparatory English, Preparatory EAL or Preparatory Literature.",
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y9-math",
+    name: "Mathematics",
+    year: "Y9",
+    area: "Mathematics",
+    type: "CORE",
+    whatYouDo: "You work through Number, Algebra, Measurement, Space, Probability and Statistics, with exams and a Problem Solving and Modelling Task.",
+    whoItSuits: "Compulsory for everyone. If you're really struggling, you may be moved into a Foundation (MFD) class instead.",
+    leadsTo: "Preparatory Essential Mathematics (by invitation), Preparatory General Mathematics, Preparatory Mathematical Methods or Preparatory Specialist Mathematics.",
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y9-sci",
+    name: "Science",
+    year: "Y9",
+    area: "Science",
+    type: "CORE",
+    whatYouDo: "You run experiments and investigations across physical, chemical, earth, environmental and biological science, then write them up as reports.",
+    whoItSuits: "Everyone takes it. Suits students who don't mind lab write-ups and structured report writing.",
+    leadsTo: "Preparatory Science in Practice, Preparatory Biology, Preparatory Chemistry or Preparatory Physics.",
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y9-history",
+    name: "History",
+    year: "Y9",
+    area: "Humanities",
+    type: "CORE",
+    whatYouDo: "You study industrialisation, nationalism and WWI through source analysis, finishing with a short response test and a research assignment. One semester, alternating with HPE.",
+    whoItSuits: "Compulsory for everyone. Suits students who like reading historical sources and building an argument from evidence.",
+    leadsTo: "Preparatory Religion & Ethics, Preparatory Social & Community Studies, Preparatory Ancient History or Preparatory Modern History.",
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y9-hpe",
+    name: "Health and Physical Education",
+    year: "Y9",
+    area: "Health & PE",
+    type: "CORE",
+    whatYouDo: "You mix practical sport, like orienteering and netball, with theory on training methods and harm minimisation. One semester, alternating with History.",
+    whoItSuits: "Compulsory for everyone. Suits students who enjoy being active as much as writing about health topics.",
+    leadsTo: "Preparatory Early Childhood Studies, Preparatory Fitness, Preparatory Sport & Recreation, Preparatory Health or Preparatory Physical Education.",
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y9-econ-business",
+    name: "Economics and Business Studies",
+    year: "Y9",
+    area: "Humanities",
+    type: "ELECTIVE",
+    whatYouDo: "You run a real business as part of a Market Day project, then sit an exam and complete an assignment on entrepreneurial ideas.",
+    whoItSuits: "Suits students who want a taste of business and are reliable enough to actually show up and do the work for Market Day.",
+    leadsTo: "Preparatory Accounting, Preparatory Business, Preparatory Economics or the Diploma of Business.",
+    prereq: "Market Day participation requires demonstrated reliability, effort and attendance.",
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y9-geography",
+    name: "Geography",
+    year: "Y9",
+    area: "Humanities",
+    type: "ELECTIVE",
+    whatYouDo: "You study biomes, food security and global connections, plus fieldwork, then sit a combination exam and complete a research project or field report.",
+    whoItSuits: "Recommended if you did Year 8 Humanities and don't mind fieldwork and structured research.",
+    leadsTo: "Preparatory Geography.",
+    prereq: "Year 8 Humanities (recommended).",
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y9-legal-studies",
+    name: "Legal Studies",
+    year: "Y9",
+    area: "Humanities",
+    type: "ELECTIVE",
+    whatYouDo: "You study social media law, digital citizenship, police powers and youth crime, then sit a short response test and complete a project.",
+    whoItSuits: "Suits students interested in rights, rules and current events who like debating both sides of an issue.",
+    leadsTo: "Preparatory Legal Studies, Preparatory Social and Community Studies, Preparatory Modern History or Certificate IV Justice Studies.",
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y9-french",
+    name: "French",
+    year: "Y9",
+    area: "Languages",
+    type: "ELECTIVE",
+    whatYouDo: "You build French listening, speaking, reading and writing skills, covering home life first then food, shopping and places in town.",
+    whoItSuits: "Suits students who did French in Year 7-8 and want to keep building the language, possibly towards the France exchange.",
+    leadsTo: "Preparatory French.",
+    prereq: "Year 7 and 8 French for Semester 1; also Semester 1 Year 9 French to continue into Semester 2.",
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y9-french-immersion",
+    name: "French Immersion",
+    year: "Y9",
+    area: "Languages",
+    type: "ELECTIVE",
+    whatYouDo: "You get an accelerated French course covering home life, routines and weekend activities, assessed across all four macro skills.",
+    whoItSuits: "Only for students already in the 3-year French Immersion Program of Excellence. It's a big commitment, not a casual pick.",
+    leadsTo: "Preparatory French Immersion, then Year 11 Advanced French and Year 12 French Extension.",
+    prereq: "Year 7 and 8 French Immersion.",
+    inviteOnly: true,
+    cost: false
+  },
+  {
+    id: "y9-japanese",
+    name: "Japanese",
+    year: "Y9",
+    area: "Languages",
+    type: "ELECTIVE",
+    whatYouDo: "You build Japanese language skills around shopping, family, food, health and lifestyle topics, assessed across all four skills each semester.",
+    whoItSuits: "Suits students who did Japanese in Year 7-8 and want to keep building the language, with possible exchange opportunities later.",
+    leadsTo: "Preparatory Japanese.",
+    prereq: "Year 7 and 8 Japanese for Semester 1; also Semester 1 Year 9 Japanese to continue into Semester 2.",
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y9-design-tech",
+    name: "Design Technology",
+    year: "Y9",
+    area: "Technologies",
+    type: "ELECTIVE",
+    whatYouDo: "You sketch by hand and in CAD software, then build 3D virtual models and physical prototypes to solve real design problems.",
+    whoItSuits: "Suits students who like building and designing things and who have a laptop that can run the Autodesk software.",
+    leadsTo: "Preparatory Engineering or Preparatory Design.",
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y9-digital-solutions",
+    name: "Digital Solutions",
+    year: "Y9",
+    area: "Technologies",
+    type: "ELECTIVE",
+    whatYouDo: "You learn robotics with drag-and-drop coding, then write a text-based adventure game in Python. One project per unit.",
+    whoItSuits: "Suits students curious about coding and problem-solving, even with no coding background.",
+    leadsTo: "Preparatory Digital Solutions or Information & Communication Technology.",
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y9-engineering",
+    name: "Engineering Principles and Systems",
+    year: "Y9",
+    area: "Technologies",
+    type: "ELECTIVE",
+    whatYouDo: "You build real objects, a dust pan, warning light, trebuchet and downhill racer, covering electrical systems and sheet metal work.",
+    whoItSuits: "Suits hands-on students who like making things in a workshop rather than sitting through theory.",
+    leadsTo: "Preparatory Engineering.",
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y9-materials-tech",
+    name: "Materials and Technologies Specialisations",
+    year: "Y9",
+    area: "Technologies",
+    type: "ELECTIVE",
+    whatYouDo: "You build timber projects, a carry tray and pencil holder, learning woodworking joints and surface finishing.",
+    whoItSuits: "Suits students who like working with their hands and want a practical, project-based subject.",
+    leadsTo: "Preparatory Furnishing Skills or Preparatory Design.",
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y9-drama",
+    name: "Drama",
+    year: "Y9",
+    area: "The Arts",
+    type: "ELECTIVE",
+    whatYouDo: "You perform scenes using projection and multimedia, exploring visual and Australian gothic theatre, ending in a devised performance.",
+    whoItSuits: "Suits students happy to perform in front of others and take part in group devising work.",
+    leadsTo: "Preparatory Drama.",
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y9-media-arts",
+    name: "Media Arts",
+    year: "Y9",
+    area: "The Arts",
+    type: "ELECTIVE",
+    whatYouDo: "You write a script, then shoot and edit your own short sci-fi film using green screen effects in the school's green room.",
+    whoItSuits: "Suits students interested in filmmaking, camera work or visual effects who enjoy project-based group work.",
+    leadsTo: "Preparatory Film, TV and New Media or Preparatory Media Arts in Practice.",
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y9-music",
+    name: "Music",
+    year: "Y9",
+    area: "The Arts",
+    type: "ELECTIVE",
+    whatYouDo: "You perform, compose and analyse film and media music individually and in groups, across folk, art, contemporary and film styles.",
+    whoItSuits: "Suits students with some music background who enjoy performing as much as writing about music. Not open to Music Accelerando students.",
+    leadsTo: "Preparatory Music, Preparatory Music in Practice or Preparatory Music Extension.",
+    prereq: "C or above in Year 8 English; Year 7 and/or Year 8 Music.",
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y9-music-extension",
+    name: "Music Extension (Music Accelerando)",
+    year: "Y9",
+    area: "The Arts",
+    type: "ELECTIVE",
+    whatYouDo: "You cover the same film and media music topics as Music, but at a more advanced level within the Accelerando program, including jazz performance.",
+    whoItSuits: "Only for students in the 3-year Music Accelerando Program of Excellence. A serious commitment, not a casual elective.",
+    leadsTo: "Preparatory Music, Preparatory Music in Practice or Preparatory Music Extension.",
+    prereq: "C or above in Year 8 English; Year 7 and Year 8 Music Accelerando.",
+    inviteOnly: true,
+    cost: false
+  },
+  {
+    id: "y9-visual-arts",
+    name: "Visual Arts",
+    year: "Y9",
+    area: "The Arts",
+    type: "ELECTIVE",
+    whatYouDo: "You make a ceramic and assemblage sculpture and paint in acrylic on canvas, while studying other artists and maybe visiting galleries.",
+    whoItSuits: "Suits students who enjoy hands-on art-making and don't mind keeping a visual diary of their process.",
+    leadsTo: "Preparatory Visual Arts in Practice or Preparatory Visual Art.",
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y10-prep-essential-english",
+    name: "Preparatory Essential English",
+    year: "Y10",
+    area: "English",
+    type: "PREP-APP",
+    whatYouDo: "You focus on real-world reading and writing for work, like filling in forms, through creative, multimodal, analytical and persuasive responses.",
+    whoItSuits: "For students who've found English difficult in Year 9. You can't choose this yourself, the Head of Department places you into it.",
+    leadsTo: "Essential English.",
+    prereq: "By invitation from the Head of Department only.",
+    inviteOnly: true,
+    cost: false
+  },
+  {
+    id: "y10-prep-english",
+    name: "Preparatory English",
+    year: "Y10",
+    area: "English",
+    type: "PREP-GEN",
+    whatYouDo: "You study persuasive and media texts alongside fiction, writing imaginative, analytical and public-audience responses plus a spoken piece.",
+    whoItSuits: "Suits most students heading toward senior English. A C in Year 9 English is recommended, not required.",
+    leadsTo: "English.",
+    prereq: "C grade in Year 9 English recommended.",
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y10-prep-eal",
+    name: "Preparatory English as an Additional Language",
+    year: "Y10",
+    area: "English",
+    type: "PREP-GEN",
+    whatYouDo: "You cover the same Year 10 content as Preparatory English, with extra language support if English isn't your first language.",
+    whoItSuits: "Suits students who need additional English language scaffolding to access the same texts and tasks as Preparatory English.",
+    leadsTo: "English as an Additional Language.",
+    prereq: "C grade in Year 9 English recommended.",
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y10-prep-literature",
+    name: "Preparatory Literature",
+    year: "Y10",
+    area: "English",
+    type: "PREP-GEN",
+    whatYouDo: "You read and analyse more difficult texts and write technical imaginative responses, with less focus on persuasive or media texts.",
+    whoItSuits: "Suits strong English students who enjoy close reading and want the senior Literature pathway.",
+    leadsTo: "Literature.",
+    prereq: "B grade or higher in Year 9 English highly recommended.",
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y10-prep-early-childhood",
+    name: "Preparatory Early Childhood",
+    year: "Y10",
+    area: "Health & PE",
+    type: "PREP-APP",
+    whatYouDo: "You study child development from infancy to pre-school through play-based learning, then run activities and presentations with young children.",
+    whoItSuits: "Suits students who enjoy working with kids and want a taste of early childhood education or care work.",
+    leadsTo: "Early Childhood Studies.",
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y10-prep-fitness",
+    name: "Preparatory Fitness",
+    year: "Y10",
+    area: "Health & PE",
+    type: "PREP-APP",
+    whatYouDo: "You learn to run fitness sessions, personal training and strength and conditioning through practical activities like CrossFit and orienteering.",
+    whoItSuits: "Suits students who enjoy training and want to try coaching others, not just doing the exercise themselves.",
+    leadsTo: "Sport & Recreation or Certificate III in Fitness.",
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y10-prep-sport-rec",
+    name: "Preparatory Sport & Recreation",
+    year: "Y10",
+    area: "Health & PE",
+    type: "PREP-APP",
+    whatYouDo: "You take part in recreational activities while learning to officiate, coach and manage events, building an officiating and coaching folio.",
+    whoItSuits: "Suits students interested in sport beyond just playing, like organising, coaching or refereeing.",
+    leadsTo: "Sport & Recreation or Certificate III in Fitness.",
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y10-prep-health",
+    name: "Preparatory Health",
+    year: "Y10",
+    area: "Health & PE",
+    type: "PREP-GEN",
+    whatYouDo: "You study social justice and health topics like body image and modern lifestyle impacts, then write an analytical essay and sit a written exam.",
+    whoItSuits: "Suits students considering health promotion, allied health or social work careers who don't mind essay writing.",
+    leadsTo: "Health.",
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y10-prep-pe",
+    name: "Preparatory Physical Education",
+    year: "Y10",
+    area: "Health & PE",
+    type: "PREP-GEN",
+    whatYouDo: "You compete in a range of sports while studying energy systems and biomechanics, combining written, oral and physical assessment.",
+    whoItSuits: "Suits students who want a serious mix of theory and practical sport, more academic than Preparatory Fitness.",
+    leadsTo: "Physical Education, Sport & Recreation or Certificate III in Fitness.",
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y10-prep-religion-ethics",
+    name: "Preparatory Religion and Ethics",
+    year: "Y10",
+    area: "Humanities",
+    type: "PREP-APP",
+    whatYouDo: "You investigate world religions, spiritualities and indigenous ethical traditions, analysing sources in an exam and building a multimodal project.",
+    whoItSuits: "Suits students interested in ethics, belief systems and social justice discussions.",
+    leadsTo: "Modern History, Legal Studies, Religion and Ethics or Social and Community Studies.",
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y10-prep-social-community",
+    name: "Preparatory Social and Community Studies",
+    year: "Y10",
+    area: "Humanities",
+    type: "PREP-APP",
+    whatYouDo: "You study culture, identity and lifestyle choices, building critical thinking about your future role in society through a project and an investigation.",
+    whoItSuits: "Suits students who want practical life-skills content over academic essay writing.",
+    leadsTo: "Religion and Ethics, Legal Studies or Social and Community Studies.",
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y10-prep-accounting",
+    name: "Preparatory Accounting",
+    year: "Y10",
+    area: "Humanities",
+    type: "PREP-GEN",
+    whatYouDo: "You learn financial accounting basics and end-of-period reporting, working through a project and a combination exam.",
+    whoItSuits: "Suits students who like working with numbers and are considering business or finance study later on.",
+    leadsTo: "Accounting, Business or Diploma of Business.",
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y10-prep-ancient-history",
+    name: "Preparatory Ancient History",
+    year: "Y10",
+    area: "Humanities",
+    type: "PREP-GEN",
+    whatYouDo: "You study Boudica and Ancient Greek warfare and identity, analysing historical evidence in an exam and writing a research essay.",
+    whoItSuits: "Suits students who enjoy history, evidence-based argument and essay writing.",
+    leadsTo: "Ancient History, Modern History or Social and Community Studies.",
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y10-prep-business",
+    name: "Preparatory Business",
+    year: "Y10",
+    area: "Humanities",
+    type: "PREP-GEN",
+    whatYouDo: "You study marketing and operations in a business context, completing an investigation report and a combination exam.",
+    whoItSuits: "Suits students interested in how businesses are run and considering senior Business or a business career.",
+    leadsTo: "Business or Diploma of Business.",
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y10-prep-economics",
+    name: "Preparatory Economics",
+    year: "Y10",
+    area: "Humanities",
+    type: "PREP-GEN",
+    whatYouDo: "You examine how resources get allocated across markets and government policy, including sustainability, through a case study and a combination exam.",
+    whoItSuits: "Suits students who like analysing real-world data and are curious about how the economy works.",
+    leadsTo: "Economics, Business or Diploma of Business.",
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y10-prep-geography",
+    name: "Preparatory Geography",
+    year: "Y10",
+    area: "Humanities",
+    type: "PREP-GEN",
+    whatYouDo: "You investigate climate change and human wellbeing, learning GIS data skills and completing a full-day field trip to the Gold Coast.",
+    whoItSuits: "Suits students who like fieldwork and current environmental issues over pure classroom theory.",
+    leadsTo: "Geography or Social and Community Studies.",
+    prereq: null,
+    inviteOnly: false,
+    cost: true
+  },
+  {
+    id: "y10-prep-legal-studies",
+    name: "Preparatory Legal Studies",
+    year: "Y10",
+    area: "Humanities",
+    type: "PREP-GEN",
+    whatYouDo: "You study how law works in society, covering children's rights and human rights, through a combination exam and an inquiry report.",
+    whoItSuits: "Suits students interested in rights, justice and current legal issues.",
+    leadsTo: "Legal Studies, Certificate IV Justice Studies or Social and Community Studies.",
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y10-prep-modern-history",
+    name: "Preparatory Modern History",
+    year: "Y10",
+    area: "Humanities",
+    type: "PREP-GEN",
+    whatYouDo: "You study Hitler's rise to power and the JFK assassination, analysing historical sources across two exams.",
+    whoItSuits: "Suits students who enjoy debating evidence and interpreting conflicting historical accounts.",
+    leadsTo: "Ancient History, Modern History or Social and Community Studies.",
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y10-prep-french",
+    name: "Preparatory French",
+    year: "Y10",
+    area: "Languages",
+    type: "PREP-GEN",
+    whatYouDo: "You build French skills around daily life, relationships, the past, environment and future plans, assessed across all four language skills each semester.",
+    whoItSuits: "Suits students who've studied French through Year 7-9 and want to keep building toward senior French. Full-year commitment.",
+    leadsTo: "French.",
+    prereq: "Completion of Year 7, 8 and 9 French; Semester 1 Year 10 French required to continue to Semester 2.",
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y10-prep-french-immersion",
+    name: "Preparatory French Immersion",
+    year: "Y10",
+    area: "Languages",
+    type: "PREP-GEN",
+    whatYouDo: "You compare Australian and French-speaking lifestyles and education, then study travel and tourism in French-speaking countries, at an accelerated pace matching Year 11 content.",
+    whoItSuits: "Only for students in the French Immersion Program of Excellence, working toward Advanced French or French Extension.",
+    leadsTo: "Advanced French or French Extension.",
+    prereq: "Completion of Year 7, 8 and 9 French Immersion.",
+    inviteOnly: true,
+    cost: false
+  },
+  {
+    id: "y10-prep-japanese",
+    name: "Preparatory Japanese",
+    year: "Y10",
+    area: "Languages",
+    type: "PREP-GEN",
+    whatYouDo: "You explore school trips, part-time jobs, tourism and homestays in Japan and Australia, assessed across listening, speaking, reading and writing.",
+    whoItSuits: "Suits students who've studied Japanese through Year 7-9 and want to continue building the language.",
+    leadsTo: "Japanese.",
+    prereq: "Completion of Year 7, 8 and 9 Japanese.",
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y10-prep-essential-maths",
+    name: "Preparatory Essential Mathematics",
+    year: "Y10",
+    area: "Mathematics",
+    type: "PREP-APP",
+    whatYouDo: "You cover foundational number, data, money, graphs, time, measurement and probability, with a classroom exam each term and two modelling tasks.",
+    whoItSuits: "For students who've been in Foundation Maths and find standard maths a real struggle. You can't choose this yourself.",
+    leadsTo: "Essential Mathematics.",
+    prereq: "By invitation from the Head of Department only.",
+    inviteOnly: true,
+    cost: false
+  },
+  {
+    id: "y10-prep-general-maths",
+    name: "Preparatory General Mathematics",
+    year: "Y10",
+    area: "Mathematics",
+    type: "PREP-GEN",
+    whatYouDo: "You cover Number, Algebra, Measurement, Space, Statistics and Probability, with exams each term and a Problem Solving and Modelling Task.",
+    whoItSuits: "Suits students who want to keep studying maths without needing calculus in senior school.",
+    leadsTo: "General Mathematics.",
+    prereq: "C grade or higher in Year 9 Mathematics.",
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y10-prep-maths-methods",
+    name: "Preparatory Mathematical Methods",
+    year: "Y10",
+    area: "Mathematics",
+    type: "PREP-GEN",
+    whatYouDo: "You go deeper into algebra and mathematical modelling, preparing for the calculus-based senior Methods course, with exams each term.",
+    whoItSuits: "Suits students who are solid at maths and want the calculus pathway.",
+    leadsTo: "Mathematical Methods, alongside Specialist Mathematics if you take both.",
+    prereq: "C grade or higher in Year 9 Mathematics.",
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y10-prep-specialist-maths",
+    name: "Preparatory Specialist Mathematics",
+    year: "Y10",
+    area: "Mathematics",
+    type: "PREP-GEN",
+    whatYouDo: "You extend Mathematical Methods topics into Patterns, Algebra, Geometry, Combinatorics, Probability and Matrices, with an exam each term.",
+    whoItSuits: "Only for strong maths students planning senior Specialist Mathematics.",
+    leadsTo: "Specialist Mathematics, studied alongside Mathematical Methods.",
+    prereq: "B grade or higher in Year 9 Mathematics; intention to study Specialist Mathematics in Year 11-12.",
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y10-prep-science-practice",
+    name: "Preparatory Science in Practice",
+    year: "Y10",
+    area: "Science",
+    type: "PREP-APP",
+    whatYouDo: "You run hands-on science projects and applied investigations, like the Myth Busters unit, without heading toward a senior general science subject.",
+    whoItSuits: "Suits students who like practical science but don't want the more academic senior science pathway.",
+    leadsTo: "Science in Practice.",
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y10-prep-biology",
+    name: "Preparatory Biology",
+    year: "Y10",
+    area: "Science",
+    type: "PREP-GEN",
+    whatYouDo: "You study genetics, DNA and evolution through experiments and investigations, then write up a research investigation and sit an exam.",
+    whoItSuits: "Suits students curious about living things and genetics who don't mind lab write-ups.",
+    leadsTo: "Biology, and also Chemistry or Physics if you meet their prerequisites.",
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y10-prep-chemistry",
+    name: "Preparatory Chemistry",
+    year: "Y10",
+    area: "Science",
+    type: "PREP-GEN",
+    whatYouDo: "You study atoms, bonding, the mole concept and chemical reactions through data tests and student experiments.",
+    whoItSuits: "Suits students who like precise, structured problem-solving and are comfortable with some maths.",
+    leadsTo: "Chemistry and/or Physics, both accept Preparatory Chemistry as a prerequisite.",
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y10-prep-physics",
+    name: "Preparatory Physics",
+    year: "Y10",
+    area: "Science",
+    type: "PREP-GEN",
+    whatYouDo: "You study motion, force, energy and electrical circuits through experiments, describing motion using displacement, velocity and acceleration.",
+    whoItSuits: "Suits students who like maths-heavy problem-solving and want to understand how things move and work.",
+    leadsTo: "Physics and/or Chemistry, both accept Preparatory Physics as a prerequisite.",
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y10-prep-furnishing",
+    name: "Preparatory Furnishing Skills",
+    year: "Y10",
+    area: "Technologies",
+    type: "PREP-APP",
+    whatYouDo: "You learn traditional furniture-making and glazing through practical demonstrations and hands-on production work.",
+    whoItSuits: "Suits students who like working with their hands and want a trade-style, practical subject.",
+    leadsTo: "Furnishing Skills.",
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y10-prep-design",
+    name: "Preparatory Design",
+    year: "Y10",
+    area: "Technologies",
+    type: "PREP-GEN",
+    whatYouDo: "You design and prototype solutions to real stakeholder problems, thinking through economic, social and cultural factors along the way.",
+    whoItSuits: "Suits students who enjoy problem-solving through drawing and prototyping rather than pure workshop skills.",
+    leadsTo: "Design.",
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y10-prep-digital-solutions",
+    name: "Preparatory Digital Solutions",
+    year: "Y10",
+    area: "Technologies",
+    type: "PREP-GEN",
+    whatYouDo: "You code in Python and build a GUI Clicker game with Tkinter, then build a data-driven web app using CSS, ending in a CRUD application.",
+    whoItSuits: "Suits students who enjoyed Year 9 Digital Solutions or coding generally and want to build toward senior Digital Solutions.",
+    leadsTo: "Digital Solutions or Information & Communication Technology.",
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y10-prep-engineering",
+    name: "Preparatory Engineering",
+    year: "Y10",
+    area: "Technologies",
+    type: "PREP-GEN",
+    whatYouDo: "You work through engineering fundamentals and emerging technologies in project-based activities, building technical vocabulary along the way.",
+    whoItSuits: "Suits students who did well in Year 9 Maths and Science and like practical problem-solving.",
+    leadsTo: "Engineering.",
+    prereq: "C grade in Year 9 Mathematics and Science recommended.",
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y10-prep-media-arts-practice",
+    name: "Preparatory Media Arts in Practice",
+    year: "Y10",
+    area: "The Arts",
+    type: "PREP-APP",
+    whatYouDo: "You produce a video podcast and a filmed pitch deck with a composite movie poster, using Adobe Premiere Pro and Photoshop in the school's podcast studio.",
+    whoItSuits: "Suits students who like hands-on video production and editing software over film theory and analysis.",
+    leadsTo: "Film, Television and New Media or Media Arts in Practice.",
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y10-prep-music-practice",
+    name: "Preparatory Music in Practice",
+    year: "Y10",
+    area: "The Arts",
+    type: "PREP-APP",
+    whatYouDo: "You write songs across pop, blues, folk and jazz styles, focusing on vocal technique and arranging, then compose, perform and respond to music.",
+    whoItSuits: "Suits students with some music background who want a practical, performance-focused course.",
+    leadsTo: "Music in Practice or Music Extension (Year 12 only).",
+    prereq: "C grade or higher in Year 9 English recommended; completion of Year 7, 8 or 9 music recommended.",
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y10-prep-visual-arts-practice",
+    name: "Preparatory Visual Arts in Practice",
+    year: "Y10",
+    area: "The Arts",
+    type: "PREP-APP",
+    whatYouDo: "You learn printmaking to make a marketable item, then paint a skateboard deck exploring social commentary.",
+    whoItSuits: "Suits students who like practical, hands-on art projects with a real-world or design angle.",
+    leadsTo: "Visual Art or Visual Arts in Practice.",
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y10-prep-drama",
+    name: "Preparatory Drama",
+    year: "Y10",
+    area: "The Arts",
+    type: "PREP-GEN",
+    whatYouDo: "You reimagine a traditional play with digital tools, then devise, rehearse and perform your own piece for a live audience.",
+    whoItSuits: "Suits students happy to perform live and collaborate on devising work with a group.",
+    leadsTo: "Drama.",
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y10-prep-film-tv",
+    name: "Preparatory Film, Television and New Media",
+    year: "Y10",
+    area: "The Arts",
+    type: "PREP-GEN",
+    whatYouDo: "You study auteur directors and their technical and editing styles, then produce your own short film paying homage to a director's style.",
+    whoItSuits: "Suits students interested in filmmaking and directing, with a stronger focus on analysis than Media Arts in Practice.",
+    leadsTo: "Film, Television & New Media or Media Arts in Practice.",
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y10-prep-music",
+    name: "Preparatory Music",
+    year: "Y10",
+    area: "The Arts",
+    type: "PREP-GEN",
+    whatYouDo: "You study jazz styles from Blues to Bebop to Bossa Nova, composing, performing and analysing music in these styles.",
+    whoItSuits: "Suits students who've done music before and want a more academic, analysis-heavy course than Music in Practice.",
+    leadsTo: "Music or Music Extension (Year 12 only).",
+    prereq: "Completion of Year 9 music subject required, or instrumental music student with HoD approval; C grade or higher in Year 9 English recommended.",
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y10-prep-music-extension",
+    name: "Preparatory Music Extension",
+    year: "Y10",
+    area: "The Arts",
+    type: "PREP-GEN",
+    whatYouDo: "You explore 'Bold or Beautiful' in art and music, composing, performing, researching and keeping an assessment journal.",
+    whoItSuits: "For students already doing Preparatory Music or Music in Practice who want the most advanced music option available.",
+    leadsTo: "Music or Music Extension (Year 12 only).",
+    prereq: "Enrolment in Preparatory Music and/or Preparatory Music in Practice; Year 9 Music or instrumental music student with HoD approval; C standard or above in Year 9 English.",
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: "y10-prep-visual-arts",
+    name: "Preparatory Visual Arts",
+    year: "Y10",
+    area: "The Arts",
+    type: "PREP-GEN",
+    whatYouDo: "You sculpt a ceramic piece exploring symbolism and identity, then create a mixed-media drawing about environmental issues using photography, digital tools, inks or watercolour.",
+    whoItSuits: "Suits students who enjoy art-making across multiple media and don't mind a written exam component.",
+    leadsTo: "Visual Art or Visual Arts in Practice.",
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  }
+];
+const SUBJECTS_Y11_12 = [
+  {
+    id: 'y11-essential-english',
+    name: 'Essential English',
+    year: 'Y11-12',
+    area: 'English',
+    type: 'APP',
+    whatYouDo: 'Work with everyday texts like news reports, ads and workplace writing, then create your own spoken, written and multimodal responses. Four internal assessments including a common internal test, and no external exam.',
+    whoItSuits: 'Suits you if you want practical literacy for work and life rather than heavy essay analysis. Steady workload, but the writing still has to be organised.',
+    leadsTo: 'Counts towards your QCE and meets the senior English requirement, but only one Applied subject can normally count in an ATAR. Points to vocational, trade and community pathways.',
+    scaling: 'capped',
+    scalingBasis: 'Applied subject. Normally only one Applied subject can count towards an ATAR at all, which matters far more than any scaling effect.',
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-english',
+    name: 'English',
+    year: 'Y11-12',
+    area: 'English',
+    type: 'GEN',
+    whatYouDo: 'Analyse literary and non-literary texts, then write persuasive, analytical and imaginative pieces for real audiences. Assessment is a spoken response, a written response, an internal exam and a 25 percent external exam.',
+    whoItSuits: 'Suits you if you can build an argument and back it with textual evidence. Heavy reading and writing load across all four units.',
+    leadsTo: 'Counts towards an ATAR. Commonly expected for university humanities, law, teaching and any degree that needs strong writing.',
+    scaling: 'neutral',
+    scalingBasis: 'Almost every ATAR student takes a senior English subject, so this cohort spans the full ability range and sits close to the reference population.',
+    prereq: 'C in Preparatory English or C in Preparatory Literature. A B in Preparatory English is recommended.',
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-eal',
+    name: 'English as an Additional Language',
+    year: 'Y11-12',
+    area: 'English',
+    type: 'GEN',
+    whatYouDo: 'Study literary and non-literary texts in Standard Australian English with extra language scaffolding, writing analytical, persuasive and imaginative responses. Three internal tasks plus a 25 percent external exam.',
+    whoItSuits: 'Built for students whose parents do not speak English as a first language. Demanding, because you analyse complex texts while still building the language.',
+    leadsTo: 'Counts towards an ATAR and meets the senior English requirement. Opens the same tertiary pathways as senior English.',
+    scaling: 'neutral',
+    scalingBasis: 'Cohort is small but mixed, ranging from students still building their English to students carrying demanding maths and science subjects alongside it.',
+    prereq: 'Parents do not speak English as a first language, plus a C in Preparatory English EAL, Preparatory English or Preparatory Literature. You cannot study senior English or Literature at the same time.',
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-literature',
+    name: 'Literature',
+    year: 'Y11-12',
+    area: 'English',
+    type: 'GEN',
+    whatYouDo: 'Read novels, poetry, plays and film closely, then write analytical essays and original imaginative pieces. Three internal tasks plus a 25 percent external exam.',
+    whoItSuits: 'For strong readers who enjoy digging into how writers create meaning. The reading load is the heaviest of the English options.',
+    leadsTo: 'Counts towards an ATAR and meets the senior English requirement. Points to arts, humanities, law, journalism and teaching.',
+    scaling: 'up',
+    scalingBasis: 'Smaller cohort that self-selects for confident readers, most of whom also carry other academic subjects, so their wider results tend to reveal this subject as demanding.',
+    prereq: 'B in Preparatory English or C in Preparatory Literature. A B in Preparatory Literature is recommended.',
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-early-childhood',
+    name: 'Early Childhood Studies',
+    year: 'Y11-12',
+    area: 'Health & PE',
+    type: 'APP',
+    whatYouDo: 'Learn how children from birth to five learn through play, then plan, run and review play based activities. Four internal tasks made up of investigations and projects, with no external exam.',
+    whoItSuits: 'Suits you if you like working with young children and can organise a project properly. More writing and planning than most people expect.',
+    leadsTo: 'Counts towards your QCE, and only one Applied subject can normally count in an ATAR. Points to early childhood education, teacher aide work and community services.',
+    scaling: 'capped',
+    scalingBasis: 'Applied subject. Normally only one Applied subject can count towards an ATAR at all, which matters far more than any scaling effect.',
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-sport-rec',
+    name: 'Sport & Recreation',
+    year: 'Y11-12',
+    area: 'Health & PE',
+    type: 'APP',
+    whatYouDo: 'Take part in activities such as swimming and team sport while learning coaching, officiating and event management. Assessed through practical performances and projects, with no external exam.',
+    whoItSuits: 'Suits you if you are active and happy to organise events and coach others. You are marked on planning and writing as well as playing.',
+    leadsTo: 'Counts towards your QCE, and only one Applied subject can normally count in an ATAR. Points to fitness, outdoor recreation, sports administration and community health.',
+    scaling: 'capped',
+    scalingBasis: 'Applied subject. Normally only one Applied subject can count towards an ATAR at all, which matters far more than any scaling effect.',
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-health',
+    name: 'Health',
+    year: 'Y11-12',
+    area: 'Health & PE',
+    type: 'GEN',
+    whatYouDo: 'Investigate what actually keeps people healthy, from resilience to relationships and community resources, using a health inquiry model. Action research, an internal exam, an investigation and a 25 percent external exam.',
+    whoItSuits: 'Suits you if you like researching and writing about people and society. This is a writing heavy subject with almost no physical activity.',
+    leadsTo: 'Counts towards an ATAR. Points to public health, nursing, allied health, health education and social work.',
+    scaling: 'down',
+    scalingBasis: 'Cohort tends to overlap with practical and Applied subjects rather than with the demanding maths and science lines, which shapes how it compares.',
+    prereq: 'C in Preparatory English or Preparatory Literature. A B in Preparatory Health is recommended.',
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-pe',
+    name: 'Physical Education',
+    year: 'Y11-12',
+    area: 'Health & PE',
+    type: 'GEN',
+    whatYouDo: 'Play and analyse sport while studying biomechanics, sport psychology, tactics and energy systems. You collect movement data and write folios and a report, plus a 25 percent external exam.',
+    whoItSuits: 'Suits you if you are competent in physical activity and willing to write detailed analytical folios. The theory load surprises a lot of students.',
+    leadsTo: 'Counts towards an ATAR. Points to exercise science, allied health, sport psychology, teaching and sports management.',
+    scaling: 'down',
+    scalingBasis: 'Large cohort that selects on physical competence rather than academic strength, and often pairs with practical subjects rather than the demanding maths and science lines.',
+    prereq: 'C in Preparatory English or Preparatory Literature. A C in Preparatory Physical Education is recommended.',
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-cert3-fitness',
+    name: 'Certificate III in Fitness (SIS30321)',
+    year: 'Y11-12',
+    area: 'Health & PE',
+    type: 'VET',
+    whatYouDo: 'Complete a nationally recognised fitness qualification over two years with Binnacle Training, covering first aid, gym programs, group exercise, fitness testing and workplace safety. Assessed on competency rather than exams.',
+    whoItSuits: 'Suits you if you are serious about the fitness industry and can stay on top of practical evidence and paperwork. Solid written and spoken communication is needed.',
+    leadsTo: 'Gives you a nationally recognised qualification worth 8 QCE credits. It does not contribute to an ATAR. Points to gym, group fitness and personal training work.',
+    scaling: 'capped',
+    scalingBasis: 'Vocational qualification that sits outside the subject comparison entirely, so what matters is the QCE credits and the industry pathway, not any scaling effect.',
+    prereq: 'None stated, but you sit a language, literacy and numeracy screen when you enrol.',
+    inviteOnly: false,
+    cost: true
+  },
+  {
+    id: 'y11-social-community',
+    name: 'Social & Community Studies',
+    year: 'Y11-12',
+    area: 'Humanities',
+    type: 'APP',
+    whatYouDo: 'Investigate contemporary social issues, lifestyle and money choices, legal and digital citizenship, and workplace relationships. Assessed by an extended response, two multimodal projects and a spoken investigation, with no external exam.',
+    whoItSuits: 'Suits you if you want practical life and people skills and prefer projects and presentations to exams.',
+    leadsTo: 'Counts towards your QCE, and only one Applied subject can normally count in an ATAR. Builds skills used in community services and most workplaces.',
+    scaling: 'capped',
+    scalingBasis: 'Applied subject. Normally only one Applied subject can count towards an ATAR at all, which matters far more than any scaling effect.',
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-accounting',
+    name: 'Accounting',
+    year: 'Y11-12',
+    area: 'Humanities',
+    type: 'GEN',
+    whatYouDo: 'Record business transactions, build financial statements, handle GST and judge whether a business is managing money well. Two internal exams, a cash management project and a 25 percent external exam.',
+    whoItSuits: 'Suits you if you like precise, rule based work and getting numbers to balance. Small errors cost marks, so accuracy matters more than speed.',
+    leadsTo: 'Counts towards an ATAR. Points to accounting, banking, finance, business, commerce and law.',
+    scaling: 'neutral',
+    scalingBasis: 'Small cohort, but it mixes students heading into commerce who take Mathematical Methods with students taking General Mathematics, so it sits fairly close to the middle.',
+    prereq: 'C in Preparatory English or Preparatory Literature. C in Preparatory General Mathematics and B in Preparatory Accounting are recommended.',
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-ancient-history',
+    name: 'Ancient History',
+    year: 'Y11-12',
+    area: 'Humanities',
+    type: 'GEN',
+    whatYouDo: 'Study ancient Rome, Athens and Pompeii by working with written and archaeological sources. Two research investigations, an internal extended response exam and a 25 percent external short response exam.',
+    whoItSuits: 'Suits you if you enjoy reading, arguing from evidence and writing under time pressure. Source analysis takes real practice to do well.',
+    leadsTo: 'Counts towards an ATAR. Points to archaeology, history, law, journalism, media and education.',
+    scaling: 'neutral',
+    scalingBasis: 'Moderate cohort of students who like reading and essay writing, but it spans a wide range of overall academic strength.',
+    prereq: 'C in Preparatory English or Preparatory Literature. A B in Preparatory Ancient or Modern History is recommended.',
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-business',
+    name: 'Business',
+    year: 'Y11-12',
+    area: 'Humanities',
+    type: 'GEN',
+    whatYouDo: 'Follow a business from startup through growth to maturity, covering finance, marketing, people and operations. You write a business report and a feasibility report, sit an internal exam and a 25 percent external exam.',
+    whoItSuits: 'Suits you if you like real world problem solving and can write structured reports with data behind them.',
+    leadsTo: 'Counts towards an ATAR. Points to business management, marketing, entrepreneurship, human resources and finance.',
+    scaling: 'down',
+    scalingBasis: 'Large cohort with an accessible entry point, and comparatively few of its students also take the demanding maths and science subjects.',
+    prereq: 'C in Preparatory English or Preparatory Literature. A B in Preparatory Business is recommended.',
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-economics',
+    name: 'Economics',
+    year: 'Y11-12',
+    area: 'Humanities',
+    type: 'GEN',
+    whatYouDo: 'Start with supply and demand models, then move to inflation, unemployment, government policy and international trade. Two internal exams, an investigation and a 25 percent external exam.',
+    whoItSuits: 'Suits you if you like graphs, models and arguing about cause and effect. Conceptually one of the harder Humanities subjects.',
+    leadsTo: 'Counts towards an ATAR. Points to economics, finance, data analytics, business, law and political science.',
+    scaling: 'up',
+    scalingBasis: 'Small cohort that self-selects heavily, with most students also taking Mathematical Methods or other analytical subjects, so their wider results tend to reveal this subject as demanding.',
+    prereq: 'C in Preparatory English or Preparatory Literature. A B in Preparatory Economics is recommended.',
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-geography',
+    name: 'Geography',
+    year: 'Y11-12',
+    area: 'Humanities',
+    type: 'GEN',
+    whatYouDo: 'Study hazards, land cover change, sustainable places and population shifts, using GIS mapping and real fieldwork. A field report, a data report, an internal exam and a 25 percent external exam.',
+    whoItSuits: 'Suits you if you like getting out and collecting data, and are comfortable interpreting maps, graphs and statistics.',
+    leadsTo: 'Counts towards an ATAR. Points to urban planning, environmental science, conservation, emergency response and surveying.',
+    scaling: 'neutral',
+    scalingBasis: 'Modest cohort drawn from students who enjoy fieldwork and data, spanning a broad range of overall academic strength rather than clustering at one end.',
+    prereq: 'C in Preparatory English or Preparatory Literature. A B in Preparatory Geography is recommended.',
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-legal-studies',
+    name: 'Legal Studies',
+    year: 'Y11-12',
+    area: 'Humanities',
+    type: 'GEN',
+    whatYouDo: 'Work through criminal trials, civil claims such as negligence and contract, Australian governance and human rights. An inquiry report, an analytical essay, an internal exam and a 25 percent external exam.',
+    whoItSuits: 'Suits you if you like structured argument and can handle a lot of terminology. Precise use of legal language is what separates the grades.',
+    leadsTo: 'Counts towards an ATAR. Points to law, policing, criminology, justice studies and politics.',
+    scaling: 'neutral',
+    scalingBasis: 'Popular General subject with a broad cohort, chosen by students across many different pathways, so it sits close to the reference population.',
+    prereq: 'C in Preparatory English or Preparatory Literature. A B in Preparatory Legal Studies is recommended.',
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-modern-history',
+    name: 'Modern History',
+    year: 'Y11-12',
+    area: 'Humanities',
+    type: 'GEN',
+    whatYouDo: 'Examine events since 1750 such as the Russian Revolution, civil rights movements, the Cold War and the Australian frontier wars. Two investigations, an internal extended response exam and a 25 percent external short response exam.',
+    whoItSuits: 'Suits you if you like debating contested versions of the past and can write essays quickly under exam conditions.',
+    leadsTo: 'Counts towards an ATAR. Points to history, law, journalism, education, sociology and policy work.',
+    scaling: 'neutral',
+    scalingBasis: 'Reasonably large cohort spanning the full ability range, from students on academic pathways to students choosing it as an accessible essay subject.',
+    prereq: 'C in Preparatory English or Preparatory Literature. A B in Preparatory Modern or Ancient History is recommended.',
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-diploma-business',
+    name: 'Diploma of Business (BSB50120)',
+    year: 'Y11-12',
+    area: 'Humanities',
+    type: 'VET',
+    whatYouDo: 'Complete a diploma level business qualification over two years with GET SET Education, covering leadership communication, critical thinking, social media strategy, financial management, business planning and risk. Assessed on competency rather than exams.',
+    whoItSuits: 'Suits you if you are organised, self managing and want a serious business credential. Diploma level work is a big step up from Year 10.',
+    leadsTo: 'Gives you a nationally recognised diploma worth 8 QCE credits. It does not contribute to an ATAR. Points to business, administration and management roles.',
+    scaling: 'capped',
+    scalingBasis: 'Vocational qualification that sits outside the subject comparison entirely, so what matters is the QCE credits and the industry pathway, not any scaling effect.',
+    prereq: 'B in Preparatory English or EAL, or C in Preparatory Literature, plus C in Preparatory General Mathematics or current study of Preparatory Mathematical Methods, plus a satisfactory pre-entry literacy and numeracy assessment.',
+    inviteOnly: false,
+    cost: true
+  },
+  {
+    id: 'y11-cert4-justice',
+    name: 'Certificate IV in Justice Studies (10971NAT)',
+    year: 'Y11-12',
+    area: 'Humanities',
+    type: 'VET',
+    whatYouDo: 'Study the Australian legal system, court documentation, regulatory powers, tort law, social justice analysis and interview skills through Unity College. Assessed on competency across two years with a lot of independent work.',
+    whoItSuits: 'Suits you if you want a head start in justice or policing and can work steadily without being chased. Independent learning skills are essential.',
+    leadsTo: 'Gives you a nationally recognised certificate worth 8 QCE credits. It does not contribute to an ATAR. Points to policing, courts, criminology and TAFE crime and justice study.',
+    scaling: 'capped',
+    scalingBasis: 'Vocational qualification that sits outside the subject comparison entirely, so what matters is the QCE credits and the industry pathway, not any scaling effect.',
+    prereq: null,
+    inviteOnly: false,
+    cost: true
+  },
+  {
+    id: 'y11-french',
+    name: 'French',
+    year: 'Y11-12',
+    area: 'Languages',
+    type: 'GEN',
+    whatYouDo: 'Build reading, writing, listening and speaking skills in French around family, travel, society and future plans. Two internal exams, a multimodal presentation with interview, and a 25 percent external exam.',
+    whoItSuits: 'Suits you if you keep up with vocabulary every week and are willing to speak in front of others. Falling behind is hard to recover from.',
+    leadsTo: 'Counts towards an ATAR. Leads on to Advanced French in Year 12 and then French Extension, and towards translation, teaching and international work.',
+    scaling: 'up',
+    scalingBasis: 'Languages keep a small, self-selecting cohort of academically strong students who usually carry other demanding subjects, so their wider results tend to reveal this subject as harder.',
+    prereq: 'C in Preparatory French.',
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-japanese',
+    name: 'Japanese',
+    year: 'Y11-12',
+    area: 'Languages',
+    type: 'GEN',
+    whatYouDo: 'Develop reading, writing, listening and speaking in Japanese across family, education, travel, society and future choices. Two internal exams, a multimodal presentation with interview, and a 25 percent external exam.',
+    whoItSuits: 'Suits you if you can memorise consistently and handle multiple writing systems. Rewarding, but the workload never really pauses.',
+    leadsTo: 'Counts towards an ATAR. Points to translation, teaching, international business, tourism and Asia focused study.',
+    scaling: 'up',
+    scalingBasis: 'Small cohort that persists through years of study and typically carries other demanding subjects, so their wider results tend to show this subject as harder than raw marks suggest.',
+    prereq: 'C in Preparatory Japanese.',
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-french-ext',
+    name: 'French Extension',
+    year: 'Y11-12',
+    area: 'Languages',
+    type: 'GEN',
+    whatYouDo: 'A Year 12 only extension taken on top of French, working with authentic French texts from literature, the arts, media and social science. A guided investigation, an independent investigation and a 25 percent external exam.',
+    whoItSuits: 'For students already strong in French who want to work almost entirely in the language. This sits on top of an already full subject load.',
+    leadsTo: 'Counts towards an ATAR as an additional subject. Points to linguistics, translation, teaching and international careers.',
+    scaling: 'up',
+    scalingBasis: 'Tiny cohort of students already strong in French who add it to an otherwise full load, so their results elsewhere tend to reveal it as demanding.',
+    prereq: 'Satisfactory Units 1 and 2 of Year 11 Advanced French, which itself requires satisfactory completion of Year 10 French Immersion.',
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-sen-ext-languages',
+    name: 'Senior External Examination — Languages',
+    year: 'Y11-12',
+    area: 'Languages',
+    type: 'GEN',
+    whatYouDo: 'A Year 12 only option where fluent speakers of a heritage language gain a senior result through written and oral exams set outside the school. Languages include Arabic, Chinese, Korean, Vietnamese, Punjabi, Latin and others.',
+    whoItSuits: 'For students already fluent in the language, usually because it is spoken at home. You prepare largely on your own.',
+    leadsTo: 'Counts towards an ATAR as a General subject. Useful if you want a language result without giving up one of your school subject lines.',
+    scaling: 'up',
+    scalingBasis: 'Very small cohort of fluent speakers who take it in addition to a full school load, and who typically carry other academic subjects as well.',
+    prereq: 'Year 12 students only, and you must already read, write, listen and speak the language proficiently, usually from speaking it at home.',
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-essential-maths',
+    name: 'Essential Mathematics',
+    year: 'Y11-12',
+    area: 'Mathematics',
+    type: 'APP',
+    whatYouDo: 'Work with money, measurement, data, travel and loans using maths you will actually use. Problem solving and modelling tasks, a common internal test and a short response exam, with no external exam.',
+    whoItSuits: 'Suits you if maths has been a struggle and you want confident everyday numeracy instead of algebra and calculus.',
+    leadsTo: 'Counts towards your QCE and meets the maths requirement, but only one Applied subject can normally count in an ATAR. Points to trades, industry, business support and community services.',
+    scaling: 'capped',
+    scalingBasis: 'Applied subject. Normally only one Applied subject can count towards an ATAR at all, which matters far more than any scaling effect.',
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-general-maths',
+    name: 'General Mathematics',
+    year: 'Y11-12',
+    area: 'Mathematics',
+    type: 'GEN',
+    whatYouDo: 'Cover consumer finance, trigonometry, matrices, networks and statistics, with no calculus. A modelling task, two internal short response exams and a 50 percent external exam.',
+    whoItSuits: 'Suits you if you are solid at maths but do not need calculus for your pathway. Half the marks sit in one external exam, so exam technique matters.',
+    leadsTo: 'Counts towards an ATAR and meets the maths requirement. Points to business, commerce, finance, IT, social science, education and the arts.',
+    scaling: 'neutral',
+    scalingBasis: 'One of the largest cohorts in the state, spanning the full ability range, so it sits close to the reference population.',
+    prereq: 'C in Preparatory Mathematics. If you studied Preparatory Essential Mathematics you must see the Head of Department before selecting it.',
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-maths-methods',
+    name: 'Mathematical Methods',
+    year: 'Y11-12',
+    area: 'Mathematics',
+    type: 'GEN',
+    whatYouDo: 'Learn algebra, functions, differential and integral calculus and statistics in a fast moving course. A modelling task, two internal short response exams and a 50 percent external exam.',
+    whoItSuits: 'For students genuinely comfortable with algebra who practise every week. The content moves quickly and gaps compound fast.',
+    leadsTo: 'Counts towards an ATAR. Assumed knowledge for engineering, physical sciences, computing, economics and many health degrees.',
+    scaling: 'up',
+    scalingBasis: 'Gated by prerequisites and taken mostly by students who also do a science or Specialist Mathematics, so their wider results tend to reveal it as demanding.',
+    prereq: 'C in Preparatory Mathematical Methods, with above 50 percent recommended. A CAS free graphics calculator (CASIO FXCG50) is required.',
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-specialist-maths',
+    name: 'Specialist Mathematics',
+    year: 'Y11-12',
+    area: 'Mathematics',
+    type: 'GEN',
+    whatYouDo: 'Extend Methods into vectors, matrices, complex numbers, formal proof and statistical inference. A modelling task, two internal short response exams and a 50 percent external exam. It is taken alongside Mathematical Methods, not instead of it.',
+    whoItSuits: 'The most demanding subject on offer. Only take it if maths is a genuine strength and you enjoy proof and abstract reasoning.',
+    leadsTo: 'Counts towards an ATAR. Useful for mathematics, statistics, physics, engineering, computer science and finance.',
+    scaling: 'up',
+    scalingBasis: 'Very small cohort, almost all of whom also take Mathematical Methods and a hard science, so their wider results tend to reveal this subject as demanding.',
+    prereq: 'C in Preparatory Mathematical Methods, above 50 percent recommended, and you must also study senior Mathematical Methods.',
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-science-practice',
+    name: 'Science in Practice',
+    year: 'Y11-12',
+    area: 'Science',
+    type: 'APP',
+    whatYouDo: 'Run hands on science projects in areas such as forensics, sustainability, aerodynamics and sustainable transport. Assessed through applied investigations and practical projects, with no external exam.',
+    whoItSuits: 'Suits you if you enjoy practical science but do not want the maths load and exam pressure of Biology, Chemistry or Physics.',
+    leadsTo: 'Counts towards your QCE, and only one Applied subject can normally count in an ATAR. Points to animal care, food technology, forensics support, health, tourism and the resources sector.',
+    scaling: 'capped',
+    scalingBasis: 'Applied subject. Normally only one Applied subject can count towards an ATAR at all, which matters far more than any scaling effect.',
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-biology',
+    name: 'Biology',
+    year: 'Y11-12',
+    area: 'Science',
+    type: 'GEN',
+    whatYouDo: 'Study cells, body systems, infectious disease, biodiversity, ecosystems and genetics, with regular practical work. A data test, a student experiment, a research investigation and a 50 percent external exam.',
+    whoItSuits: 'Suits you if you can hold a lot of detail in your head and write precise scientific explanations. Content heavy rather than maths heavy.',
+    leadsTo: 'Counts towards an ATAR. Points to medicine, veterinary science, biotechnology, agriculture, marine science and conservation.',
+    scaling: 'neutral',
+    scalingBasis: 'One of the largest science cohorts, taken by students across many pathways and maths levels, so it sits close to the reference population.',
+    prereq: 'C in Preparatory English or Literature, plus C in a Preparatory Science (Biology, Chemistry, Earth & Environmental Science or Physics), plus C in Preparatory General Mathematics or Mathematical Methods.',
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-chemistry',
+    name: 'Chemistry',
+    year: 'Y11-12',
+    area: 'Science',
+    type: 'GEN',
+    whatYouDo: 'Move from atomic structure and bonding through to equilibrium, acids, redox reactions and organic synthesis, with lab work throughout. A data test, a student experiment, a research investigation and a 50 percent external exam.',
+    whoItSuits: 'Suits you if you are comfortable with maths and abstract models. Widely regarded as one of the harder General subjects.',
+    leadsTo: 'Counts towards an ATAR. Points to medicine, pharmacy, engineering, forensic science, environmental science and sports science.',
+    scaling: 'up',
+    scalingBasis: 'Cohort is much smaller than Biology and skews towards students also taking Mathematical Methods and Physics, so their wider results tend to reveal it as demanding.',
+    prereq: 'C in Preparatory English or Literature, plus C in Preparatory Chemistry or Physics, plus C in Preparatory Mathematical Methods or General Mathematics.',
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-earth-env-science',
+    name: 'Earth & Environmental Science',
+    year: 'Y11-12',
+    area: 'Science',
+    type: 'GEN',
+    whatYouDo: 'Explore how rock, water, atmosphere and living systems interact, including energy transfers, resource extraction and hazards such as climate change. A data test, a student experiment, a research investigation and a 50 percent external exam.',
+    whoItSuits: 'Suits you if you like fieldwork, systems thinking and environmental issues, and can handle data analysis.',
+    leadsTo: 'Counts towards an ATAR. Points to geoscience, marine and environmental science, agriculture, ecology, urban planning and natural resource management.',
+    scaling: 'neutral',
+    scalingBasis: 'Small cohort, but it draws students choosing an alternative to Chemistry and Physics as much as students on strongly academic pathways.',
+    prereq: 'C in Preparatory English or Literature, plus C in a Preparatory Science (Biology, Chemistry, Earth & Environmental Science or Physics), plus C in Preparatory Mathematical Methods or General Mathematics.',
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-physics',
+    name: 'Physics',
+    year: 'Y11-12',
+    area: 'Science',
+    type: 'GEN',
+    whatYouDo: 'Cover thermal, nuclear and electrical physics, motion, waves, gravity, electromagnetism and modern theories such as relativity and quantum physics. A data test, a student experiment, a research investigation and a 50 percent external exam.',
+    whoItSuits: 'For students strong in maths who like working problems out from first principles. You must study Mathematical Methods alongside it.',
+    leadsTo: 'Counts towards an ATAR. Points to engineering, physics, astrophysics, biomedical science and technology.',
+    scaling: 'up',
+    scalingBasis: 'Small cohort required to study Mathematical Methods alongside it, so almost everyone in it carries a heavy academic load that reveals the subject as demanding.',
+    prereq: 'C in Preparatory English or Literature, plus C in Preparatory Physics or Chemistry, plus above 50 percent in Preparatory Mathematical Methods, and you must study senior Mathematical Methods.',
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-furnishing',
+    name: 'Furnishing Skills',
+    year: 'Y11-12',
+    area: 'Technologies',
+    type: 'APP',
+    whatYouDo: 'Build furniture and cabinets using hand tools, power tools and machinery, working through interior and commercial furnishing jobs. Assessed by practical demonstrations and projects, with no external exam.',
+    whoItSuits: 'Suits you if you would rather make things than write about them, and can work safely and accurately to a plan.',
+    leadsTo: 'Counts towards your QCE, and only one Applied subject can normally count in an ATAR. Points to cabinet making, shopfitting, upholstery, glazing and related trades.',
+    scaling: 'capped',
+    scalingBasis: 'Applied subject. Normally only one Applied subject can count towards an ATAR at all, which matters far more than any scaling effect.',
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-industrial-graphics',
+    name: 'Industrial Graphics Skills',
+    year: 'Y11-12',
+    area: 'Technologies',
+    type: 'APP',
+    whatYouDo: 'Produce technical drawings for building, construction and engineering, including computer aided drafting and residential house plans. Assessed by practical demonstrations and projects, with no external exam.',
+    whoItSuits: 'Suits you if you are patient, precise and enjoy drawing accurately to scale on a computer.',
+    leadsTo: 'Counts towards your QCE, and only one Applied subject can normally count in an ATAR. Points to drafting and estimating work in architecture, civil, mechanical and electrical fields.',
+    scaling: 'capped',
+    scalingBasis: 'Applied subject. Normally only one Applied subject can count towards an ATAR at all, which matters far more than any scaling effect.',
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-industrial-tech',
+    name: 'Industrial Technology Skills',
+    year: 'Y11-12',
+    area: 'Technologies',
+    type: 'APP',
+    whatYouDo: 'Work in metal and construction trades through welding and fabrication, sheet metal work, framing and cladding, and fitting and machining. Assessed by practical demonstrations and projects, with no external exam.',
+    whoItSuits: 'Suits you if you want real trade skills and can follow safety procedures and measurements exactly.',
+    leadsTo: 'Counts towards your QCE, and only one Applied subject can normally count in an ATAR. Points to engineering, construction, automotive, aeroskills and manufacturing trades.',
+    scaling: 'capped',
+    scalingBasis: 'Applied subject. Normally only one Applied subject can count towards an ATAR at all, which matters far more than any scaling effect.',
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-ict',
+    name: 'Information & Communication Technology',
+    year: 'Y11-12',
+    area: 'Technologies',
+    type: 'APP',
+    whatYouDo: 'Build websites, publications, digital images, 3D models and audio or video products in response to client briefs, with an esports theme in Year 12. Assessed by multimodal proposals and projects, with no external exam.',
+    whoItSuits: 'Suits you if you like making digital media and meeting client deadlines. Much less coding and theory than Digital Solutions.',
+    leadsTo: 'Counts towards your QCE, and only one Applied subject can normally count in an ATAR. Points to ICT operations, media production, publishing, web and app work.',
+    scaling: 'capped',
+    scalingBasis: 'Applied subject. Normally only one Applied subject can count towards an ATAR at all, which matters far more than any scaling effect.',
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-design',
+    name: 'Design',
+    year: 'Y11-12',
+    area: 'Technologies',
+    type: 'GEN',
+    whatYouDo: 'Use design thinking to solve problems for real stakeholders, sketching, prototyping and communicating your ideas. A design challenge, two projects and a 25 percent external extended response exam.',
+    whoItSuits: 'Suits you if you can generate ideas and also document your process clearly. The written justification carries as much weight as the design itself.',
+    leadsTo: 'Counts towards an ATAR. Points to architecture, graphic, industrial, interior, fashion and landscape design.',
+    scaling: 'neutral',
+    scalingBasis: 'Cohort mixes students on architecture and design pathways with students wanting a practical General subject, so it spans a wide range of academic strength.',
+    prereq: 'C in Preparatory General Mathematics plus C in Preparatory English or Preparatory Literature. A C in Preparatory Design is recommended.',
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-digital-solutions',
+    name: 'Digital Solutions',
+    year: 'Y11-12',
+    area: 'Technologies',
+    type: 'GEN',
+    whatYouDo: 'Write code, design algorithms, manage data and build working applications and networked solutions. A technical proposal, two digital solutions and a 25 percent external exam.',
+    whoItSuits: 'Suits you if you enjoy debugging and can keep going when your code breaks. Independent problem solving is the core skill.',
+    leadsTo: 'Counts towards an ATAR. Points to software development, data science, cybersecurity and computing.',
+    scaling: 'neutral',
+    scalingBasis: 'Small cohort, but it blends students taking Mathematical Methods with students drawn to computers without that maths background, so it does not skew clearly either way.',
+    prereq: 'C in Preparatory Digital Solutions, or C in Preparatory English or Preparatory Literature. A B in English or Literature is recommended.',
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-engineering',
+    name: 'Engineering',
+    year: 'Y11-12',
+    area: 'Technologies',
+    type: 'GEN',
+    whatYouDo: 'Apply mechanics, materials science and control technologies to real problems in civil structures, machines and emerging technologies. Two engineered solutions, an internal exam and a 25 percent external exam.',
+    whoItSuits: 'Suits you if you are strong in maths and enjoy building and testing solutions. The maths prerequisite is a genuine gate.',
+    leadsTo: 'Counts towards an ATAR. Points to all branches of engineering, plus architecture, surveying, aviation and project management.',
+    scaling: 'neutral',
+    scalingBasis: 'Maths prerequisite narrows the cohort, but it still mixes students heading to university with students pairing it with trade focused subjects.',
+    prereq: 'A in Preparatory General Mathematics or C in Preparatory Mathematical Methods, plus C in Preparatory English or Preparatory Literature.',
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-hospitality',
+    name: 'Certificate II/III in Hospitality (SIT20322 / SIT30622)',
+    year: 'Y11-12',
+    area: 'Technologies',
+    type: 'VET',
+    whatYouDo: 'Train in front of house hospitality service with Training Direct Australia, completing units of competency plus real service periods (12 for Certificate II, 36 for Certificate III). Competency based, with no external exam.',
+    whoItSuits: 'Suits you if you are reliable with customers and happy to work service shifts outside normal class time.',
+    leadsTo: 'Gives you a nationally recognised qualification worth 4 QCE credits for Certificate II or 6 for Certificate III. It does not contribute to an ATAR. Points to cafe, restaurant and tourism work.',
+    scaling: 'capped',
+    scalingBasis: 'Vocational qualification that sits outside the subject comparison entirely, so what matters is the QCE credits and the industry pathway, not any scaling effect.',
+    prereq: 'None stated, but you sit a language, literacy and numeracy screen when you enrol.',
+    inviteOnly: false,
+    cost: true
+  },
+  {
+    id: 'y11-media-arts-practice',
+    name: 'Media Arts in Practice',
+    year: 'Y11-12',
+    area: 'The Arts',
+    type: 'APP',
+    whatYouDo: 'Make media products across video games, advertising and social issue campaigns while learning the legal and ethical rules of digital media. Assessed by projects and finished media artworks, with no external exam.',
+    whoItSuits: 'Suits you if you like producing content and hitting deadlines rather than writing long essays about it.',
+    leadsTo: 'Counts towards your QCE, and only one Applied subject can normally count in an ATAR. Points to film, television, media and marketing work.',
+    scaling: 'capped',
+    scalingBasis: 'Applied subject. Normally only one Applied subject can count towards an ATAR at all, which matters far more than any scaling effect.',
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-visual-arts-practice',
+    name: 'Visual Arts in Practice',
+    year: 'Y11-12',
+    area: 'The Arts',
+    type: 'APP',
+    whatYouDo: 'Make real artworks including 2D painting, 3D jewellery and client directed pieces, finishing with a self chosen body of work. Assessed by projects and resolved artworks, with no external exam.',
+    whoItSuits: 'Suits you if you enjoy making things and want studio time rather than art history essays.',
+    leadsTo: 'Counts towards your QCE, and only one Applied subject can normally count in an ATAR. Points to creative industries, design, advertising and communications.',
+    scaling: 'capped',
+    scalingBasis: 'Applied subject. Normally only one Applied subject can count towards an ATAR at all, which matters far more than any scaling effect.',
+    prereq: null,
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-drama',
+    name: 'Drama',
+    year: 'Y11-12',
+    area: 'The Arts',
+    type: 'GEN',
+    whatYouDo: 'Perform, direct and devise theatre across inherited and contemporary styles, and write analytically about performance. A performance, a dramatic concept, a practice led project and a 25 percent external extended response exam.',
+    whoItSuits: 'Suits you if you will commit to rehearsals outside class and can also write strong analysis. Working well in a group is not optional.',
+    leadsTo: 'Counts towards an ATAR. Points to performing arts, education, law, communications and public relations.',
+    scaling: 'neutral',
+    scalingBasis: 'Cohort spans committed performers on academic pathways and students choosing it as an enjoyable elective, so it does not skew clearly in either direction.',
+    prereq: 'C in Preparatory English or Preparatory Literature. A C in Year 9 Drama or Preparatory Drama is recommended.',
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-film-tv-new-media',
+    name: 'Film, Television & New Media',
+    year: 'Y11-12',
+    area: 'The Arts',
+    type: 'GEN',
+    whatYouDo: 'Make short films and multi platform media while studying audiences, institutions, representation and film language. A case study investigation, a content project, a stylistic production and a 25 percent external extended response exam.',
+    whoItSuits: 'Suits you if you like filming and editing and can also write detailed analysis of media texts. Group production work eats a lot of time.',
+    leadsTo: 'Counts towards an ATAR. Points to film and television, advertising, communications, design, marketing and education.',
+    scaling: 'neutral',
+    scalingBasis: 'Cohort mixes students on serious media pathways with students choosing it for the production work, giving a broad spread of overall academic strength.',
+    prereq: 'C in Preparatory English or Preparatory Literature. A C in Year 9 Media or Preparatory Film, Television and New Media is recommended.',
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-music',
+    name: 'Music',
+    year: 'Y11-12',
+    area: 'The Arts',
+    type: 'GEN',
+    whatYouDo: 'Perform, compose and analyse music across four units, working on your instrument or voice and writing about repertoire. A performance, a composition, a project and a 25 percent external extended response exam.',
+    whoItSuits: 'Suits you if you already play or sing and can read music. Regular individual practice outside class is assumed.',
+    leadsTo: 'Counts towards an ATAR, and passing Year 11 Music opens the Music Extension subjects in Year 12. Points to performance, composition, teaching and creative industries.',
+    scaling: 'neutral',
+    scalingBasis: 'Entry by audition keeps the cohort small, but it selects on musical training rather than academic strength, so the spread of overall results stays broad.',
+    prereq: 'C in Preparatory Music or Preparatory Music Extension, or entry by audition.',
+    inviteOnly: true,
+    cost: false
+  },
+  {
+    id: 'y11-music-ext-composition',
+    name: 'Music Extension (Composition)',
+    year: 'Y11-12',
+    area: 'The Arts',
+    type: 'GEN',
+    whatYouDo: 'A Year 12 only extension taken after Year 11 Music, where you compose and resolve new works of your own. Two compositions, a composition project and a 25 percent external extended response exam.',
+    whoItSuits: 'For students who already write music and can drive a creative project with very little supervision.',
+    leadsTo: 'Counts towards an ATAR as an additional subject. Points to composition, music production and tertiary music study.',
+    scaling: 'up',
+    scalingBasis: 'Tiny cohort that must already have completed senior Music and adds this on top of a full load, so their wider results tend to reveal it as demanding.',
+    prereq: 'Satisfactory completion of Units 1 and 2 of Year 11 Music.',
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-music-ext-musicology',
+    name: 'Music Extension (Musicology)',
+    year: 'Y11-12',
+    area: 'The Arts',
+    type: 'GEN',
+    whatYouDo: 'A Year 12 only extension taken after Year 11 Music, focused on researching and analysing music works and ideas. Two investigations, a musicology project and a 25 percent external extended response exam.',
+    whoItSuits: 'For students who enjoy deep research and writing about music, and can manage a long independent project.',
+    leadsTo: 'Counts towards an ATAR as an additional subject. Points to musicology, research, arts writing and tertiary music study.',
+    scaling: 'up',
+    scalingBasis: 'Tiny, highly selective cohort continuing from senior Music, most of whom also carry academic subjects, so their wider results tend to reveal it as demanding.',
+    prereq: 'Satisfactory completion of Units 1 and 2 of Year 11 Music.',
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-music-ext-performance',
+    name: 'Music Extension (Performance)',
+    year: 'Y11-12',
+    area: 'The Arts',
+    type: 'GEN',
+    whatYouDo: 'A Year 12 only extension taken after Year 11 Music, built around polishing solo or ensemble performances to a high standard. Two performances, a performance project and a 25 percent external extended response exam.',
+    whoItSuits: 'For students already performing at a strong level who will practise seriously every week.',
+    leadsTo: 'Counts towards an ATAR as an additional subject. Points to performance, teaching and tertiary music study.',
+    scaling: 'up',
+    scalingBasis: 'Tiny cohort of committed performers carrying this as an extra subject alongside a full load, so their results in other subjects tend to reveal it as demanding.',
+    prereq: 'Satisfactory completion of Units 1 and 2 of Year 11 Music.',
+    inviteOnly: false,
+    cost: false
+  },
+  {
+    id: 'y11-visual-art',
+    name: 'Visual Art',
+    year: 'Y11-12',
+    area: 'The Arts',
+    type: 'GEN',
+    whatYouDo: 'Develop a folio of artworks through an inquiry process while researching artists and art history and writing responses. Three inquiry based investigations and projects plus a 25 percent external extended response exam.',
+    whoItSuits: 'Suits you if you can sustain long practical projects and also write about art theory and context. The folio workload builds up quickly.',
+    leadsTo: 'Counts towards an ATAR. Points to arts practice, design, craft, creative industries, advertising and education.',
+    scaling: 'neutral',
+    scalingBasis: 'Cohort ranges from students planning tertiary art study to students taking it for the folio work, spanning a broad range of overall academic strength.',
+    prereq: 'C in Preparatory English or Preparatory Literature. A C in Year 9 Art or Year 10 Preparatory Art is recommended.',
+    inviteOnly: false,
+    cost: false
+  }
+];
+const ALL = SUBJECTS_Y9_Y10.concat(SUBJECTS_Y11_12);
+const PW = {
+ "edges": {
+  "y9-eng": [
+   "y10-prep-essential-english",
+   "y10-prep-english",
+   "y10-prep-eal",
+   "y10-prep-literature"
+  ],
+  "y9-math": [
+   "y10-prep-essential-maths",
+   "y10-prep-general-maths",
+   "y10-prep-maths-methods",
+   "y10-prep-specialist-maths"
+  ],
+  "y9-sci": [
+   "y10-prep-science-practice",
+   "y10-prep-biology",
+   "y10-prep-chemistry",
+   "y10-prep-physics"
+  ],
+  "y9-history": [
+   "y10-prep-religion-ethics",
+   "y10-prep-social-community",
+   "y10-prep-ancient-history",
+   "y10-prep-modern-history"
+  ],
+  "y9-hpe": [
+   "y10-prep-early-childhood",
+   "y10-prep-fitness",
+   "y10-prep-sport-rec",
+   "y10-prep-health",
+   "y10-prep-pe"
+  ],
+  "y9-econ-business": [
+   "y10-prep-accounting",
+   "y10-prep-business",
+   "y10-prep-economics"
+  ],
+  "y9-geography": [
+   "y10-prep-geography"
+  ],
+  "y9-legal-studies": [
+   "y10-prep-legal-studies",
+   "y10-prep-social-community",
+   "y10-prep-modern-history"
+  ],
+  "y9-french": [
+   "y10-prep-french"
+  ],
+  "y9-french-immersion": [
+   "y10-prep-french-immersion"
+  ],
+  "y9-japanese": [
+   "y10-prep-japanese"
+  ],
+  "y9-design-tech": [
+   "y10-prep-engineering",
+   "y10-prep-design"
+  ],
+  "y9-digital-solutions": [
+   "y10-prep-digital-solutions"
+  ],
+  "y9-engineering": [
+   "y10-prep-engineering"
+  ],
+  "y9-materials-tech": [
+   "y10-prep-furnishing",
+   "y10-prep-design"
+  ],
+  "y9-drama": [
+   "y10-prep-drama"
+  ],
+  "y9-media-arts": [
+   "y10-prep-film-tv",
+   "y10-prep-media-arts-practice"
+  ],
+  "y9-music": [
+   "y10-prep-music",
+   "y10-prep-music-practice",
+   "y10-prep-music-extension"
+  ],
+  "y9-music-extension": [
+   "y10-prep-music",
+   "y10-prep-music-practice",
+   "y10-prep-music-extension"
+  ],
+  "y9-visual-arts": [
+   "y10-prep-visual-arts-practice"
+  ],
+  "y10-prep-essential-english": [
+   "y11-essential-english"
+  ],
+  "y10-prep-english": [
+   "y11-english"
+  ],
+  "y10-prep-eal": [
+   "y11-eal"
+  ],
+  "y10-prep-literature": [
+   "y11-literature"
+  ],
+  "y10-prep-early-childhood": [
+   "y11-early-childhood"
+  ],
+  "y10-prep-fitness": [
+   "y11-sport-rec",
+   "y11-cert3-fitness"
+  ],
+  "y10-prep-sport-rec": [
+   "y11-sport-rec",
+   "y11-cert3-fitness"
+  ],
+  "y10-prep-health": [
+   "y11-health"
+  ],
+  "y10-prep-pe": [
+   "y11-pe",
+   "y11-sport-rec",
+   "y11-cert3-fitness"
+  ],
+  "y10-prep-religion-ethics": [
+   "y11-modern-history",
+   "y11-legal-studies",
+   "y11-social-community"
+  ],
+  "y10-prep-social-community": [
+   "y11-legal-studies",
+   "y11-social-community"
+  ],
+  "y10-prep-accounting": [
+   "y11-accounting",
+   "y11-business",
+   "y11-diploma-business"
+  ],
+  "y10-prep-ancient-history": [
+   "y11-ancient-history",
+   "y11-modern-history",
+   "y11-social-community"
+  ],
+  "y10-prep-business": [
+   "y11-business",
+   "y11-diploma-business"
+  ],
+  "y10-prep-economics": [
+   "y11-economics",
+   "y11-business",
+   "y11-diploma-business"
+  ],
+  "y10-prep-geography": [
+   "y11-geography",
+   "y11-social-community"
+  ],
+  "y10-prep-legal-studies": [
+   "y11-legal-studies",
+   "y11-cert4-justice",
+   "y11-social-community"
+  ],
+  "y10-prep-modern-history": [
+   "y11-ancient-history",
+   "y11-modern-history",
+   "y11-social-community"
+  ],
+  "y10-prep-french": [
+   "y11-french"
+  ],
+  "y10-prep-french-immersion": [
+   "y11-french-ext"
+  ],
+  "y10-prep-japanese": [
+   "y11-japanese"
+  ],
+  "y10-prep-essential-maths": [
+   "y11-essential-maths"
+  ],
+  "y10-prep-general-maths": [
+   "y11-general-maths"
+  ],
+  "y10-prep-maths-methods": [
+   "y11-maths-methods"
+  ],
+  "y10-prep-specialist-maths": [
+   "y11-specialist-maths"
+  ],
+  "y10-prep-science-practice": [
+   "y11-science-practice"
+  ],
+  "y10-prep-biology": [
+   "y11-biology",
+   "y11-physics"
+  ],
+  "y10-prep-chemistry": [
+   "y11-chemistry"
+  ],
+  "y10-prep-physics": [
+   "y11-physics"
+  ],
+  "y10-prep-furnishing": [
+   "y11-furnishing"
+  ],
+  "y10-prep-design": [
+   "y11-design"
+  ],
+  "y10-prep-digital-solutions": [
+   "y11-digital-solutions",
+   "y11-ict"
+  ],
+  "y10-prep-engineering": [
+   "y11-engineering"
+  ],
+  "y10-prep-media-arts-practice": [
+   "y11-film-tv-new-media",
+   "y11-media-arts-practice"
+  ],
+  "y10-prep-music-practice": [
+   "y11-music-ext-composition"
+  ],
+  "y10-prep-visual-arts-practice": [
+   "y11-visual-art",
+   "y11-visual-arts-practice"
+  ],
+  "y10-prep-drama": [
+   "y11-drama"
+  ],
+  "y10-prep-film-tv": [
+   "y11-film-tv-new-media",
+   "y11-media-arts-practice"
+  ],
+  "y10-prep-music": [
+   "y11-music",
+   "y11-music-ext-composition"
+  ],
+  "y10-prep-music-extension": [
+   "y11-music",
+   "y11-music-ext-composition"
+  ],
+  "y10-prep-visual-arts": [
+   "y11-visual-art",
+   "y11-visual-arts-practice"
+  ],
+  "y11-music": [
+   "y11-music-ext-composition",
+   "y11-music-ext-musicology",
+   "y11-music-ext-performance"
+  ]
+ },
+ "prereqEdges": {
+  "y10-prep-biology": [
+   "y11-earth-env-science"
+  ],
+  "y10-prep-chemistry": [
+   "y11-earth-env-science"
+  ],
+  "y10-prep-physics": [
+   "y11-earth-env-science"
+  ]
+ },
+ "directEntry": [
+  "y11-essential-english",
+  "y11-early-childhood",
+  "y11-sport-rec",
+  "y11-cert3-fitness",
+  "y11-social-community",
+  "y11-cert4-justice",
+  "y11-essential-maths",
+  "y11-science-practice",
+  "y11-furnishing",
+  "y11-industrial-graphics",
+  "y11-industrial-tech",
+  "y11-ict",
+  "y11-hospitality",
+  "y11-media-arts-practice",
+  "y11-visual-arts-practice"
+ ],
+ "notOffered": [
+  {
+   "from": "Y10 Preparatory Religion and Ethics",
+   "named": "Religion and Ethics"
+  },
+  {
+   "from": "Y10 Preparatory Social and Community Studies",
+   "named": "Religion and Ethics"
+  },
+  {
+   "from": "Y10 Preparatory Music in Practice",
+   "named": "Music in Practice"
+  }
+ ]
+};
+const BY_ID = {}; ALL.forEach(s => BY_ID[s.id] = s);
+// senior destinations the guides name but which are absent from the senior offering
+const PW_GAPS = {};
+(PW.notOffered || []).forEach(g => {
+  const m = /^Y(9|10) (.+)$/.exec(g.from); if (!m) return;
+  const src = ALL.find(x => x.name === m[2] && x.year === (m[1] === '9' ? 'Y9' : 'Y10'));
+  if (src) (PW_GAPS[src.id] = PW_GAPS[src.id] || []).push(g.named);
+});
+function fwd(id){ return (PW.edges[id] || []).concat(PW.prereqEdges[id] || []); }
+function back(id){ return Object.keys(PW.edges).filter(k => fwd(k).indexOf(id) >= 0); }
+
+const YEARS = ['All','Y9','Y10','Y11-12'];
+const YEAR_LABEL = {'All':'All years','Y9':'Year 9','Y10':'Year 10','Y11-12':'Year 11-12'};
+const AREAS = ['All','English','Mathematics','Science','Humanities','Languages','Technologies','The Arts','Health & PE'];
+const TYPE_LABEL = {GEN:'General',APP:'Applied',VET:'VET',CORE:'Core',ELECTIVE:'Elective',
+  'PREP-GEN':'Prep General','PREP-APP':'Prep Applied'};
+const SCALES = ['All','up','neutral','down','capped'];
+const SCALE_LABEL = {All:'Any scaling',up:'Tends up',neutral:'Mid',down:'Tends down',capped:'Capped'};
+const SCALE_LONG = {up:'Tends to scale up (estimate)',neutral:'Tends to sit mid (estimate)',
+  down:'Tends to scale down (estimate)',capped:'Applied or VET, ATAR-capped'};
+const EST_DISCLAIMER = 'This is an estimate, not official data. QTAC does not publish scaling figures for individual Queensland subjects, and recalculates scaling each year from the current cohort. The reasoning above is the entire basis for this label. Do not pick a subject because of it.';
+
+let fYear='All', fArea='All', fScale='All', fQ='';
+
+const esc = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function buildSeg(el, items, get, set, labelFn){
+  el.innerHTML='';
+  items.forEach(v=>{
+    const b=document.createElement('button');
+    b.textContent=labelFn(v);
+    if(get()===v) b.className='on';
+    b.onclick=()=>{set(v);render();};
+    el.appendChild(b);
+  });
+}
+
+function match(s){
+  if(fYear!=='All' && s.year!==fYear) return false;
+  if(fArea!=='All' && s.area!==fArea) return false;
+  if(fScale!=='All' && s.scaling!==fScale) return false;
+  if(fQ){
+    const h=(s.name+' '+s.area+' '+s.whatYouDo+' '+s.whoItSuits+' '+(s.leadsTo||'')).toLowerCase();
+    if(!h.includes(fQ)) return false;
+  }
+  return true;
+}
+
+function render(){
+  buildSeg(document.getElementById('yearSeg'),YEARS,()=>fYear,v=>fYear=v,v=>YEAR_LABEL[v]);
+  buildSeg(document.getElementById('areaSeg'),AREAS,()=>fArea,v=>fArea=v,v=>v);
+  const scaleEl=document.getElementById('scaleSeg');
+  if(fYear==='Y9'||fYear==='Y10'){ scaleEl.innerHTML=''; if(fScale!=='All'){fScale='All';} }
+  else buildSeg(scaleEl,SCALES,()=>fScale,v=>fScale=v,v=>SCALE_LABEL[v]);
+  const list=ALL.filter(match);
+  document.getElementById('count').textContent=
+    list.length+' subject'+(list.length===1?'':'s')+' shown of '+ALL.length+' total';
+  const g=document.getElementById('grid');
+  if(!list.length){g.innerHTML='<p class="empty">No subjects match that. Try a different word or clear the filters.</p>';return;}
+  g.innerHTML=list.map((s,i)=>{
+    const idx=ALL.indexOf(s);
+    let b='<span class="b '+s.type+'">'+TYPE_LABEL[s.type]+'</span>'+
+          '<span class="b yr">'+YEAR_LABEL[s.year]+'</span>';
+    if(s.cost) b+='<span class="b cost">Fees apply</span>';
+    if(s.inviteOnly) b+='<span class="b inv">Invite only</span>';
+    if(s.scaling) b+='<span class="sb '+s.scaling+'" title="Estimate, not official data">'+SCALE_LABEL[s.scaling]+'</span>';
+    return '<div class="card" data-i="'+idx+'"><div class="badges">'+b+'</div>'+
+      '<h3>'+esc(s.name)+'</h3><p>'+esc(s.whatYouDo)+'</p></div>';
+  }).join('');
+  [...g.querySelectorAll('.card')].forEach(c=>c.onclick=()=>open_(ALL[+c.dataset.i]));
+}
+
+function open_(s){
+  let b='<span class="b '+s.type+'">'+TYPE_LABEL[s.type]+'</span>'+
+        '<span class="b yr">'+YEAR_LABEL[s.year]+'</span>';
+  if(s.cost) b+='<span class="b cost">Fees apply</span>';
+  if(s.inviteOnly) b+='<span class="b inv">Invite only</span>';
+  if(s.scaling) b+='<span class="sb '+s.scaling+'">'+SCALE_LABEL[s.scaling]+'</span>';
+  let h='<div class="badges">'+b+'</div><h2>'+esc(s.name)+'</h2>'+
+    '<div class="sec"><h4>What you actually do</h4><p>'+esc(s.whatYouDo)+'</p></div>'+
+    '<div class="sec"><h4>Who it suits</h4><p>'+esc(s.whoItSuits)+'</p></div>'+
+    '<div class="sec"><h4>Where it leads</h4><p>'+esc(s.leadsTo||'Not stated in the guide.')+'</p></div>'+
+    '<div class="sec"><h4>Learning area</h4><p>'+esc(s.area)+'</p></div>';
+  if(s.scaling) h+='<div class="sec"><h4>Scaling &mdash; estimate only</h4>'+
+    '<p><b>'+esc(SCALE_LONG[s.scaling])+'</b></p>'+
+    '<p style="margin-top:6px">'+esc(s.scalingBasis)+'</p>'+
+    '<div class="estnote">'+esc(EST_DISCLAIMER)+'</div></div>';
+  if(s.prereq) h+='<div class="sec"><h4>Prerequisite</h4><p>'+esc(s.prereq)+'</p></div>';
+  if(s.inviteOnly) h+='<div class="warn">You cannot just pick this one. Entry is by invitation, audition, teacher recommendation or application.</div>';
+  if(s.cost) h+='<div class="warn">'+(s.type==='VET'
+      ? 'This subject has a course fee because it is delivered with an outside training organisation. Confirm the current amount with the school, and ask whether VETiS funding applies.'
+      : 'This subject has an out-of-pocket cost, such as a compulsory excursion or field trip. Confirm the current amount with the school.')+'</div>';
+  h+='<button class="close" onclick="close_()">Close</button>';
+  document.getElementById('modal').innerHTML=h;
+  document.getElementById('ov').classList.add('open');
+}
+function close_(){document.getElementById('ov').classList.remove('open');}
+document.getElementById('ov').onclick=e=>{if(e.target.id==='ov')close_();};
+document.onkeydown=e=>{if(e.key==='Escape')close_();};
+document.getElementById('q').oninput=e=>{fQ=e.target.value.trim().toLowerCase();render();};
+
+
+/* ---------------- tabs ---------------- */
+function showTab(which){
+  var b = which === 'browse';
+  document.getElementById('tabBrowse').className = b ? 'on' : '';
+  document.getElementById('tabPath').className = b ? '' : 'on';
+  document.getElementById('panelBrowse').className = 'panel' + (b ? ' on' : '');
+  document.getElementById('panelPath').className = 'panel' + (b ? '' : ' on');
+  if(!b){ renderPath(); }
+}
+document.getElementById('tabBrowse').onclick = function(){ showTab('browse'); };
+document.getElementById('tabPath').onclick = function(){ showTab('path'); };
+
+/* ---------------- pathway map ---------------- */
+var PW_MODES = ['fwd','rev'];
+var PW_MODE_LABEL = {fwd:'Forward from Year 9', rev:'Backwards from Year 11-12'};
+var pwMode = 'fwd', pwSel = null;
+
+function pwOptions(){
+  return pwMode === 'fwd' ? ALL.filter(function(s){return s.year==='Y9';})
+                          : ALL.filter(function(s){return s.year==='Y11-12';});
+}
+
+function buildPicker(){
+  var sel = document.getElementById('pwPick');
+  var opts = pwOptions();
+  if(!pwSel || opts.indexOf(BY_ID[pwSel]) < 0) pwSel = opts[0].id;
+  var areas = [];
+  opts.forEach(function(s){ if(areas.indexOf(s.area)<0) areas.push(s.area); });
+  var h = '';
+  areas.forEach(function(a){
+    h += '<optgroup label="' + esc(a) + '">';
+    opts.filter(function(s){return s.area===a;}).forEach(function(s){
+      h += '<option value="' + esc(s.id) + '"' + (s.id===pwSel?' selected':'') + '>' + esc(s.name) + '</option>';
+    });
+    h += '</optgroup>';
+  });
+  sel.innerHTML = h;
+  sel.onchange = function(){ pwSel = sel.value; renderPath(); };
+  document.getElementById('pwPickLabel').textContent =
+    pwMode === 'fwd' ? 'Year 9 subject' : 'Year 11-12 subject';
+}
+
+function nodeHTML(s, cls, gapName, first){
+  if(gapName){
+    return '<div class="pw-node gap" data-gap="1">' + esc(gapName) +
+           '<span class="pwt">Named in the guide but not in the senior offering</span></div>';
+  }
+  var t = TYPE_LABEL[s.type] || '';
+  // entities must sit OUTSIDE esc(), or they get double-escaped and show as raw text
+  var pre = first ? 'Take this first &middot; ' : '';
+  var extra = s.scaling && s.scaling !== 'capped' ? ' &middot; ' + SCALE_LABEL[s.scaling] + ' (est)' : '';
+  return '<div class="pw-node' + (cls?' '+cls:'') + '" data-id="' + esc(s.id) + '">' + esc(s.name) +
+         '<span class="pwt">' + pre + esc(t) + extra + '</span></div>';
+}
+
+function col(title, count, inner){
+  return '<div class="pw-col"><h5>' + title +
+    (count !== null ? ' <span class="pwcount">' + count + '</span>' : '') + '</h5>' +
+    (inner || '<p class="pw-empty">Nothing listed.</p>') + '</div>';
+}
+
+function renderPath(){
+  buildSeg(document.getElementById('pwModeSeg'), PW_MODES, function(){return pwMode;},
+    function(v){ pwMode = v; pwSel = null; }, function(v){ return PW_MODE_LABEL[v]; });
+  buildPicker();
+  var root = BY_ID[pwSel];
+  var colsEl = document.getElementById('pwCols');
+  var hint = document.getElementById('pwHint');
+  var c1, c2, c3;
+
+  if(pwMode === 'fwd'){
+    var y10 = fwd(root.id).map(function(i){return BY_ID[i];}).filter(Boolean);
+    var senSet = [], gapNames = [];
+    y10.forEach(function(j){
+      fwd(j.id).forEach(function(i){ if(senSet.indexOf(i)<0) senSet.push(i); });
+      (PW_GAPS[j.id]||[]).forEach(function(g){ if(gapNames.indexOf(g)<0) gapNames.push(g); });
+    });
+    (PW_GAPS[root.id]||[]).forEach(function(g){ if(gapNames.indexOf(g)<0) gapNames.push(g); });
+    var sen = senSet.map(function(i){return BY_ID[i];}).filter(Boolean);
+    c1 = col('Year 9', null, nodeHTML(root,'root'));
+    c2 = col('Year 10 options', y10.length, y10.map(function(x){return nodeHTML(x);}).join(''));
+    c3 = col('Year 11-12 options', sen.length,
+      sen.map(function(x){return nodeHTML(x);}).join('') +
+      gapNames.map(function(g){return nodeHTML(null,null,g);}).join(''));
+    hint.innerHTML = 'Taking <b>' + esc(root.name) + '</b> in Year 9 keeps <b>' + y10.length +
+      '</b> Year 10 subject' + (y10.length===1?'':'s') + ' open, which in turn lead to <b>' + sen.length +
+      '</b> senior subject' + (sen.length===1?'':'s') + '.';
+  } else {
+    var feeders = back(root.id).map(function(i){return BY_ID[i];}).filter(Boolean);
+    // Some senior subjects are gated by another SENIOR subject, not by a Year 10 one.
+    // The three Music Extensions require Year 11 Music. Follow that hop, then continue
+    // back through the senior prerequisite to find its own Year 10 and Year 9 feeders.
+    var seniorFeed = feeders.filter(function(x){return x.year==='Y11-12';});
+    var y10f = feeders.filter(function(x){return x.year==='Y10';});
+    seniorFeed.forEach(function(sf){
+      back(sf.id).forEach(function(i){
+        var t = BY_ID[i];
+        if(t && t.year==='Y10' && y10f.indexOf(t)<0) y10f.push(t);
+      });
+    });
+    var y9set = [];
+    y10f.forEach(function(j){ back(j.id).forEach(function(i){ if(y9set.indexOf(i)<0) y9set.push(i); }); });
+    var y9f = y9set.map(function(i){return BY_ID[i];})
+      .filter(function(x){return x && x.year==='Y9';});
+    var isDirect = (PW.directEntry||[]).indexOf(root.id) >= 0;
+    c1 = col('Year 9 needed', y9f.length, y9f.map(function(x){return nodeHTML(x);}).join(''));
+    c2 = col('Year 10 needed', y10f.length, y10f.map(function(x){return nodeHTML(x);}).join(''));
+    c3 = col('Year 11-12', null,
+      seniorFeed.map(function(x){return nodeHTML(x,'first',null,true);}).join('') + nodeHTML(root,'root'));
+    if(isDirect){
+      hint.innerHTML = '<b>' + esc(root.name) + '</b> has no stated subject prerequisite, so you can pick it in Year 11 without a particular Year 9 or Year 10 background.';
+    } else if(seniorFeed.length){
+      hint.innerHTML = '<b>' + esc(root.name) + '</b> is gated by another senior subject. You need <b>' +
+        seniorFeed.map(function(x){return esc(x.name);}).join('</b> and <b>') +
+        '</b> first, so the Year 10 and Year 9 columns show what feeds into that.';
+    } else if(!y10f.length){
+      hint.innerHTML = 'The guides do not list a Year 10 subject that feeds <b>' + esc(root.name) +
+        '</b>. Its stated requirement is: ' + esc(root.prereq || 'not stated') +
+        ' Check with the relevant Head of Department.';
+    } else {
+      hint.innerHTML = 'To keep <b>' + esc(root.name) + '</b> open you generally need one of the Year 10 subjects below, which come from the Year 9 subjects on the left.';
+    }
+  }
+  colsEl.innerHTML = c1 + c2 + c3;
+  var nodes = colsEl.querySelectorAll('.pw-node');
+  for(var i=0;i<nodes.length;i++){
+    (function(n){
+      if(n.getAttribute('data-gap')) return;
+      n.onclick = function(){ var s = BY_ID[n.getAttribute('data-id')]; if(s) open_(s); };
+    })(nodes[i]);
+  }
+  renderDirect();
+  drawLines();
+}
+
+function renderDirect(){
+  var el = document.getElementById('pwDirect');
+  if(pwMode !== 'fwd'){ el.innerHTML=''; return; }
+  var d = (PW.directEntry||[]).map(function(i){return BY_ID[i];}).filter(Boolean);
+  el.innerHTML = '<div class="pw-direct"><h5>You can also start these in Year 11 with no particular background</h5>' +
+    '<p>' + d.length + ' senior subjects have no stated subject prerequisite. Your Year 9 and Year 10 choices do not close these off.</p>' +
+    '<div class="chips">' + d.map(function(s){
+      return '<button data-id="'+esc(s.id)+'">'+esc(s.name)+'</button>'; }).join('') + '</div></div>';
+  var bs = el.querySelectorAll('button');
+  for(var i=0;i<bs.length;i++){
+    (function(b){ b.onclick=function(){ var s=BY_ID[b.getAttribute('data-id')]; if(s) open_(s); }; })(bs[i]);
+  }
+}
+
+/* connector lines, drawn after layout from real element positions */
+function drawLines(){
+  var svg = document.getElementById('pwlines');
+  var stage = svg.parentNode;
+  var cols = stage.querySelectorAll('.pw-col');
+  if(!svg.getBoundingClientRect || cols.length < 3){ svg.innerHTML=''; return; }
+  var sb = stage.getBoundingClientRect();
+  if(sb.width < 600){ svg.innerHTML=''; return; }
+  svg.setAttribute('viewBox','0 0 '+sb.width+' '+sb.height);
+  function pts(colEl){
+    var out=[], ns=colEl.querySelectorAll('.pw-node');
+    for(var i=0;i<ns.length;i++){
+      var r=ns[i].getBoundingClientRect();
+      out.push({l:r.left-sb.left, r:r.right-sb.left, y:r.top-sb.top+r.height/2});
+    }
+    return out;
+  }
+  var a=pts(cols[0]), b=pts(cols[1]), c=pts(cols[2]);
+  var d='';
+  function join(from,to){
+    from.forEach(function(p){ to.forEach(function(q){
+      var x1=p.r+2, x2=q.l-2, mx=(x1+x2)/2;
+      d += 'M'+x1+' '+p.y+' C'+mx+' '+p.y+' '+mx+' '+q.y+' '+x2+' '+q.y+' ';
+    });});
+  }
+  join(a,b); join(b,c);
+  svg.innerHTML = '<path d="'+d+'" fill="none" stroke="#37425c" stroke-width="1.2" opacity="0.85"/>';
+}
+var pwT=null;
+if(typeof window !== 'undefined'){
+  window.addEventListener('resize', function(){ clearTimeout(pwT); pwT=setTimeout(drawLines,120); });
+}
+
+// sanity tests
+(function(){
+  const ok=[], bad=[];
+  const ids=new Set();
+  ALL.forEach(s=>{
+    if(ids.has(s.id)) bad.push('dup id '+s.id); ids.add(s.id);
+    if(!AREAS.includes(s.area)) bad.push('bad area "'+s.area+'" on '+s.id);
+    if(!TYPE_LABEL[s.type]) bad.push('bad type "'+s.type+'" on '+s.id);
+    if(!YEAR_LABEL[s.year]) bad.push('bad year "'+s.year+'" on '+s.id);
+    ['whatYouDo','whoItSuits'].forEach(k=>{if(!s[k]||!s[k].length) bad.push('empty '+k+' on '+s.id);});
+    if(s.year==='Y11-12'){
+      if(!s.scaling) bad.push('missing scaling on '+s.id);
+      else if(!SCALE_LABEL[s.scaling]) bad.push('bad scaling band "'+s.scaling+'" on '+s.id);
+      if(!s.scalingBasis) bad.push('missing scalingBasis on '+s.id);
+      if(s.scalingBasis&&/[0-9%]/.test(s.scalingBasis)) bad.push('numeric claim in scalingBasis on '+s.id);
+      if((s.type!=='GEN')!==(s.scaling==='capped')) bad.push('type/band mismatch on '+s.id);
+    } else if(s.scaling) bad.push('scaling set on non-senior subject '+s.id);
+  });
+  // pathway edge integrity
+  const idset=new Set(ALL.map(s=>s.id));
+  Object.keys(PW.edges).forEach(k=>{
+    if(!idset.has(k)) bad.push('edge from unknown id '+k);
+    PW.edges[k].forEach(v=>{if(!idset.has(v)) bad.push('edge to unknown id '+v);});
+  });
+  Object.keys(PW.prereqEdges).forEach(k=>{
+    PW.prereqEdges[k].forEach(v=>{if(!idset.has(v)) bad.push('prereq edge to unknown id '+v);});
+  });
+  (PW.directEntry||[]).forEach(v=>{if(!idset.has(v)) bad.push('directEntry unknown id '+v);});
+  ALL.filter(s=>s.year==='Y9').forEach(s=>{
+    if(!fwd(s.id).length) bad.push('Y9 subject with no forward edge: '+s.id);
+    fwd(s.id).forEach(v=>{if(BY_ID[v].year!=='Y10') bad.push('Y9 edge not to Y10: '+s.id+'->'+v);});
+  });
+  const counts={};ALL.forEach(s=>counts[s.year]=(counts[s.year]||0)+1);
+  if(bad.length) console.error('Subject Guide sanity tests: FAILED',bad);
+  else console.log('Subject Guide sanity tests: passed ('+ALL.length+' subjects)',counts);
+})();
+
+render();
+</script>
+</body>
+</html>
