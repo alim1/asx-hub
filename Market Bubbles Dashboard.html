@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Market Bubbles — 1929 / 2000 / 2008 / 2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#0b1220;
+  --panel:#111a2e;
+  --panel2:#0f1830;
+  --border:#334155;
+  --border-soft:#243044;
+  --text:#e2e8f0;
+  --meta:#94a3b8;
+  --dim:#64748b;
+  --accent:#7eb8d4;
+  --accent2:#8db4ce;
+  --head:#60a5fa;
+  --green:#22c55e;
+  --red:#ef4444;
+  --amber:#f59e0b;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  line-height:1.5;
+}
+a{color:var(--accent);}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px 60px;}
+header.top{
+  background:linear-gradient(180deg,#0d1526,#0b1220);
+  border-bottom:1px solid var(--border-soft);
+  padding:28px 20px 0;
+  position:sticky;top:0;z-index:50;
+}
+h1{font-size:1.5rem;margin:0 0 4px;color:var(--text);}
+.subtitle{color:var(--meta);font-size:0.92rem;margin-bottom:18px;}
+nav.tabs{display:flex;gap:4px;flex-wrap:wrap;max-width:1180px;margin:0 auto;padding:0 0px;}
+nav.tabs button{
+  background:transparent;border:none;border-bottom:3px solid transparent;
+  color:var(--meta);padding:10px 16px;font-size:0.92rem;cursor:pointer;
+  font-weight:600;letter-spacing:0.01em;
+}
+nav.tabs button:hover{color:var(--text);}
+nav.tabs button.active{color:var(--head);border-bottom-color:var(--head);}
+.tab-content{display:none;padding-top:26px;}
+.tab-content.active{display:block;}
+h2.section-head{color:var(--head);font-size:1.2rem;margin:34px 0 6px;border-top:1px solid var(--border-soft);padding-top:22px;}
+h2.section-head:first-child{border-top:none;padding-top:0;margin-top:0;}
+h3{color:var(--head);font-size:1.02rem;margin:0 0 8px;}
+p{color:var(--text);}
+.meta{color:var(--meta);font-size:0.88rem;}
+.dim{color:var(--dim);}
+.howto{
+  background:var(--panel2);border:1px solid var(--border-soft);border-left:3px solid var(--accent);
+  border-radius:6px;padding:12px 16px;margin:10px 0 20px;font-size:0.88rem;color:var(--accent2);
+}
+.howto b{color:var(--text);}
+.caveat{
+  background:#1a1420;border:1px solid #4a2f3a;border-left:3px solid var(--amber);
+  border-radius:6px;padding:12px 16px;margin:10px 0 20px;font-size:0.88rem;color:#e8c99a;
+}
+.grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin:16px 0;}
+.card{
+  background:var(--panel);border:1px solid var(--border-soft);border-radius:10px;padding:16px;
+  cursor:pointer;transition:border-color .15s;
+}
+.card:hover{border-color:var(--accent);}
+.card h4{margin:0 0 6px;color:var(--text);font-size:1rem;}
+.card .range{color:var(--accent2);font-size:0.82rem;font-weight:600;}
+.card .stat{font-size:1.6rem;font-weight:700;color:var(--red);margin:8px 0 2px;}
+.card .stat.green{color:var(--green);}
+.card p{color:var(--meta);font-size:0.86rem;margin:4px 0 0;}
+table{width:100%;border-collapse:collapse;margin:10px 0 20px;font-size:0.87rem;}
+th{text-align:left;color:var(--head);font-weight:600;border-bottom:1px solid var(--border);padding:8px 10px;background:var(--panel2);}
+td{padding:8px 10px;border-bottom:1px solid var(--border-soft);color:var(--text);vertical-align:top;}
+tr.clickable{cursor:pointer;}
+tr.clickable:hover td{background:var(--panel2);}
+.src{color:var(--dim);font-size:0.78rem;}
+.badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:0.72rem;font-weight:700;color:#fff;letter-spacing:0.02em;}
+.badge.disp{background:#475569;}
+.badge.boom{background:#0369a1;}
+.badge.euph{background:#7c3aed;}
+.badge.dist{background:#b45309;}
+.badge.panic{background:#b91c1c;}
+.badge.rev{background:#334155;}
+.stagegrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:14px 0 22px;}
+.stagecard{background:var(--panel);border:1px solid var(--border-soft);border-radius:8px;padding:12px;}
+.stagecard .window{color:var(--accent2);font-size:0.78rem;font-weight:600;margin:6px 0;}
+.stagecard p{font-size:0.82rem;color:var(--meta);margin:0;}
+.chart-box{background:var(--panel);border:1px solid var(--border-soft);border-radius:10px;padding:18px;margin:14px 0 8px;}
+canvas{max-height:360px;}
+.warnlist{list-style:none;padding:0;margin:12px 0 22px;}
+.warnlist li{
+  background:var(--panel);border:1px solid var(--border-soft);border-radius:8px;
+  padding:12px 14px;margin-bottom:8px;font-size:0.88rem;cursor:pointer;
+}
+.warnlist li:hover{border-color:var(--accent);}
+.warnlist li b{color:var(--accent2);}
+.scorecard-row{display:grid;grid-template-columns:1.1fr 1fr 1fr 1fr .9fr;gap:0;border:1px solid var(--border-soft);border-radius:8px;margin-bottom:8px;overflow:hidden;}
+.scorecard-row > div{padding:12px 14px;font-size:0.84rem;border-right:1px solid var(--border-soft);}
+.scorecard-row > div:last-child{border-right:none;}
+.scorecard-row.headrow{background:var(--panel2);font-weight:700;color:var(--head);font-size:0.8rem;text-transform:uppercase;letter-spacing:0.03em;}
+.scorecard-row:not(.headrow){background:var(--panel);}
+.verdict{font-weight:700;text-align:center;}
+.verdict.rhyme{color:var(--red);}
+.verdict.diverge{color:var(--green);}
+.verdict.mixed{color:var(--amber);}
+.twocol{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:16px 0;}
+@media(max-width:760px){.twocol{grid-template-columns:1fr;} .scorecard-row{grid-template-columns:1fr;} .scorecard-row>div{border-right:none;border-bottom:1px solid var(--border-soft);}}
+.case-box{background:var(--panel);border-radius:10px;padding:18px;border-top:4px solid var(--red);}
+.case-box.bear{border-top-color:var(--green);}
+.case-box h3{margin-top:0;}
+.case-box ul{padding-left:18px;font-size:0.88rem;color:var(--text);}
+.case-box li{margin-bottom:8px;}
+footer{color:var(--dim);font-size:0.78rem;margin-top:40px;padding-top:16px;border-top:1px solid var(--border-soft);}
+/* modal */
+.modal-overlay{
+  display:none;position:fixed;inset:0;background:rgba(4,8,16,0.75);z-index:100;
+  align-items:center;justify-content:center;padding:20px;
+}
+.modal-overlay.open{display:flex;}
+.modal{
+  background:var(--panel);border:1px solid var(--border);border-radius:12px;
+  max-width:640px;width:100%;max-height:80vh;overflow-y:auto;padding:24px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+}
+.modal h3{color:var(--head);margin-top:0;}
+.modal .close{
+  float:right;background:none;border:none;color:var(--meta);font-size:1.4rem;cursor:pointer;line-height:1;
+}
+.modal .close:hover{color:var(--text);}
+.modal p{font-size:0.92rem;}
+.modal .src{margin-top:14px;padding-top:10px;border-top:1px solid var(--border-soft);}
+.gap-tag{color:var(--amber);font-size:0.78rem;font-weight:700;}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap" style="padding:0;">
+    <h1>Market Bubbles: 1929 · 2000 · 2008 · 2026</h1>
+    <div class="subtitle">Timelines, stages, and cross-asset behaviour across four episodes — built for a 2-minute skim or an analyst's deep read. Compiled 31 Jul 2026. Every figure sourced; gaps marked, not guessed.</div>
+  </div>
+  <nav class="tabs wrap" style="padding:0 20px;">
+    <button class="tab-btn active" data-tab="overview">Overview</button>
+    <button class="tab-btn" data-tab="e1929">1929</button>
+    <button class="tab-btn" data-tab="e2000">2000</button>
+    <button class="tab-btn" data-tab="e2008">2008</button>
+    <button class="tab-btn" data-tab="e2026">2026</button>
+    <button class="tab-btn" data-tab="compare">Compare &amp; Scorecard</button>
+  </nav>
+</header>
+
+<div class="wrap">
+
+<!-- ================= OVERVIEW ================= -->
+<section id="tab-overview" class="tab-content active">
+
+  <div class="caveat">
+    <b style="color:#e8c99a;">Sample-size warning:</b> this dashboard compares three historical bubbles plus one live episode. Three data points is not a statistical pattern — it's three case studies. Every "this rhymes with X" claim here is a pattern observation, not a law. Treat the 2026 section as evidence to weigh, not a forecast.
+  </div>
+
+  <div class="howto">
+    <b>HOW TO READ THIS DASHBOARD:</b> Each episode tab has the same four parts — a dated timeline, a stage map (displacement → boom → euphoria → distress → panic, borrowed from economist Hyman Minsky and historian Charles Kindleberger), a cross-asset chart (equities vs. gold vs. interest rates vs. credit), and a list of warning signs contemporaries either missed or dismissed. The Compare tab lines all four up side by side, plus a signal scorecard and both the bull and bear case for 2026 — read as arguments, not verdicts.
+  </div>
+
+  <h2 class="section-head">Four episodes at a glance</h2>
+  <div class="grid4">
+    <div class="card" onclick="showTab('e1929')">
+      <div class="range">1927–1932</div>
+      <h4>The Crash of 1929</h4>
+      <div class="stat">−89.2%</div>
+      <p>DJIA, Sept 1929 peak (381.17) to July 1932 trough (41.22). Gold was fixed by law at $20.67/oz throughout — no market correlation is possible for this episode.</p>
+    </div>
+    <div class="card" onclick="showTab('e2000')">
+      <div class="range">1995–2002</div>
+      <h4>The Dot-Com Bubble</h4>
+      <div class="stat">−78%</div>
+      <p>Nasdaq Composite, Mar 2000 peak (5,048.62) to Oct 2002 trough (1,114.11). Gold sat at a 20-year low the same month the bubble peaked.</p>
+    </div>
+    <div class="card" onclick="showTab('e2008')">
+      <div class="range">2003–2009</div>
+      <h4>The Housing &amp; Credit Bubble</h4>
+      <div class="stat">−56.8%</div>
+      <p>S&amp;P 500, Oct 2007 peak (1,565.15) to Mar 2009 trough (676.53). Gold rose for most of the cycle, then sold off hard alongside everything else in Oct–Nov 2008.</p>
+    </div>
+    <div class="card" onclick="showTab('e2026')">
+      <div class="range">2026 — ongoing</div>
+      <h4>AI &amp; the Everything Rally</h4>
+      <div class="stat green">? — open question</div>
+      <p>Shiller CAPE (40.6) above the 1929 and 2008 peaks; gold near record highs alongside record equity valuations. No crash has occurred. See the scorecard, not a prediction.</p>
+    </div>
+  </div>
+
+  <h2 class="section-head">What "correlation to gold, rates, and bonds" actually means here</h2>
+  <p style="font-size:0.9rem;">These four episodes sit under three completely different monetary regimes, and collapsing them into one gold line would mislead more than it informs:</p>
+  <table>
+    <tr><th>Episode</th><th>Monetary regime</th><th>What gold could do</th></tr>
+    <tr><td>1929</td><td>Gold standard (Gold Standard Act, 1900)</td><td>Fixed by law at $20.67/oz until 1933 — no market price exists to correlate. Revalued by statute to $35/oz in Jan 1934.</td></tr>
+    <tr><td>2000</td><td>Fully floating, post-Bretton Woods</td><td>Free-floating; sat near a 20-year low as capital chased equities — an inverse relationship driven by opportunity cost, not crisis.</td></tr>
+    <tr><td>2008</td><td>Fully floating</td><td>Rose for most of the cycle as an inflation/dollar hedge, then sold off sharply in the Oct–Nov 2008 panic as leveraged funds liquidated every liquid asset to raise cash — a "correlations go to 1" liquidity effect, not a reversal of the hedge thesis.</td></tr>
+    <tr><td>2026</td><td>Fully floating</td><td>Near all-time highs (~$4,098/oz) at the same time equities are at record valuations — an "everything rally" pattern, not the classic pre-panic flight-to-gold seen late in 2008.</td></tr>
+  </table>
+
+</section>
+
+<!-- ================= 1929 ================= -->
+<section id="tab-e1929" class="tab-content">
+
+  <h2 class="section-head" style="border-top:none;margin-top:0;">1927–1932: The Terminal Boom and Crash</h2>
+  <div class="howto"><b>HOW TO READ THIS:</b> The Fed cut rates in 1927, partly to help Britain defend its return to the gold standard — the conventional "start" of the blow-off phase, though historians dispute how directly that move caused the 1929 crash. The Dow peaked in September 1929 and didn't reclaim that level for 25 years.</div>
+
+  <h3>Timeline</h3>
+  <table>
+    <tr><th>Date</th><th>Event</th></tr>
+    <tr class="clickable" onclick="openModal('m1927')"><td>Aug 1927</td><td>NY Fed cuts discount rate 4.00% → 3.50% — conventional start of the terminal blow-off phase</td></tr>
+    <tr class="clickable" onclick="openModal('m1929itrust')"><td>Aug–Sep 1929</td><td>Investment-trust IPO boom peaks: &gt;$1bn in new trust shares sold in two months (vs ~$400m all of 1928)</td></tr>
+    <tr class="clickable" onclick="openModal('m1929peak')"><td>Sept 3, 1929</td><td>DJIA closes at cycle peak: <b>381.17</b></td></tr>
+    <tr class="clickable" onclick="openModal('m1929babson')"><td>Sept 5, 1929</td><td>Roger Babson predicts "a crash is coming, and it may be terrific" — the "Babson Break"</td></tr>
+    <tr class="clickable" onclick="openModal('m1929util')"><td>Oct 8–19, 1929</td><td>Massachusetts and New York regulators move against utility holding-company practices — Bierman's candidate for the actual trigger, given utilities' 18% NYSE weight and extreme leverage</td></tr>
+    <tr class="clickable" onclick="openModal('m1929thu')"><td>Oct 24, 1929 — "Black Thursday"</td><td>Record 12.9m-share day; bankers' pool buys blue-chips to stem the slide; Dow closes down only 2.09%</td></tr>
+    <tr class="clickable" onclick="openModal('m1929mon')"><td>Oct 28, 1929 — "Black Monday"</td><td>Dow falls 12.82% to 260.64 — the pool does not reconvene</td></tr>
+    <tr class="clickable" onclick="openModal('m1929tue')"><td>Oct 29, 1929 — "Black Tuesday"</td><td>Record 16.4m shares traded; Dow falls 11.73% to 230.07 — worst two-day % loss in Dow history</td></tr>
+    <tr class="clickable" onclick="openModal('m1930')"><td>Apr 17, 1930</td><td>Bear-market-rally peak: Dow 294.07, before resuming decline — a false recovery</td></tr>
+    <tr class="clickable" onclick="openModal('m1931')"><td>Nov 1930 – Jun 1931</td><td>Two waves of US regional banking panics convert a recession into the Great Depression</td></tr>
+    <tr class="clickable" onclick="openModal('m1932')"><td>Jul 8, 1932</td><td>DJIA closes at <b>41.22</b> — the 20th-century low, −89.2% from peak</td></tr>
+    <tr class="clickable" onclick="openModal('m1934')"><td>Jan 30, 1934</td><td>Gold Reserve Act: gold revalued by statute from $20.67 to $35.00/oz</td></tr>
+  </table>
+
+  <h3>Stages (Minsky/Kindleberger framework)</h3>
+  <div class="stagegrid">
+    <div class="stagecard"><span class="badge disp">Displacement</span><div class="window">1922–1927</div><p>NY Fed's Benjamin Strong shifts to open-market operations; Aug 1927 rate cut eases credit partly to support Britain's gold standard return.</p></div>
+    <div class="stagecard"><span class="badge boom">Boom</span><div class="window">1927–mid 1929</div><p>Real fundamentals genuinely strong — industrial production, freight, factory payrolls all hit records. Dow ~18%/yr compound 1922–29.</p></div>
+    <div class="stagecard"><span class="badge euph">Euphoria</span><div class="window">Mid-1929–Sept 3</div><p>Investment-trust IPOs peak; utility-holding-company pyramiding at its most extreme. Dow closes at cycle high 381.17.</p></div>
+    <div class="stagecard"><span class="badge dist">Distress</span><div class="window">Sept 5–Oct 23, 1929</div><p>Babson Break → Hatry fraud (London) → BoE hikes → Snowden's "orgy of speculation" remark → adverse utility-regulation rulings.</p></div>
+    <div class="stagecard"><span class="badge panic">Panic</span><div class="window">Oct 24–29, 1929</div><p>Black Thursday, Monday, Tuesday. A private bankers' pool intervenes on Thursday; fails to hold by Monday.</p></div>
+    <div class="stagecard"><span class="badge rev">Revulsion</span><div class="window">Nov 1929–Jul 1932</div><p>False Apr 1930 recovery, then bank panics (Nov 1930, Jun 1931) turn a recession into the Depression. Bottom: Jul 1932, −89.2%.</p></div>
+  </div>
+  <p class="meta" style="font-size:0.82rem;">Sample-size caveat: this is one episode. Economic historians (Bierman vs. the popular "speculative orgy" narrative) dispute the causal chain even within this single case.</p>
+
+  <h3>Cross-asset behaviour</h3>
+  <div class="caveat"><b style="color:#e8c99a;">Gold is not a market price here.</b> The US was on the gold standard: gold was fixed at $20.67/oz by law until 1933, revalued to $35.00/oz by the Gold Reserve Act (30 Jan 1934). The chart below shows this as a flat administrative line, not a market signal — don't read anything into its "correlation" with the crash.</div>
+  <div class="chart-box"><canvas id="chart1929"></canvas></div>
+  <div class="howto"><b>HOW TO READ THIS CHART:</b> DJIA (left axis, log scale) shows the boom and the −89% collapse. The NY Fed discount rate rose into the peak (defending against speculation) and gold sat flat by law. Long-term government bond yields barely moved (3.3%–3.8%) through the entire cycle — a sign this was an equity-specific bubble, not a bond-market one. Every labeled point on this chart is a sourced figure from the research file — there is no unsourced interpolation.</div>
+
+  <h3>Warning signs present at the time</h3>
+  <ul class="warnlist">
+    <li onclick="openModal('w1929trust')"><b>Investment-trust (closed-end fund) mania.</b> $1bn+ raised in Aug–Sept 1929 alone vs $400m for all of 1928, often at ~50% premiums to net asset value.</li>
+    <li onclick="openModal('w1929pyramid')"><b>Utility holding-company pyramiding.</b> Layered financing structures left as little as $12,800–$38,400 of investor equity supporting $1,000,000 of underlying assets — effective leverage of 26–78x.</li>
+    <li onclick="openModal('w1929margin')"><b>Margin lending.</b> Brokers' loans exceeded $8.5bn by August 1929 — more than all US currency in circulation. Standard margin requirement: 50% (up to 75% on some stocks).</li>
+    <li onclick="openModal('w1929valuation')"><b>Valuation extremes — two measures, don't blend them.</b> Current-earnings P/E for 45 industrials ran 10–15x (not extreme by Bierman's read); Shiller's CAPE-style measure hit 32.6x in Sept 1929 (extreme by any modern read).</li>
+  </ul>
+
+</section>
+
+<!-- ================= 2000 ================= -->
+<section id="tab-e2000" class="tab-content">
+
+  <h2 class="section-head" style="border-top:none;margin-top:0;">1995–2002: The Dot-Com Bubble</h2>
+  <div class="howto"><b>HOW TO READ THIS:</b> This is the cleanest "IPO mania" precedent of the three historical episodes — the one to hold up against 2026's AI-IPO wave. Watch the first-day pop statistics; they're the sharpest single number in this episode.</div>
+
+  <h3>Timeline</h3>
+  <table>
+    <tr><th>Date</th><th>Event</th></tr>
+    <tr class="clickable" onclick="openModal('m2000netscape')"><td>Aug 9, 1995</td><td>Netscape IPO: priced $28, closes $58.25 (+108% day one) — the symbolic start of the internet-stock era</td></tr>
+    <tr class="clickable" onclick="openModal('m2000greenspan')"><td>Dec 5, 1996</td><td>Greenspan's "irrational exuberance" speech — flagged, no policy action taken</td></tr>
+    <tr class="clickable" onclick="openModal('m2000webvan')"><td>Nov 5, 1999</td><td>Webvan IPO raises $375m, closes +65%, valuing the company &gt;$4.8bn on $395,000 of cumulative revenue</td></tr>
+    <tr class="clickable" onclick="openModal('m2000aol')"><td>Jan 10, 2000</td><td>AOL–Time Warner merger announced (~$165bn) — widely read as the euphoria peak</td></tr>
+    <tr class="clickable" onclick="openModal('m2000peak')"><td>Mar 10, 2000</td><td>Nasdaq Composite closes at its peak: <b>5,048.62</b></td></tr>
+    <tr class="clickable" onclick="openModal('m2000sp500peak')"><td>Mar 24, 2000</td><td>S&amp;P 500 closes at its bear-market-start peak: <b>1,527.46</b></td></tr>
+    <tr class="clickable" onclick="openModal('m2000crash1')"><td>Apr 3 &amp; 14, 2000</td><td>Microsoft antitrust ruling (−8% in a day) and tax-driven selling (−9% in a day, −25% for the week)</td></tr>
+    <tr class="clickable" onclick="openModal('m2000pets')"><td>Nov 9, 2000</td><td>Pets.com ceases operations 9 months after IPO; internet stocks broadly down ~75% from highs</td></tr>
+    <tr class="clickable" onclick="openModal('m2000webvanfail')"><td>Jun–Jul 2001</td><td>Webvan shuts down, having lost &gt;$800m against $771m raised</td></tr>
+    <tr class="clickable" onclick="openModal('m2000scandals')"><td>Dec 2001 – Jul 2002</td><td>Enron, WorldCom, Adelphia accounting scandals destroy remaining institutional trust</td></tr>
+    <tr class="clickable" onclick="openModal('m2000trough')"><td>Oct 9–10, 2002</td><td>Nasdaq bottoms at 1,114.11 (−78%); S&amp;P 500 bottoms at <b>776.76</b> (−49.1% from Mar 2000)</td></tr>
+  </table>
+
+  <h3>Stages</h3>
+  <div class="stagegrid">
+    <div class="stagecard"><span class="badge disp">Displacement</span><div class="window">1993–1995</div><p>Mosaic/web browser commercialization; falling rates; capital-gains relief; the Netscape IPO legitimizes pre-revenue listings.</p></div>
+    <div class="stagecard"><span class="badge boom">Boom</span><div class="window">1995–1998</div><p>Nasdaq crosses 1,000; VC capital pours in; Greenspan flags "irrational exuberance" but takes no action; 1998 LTCM-crisis rate cuts add fresh liquidity.</p></div>
+    <div class="stagecard"><span class="badge euph">Euphoria</span><div class="window">1999–Mar 2000</div><p>IPO first-day pops average 71% (87% for tech); day-trading surges; AOL–Time Warner; Super Bowl ad blitz; "get big fast" burn-rate models.</p></div>
+    <div class="stagecard"><span class="badge dist">Distress</span><div class="window">Mar–Dec 2000</div><p><i>Barron's</i> "Burning Up" warning; MicroStrategy restatement; Microsoft ruling; Fed hikes to 6.5% peak; insider selling accelerates.</p></div>
+    <div class="stagecard"><span class="badge panic">Panic / Revulsion</span><div class="window">2001–Oct 2002</div><p>Cascading failures (Pets.com, Webvan); Fed cuts 6.5%→1.75%; 9/11; Enron/WorldCom/Adelphia scandals. Bottom Oct 2002.</p></div>
+  </div>
+
+  <h3>Cross-asset behaviour</h3>
+  <div class="chart-box"><canvas id="chart2000"></canvas></div>
+  <div class="howto"><b>HOW TO READ THIS CHART:</b> Nasdaq's blow-off and collapse dwarfs every other series. Note gold sat near a 20-year low ($254/oz intra-year low, Jul 1999) almost exactly as the bubble peaked — capital rotated out of the "monetary metal" into speculative growth stocks. The Fed hiked into the peak, then cut aggressively (6.5%→1.75%) once it burst. The bolded peak/trough Nasdaq levels, the year-end/cycle-turn Fed funds and 10-year yield anchor points, and the annual gold averages are sourced (FRED, USGS) — but the monthly points interpolated between those anchors (on all three of Nasdaq, Fed funds, and 10-year yield) are approximate, for visual trend only, and shouldn't be read as precise values for any given month.</div>
+
+  <h3>Warning signs present at the time</h3>
+  <ul class="warnlist">
+    <li onclick="openModal('w2000ipo')"><b>IPO first-day pops.</b> 1999: 476 IPOs, mean first-day return 71.2% (86.7% for tech IPOs specifically); 114 tech IPOs doubled on debut. Compare to a 14.8% average 1990–98.</li>
+    <li onclick="openModal('w2000profitless')"><b>Profitless companies going public.</b> 76% of 1999 IPOs and 81% of 2000 IPOs had negative trailing earnings, vs ~30% in 1990–98.</li>
+    <li onclick="openModal('w2000pricetosales')"><b>Price-to-sales multiples.</b> Median tech-IPO P/S jumped to 26.5x (1999) and 31.7x (2000), from a 1995–98 average of ~3–8x.</li>
+    <li onclick="openModal('w2000dotcom')"><b>Cosmetic renaming and stock splits.</b> Adding ".com" to a company name produced a statistically significant stock-price pop (Cooper, Dimitrov &amp; Rau, <i>Journal of Finance</i>, 2001) — pure signaling, no fundamental change.</li>
+    <li onclick="openModal('w2000insider')"><b>Insider selling.</b> Telecom/tech executives realized very large sums before the crash (Qwest, Global Crossing execs) — figures widely reported but not independently re-verified against SEC filings.</li>
+    <li onclick="openModal('w2000overbuild')"><b>Infrastructure overbuild funded by debt.</b> $500bn+ invested in fiber/telecom capacity after the 1996 Telecom Act, vastly outstripping demand — a direct analogue to today's AI data-center buildout debate.</li>
+  </ul>
+
+</section>
+
+<!-- ================= 2008 ================= -->
+<section id="tab-e2008" class="tab-content">
+
+  <h2 class="section-head" style="border-top:none;margin-top:0;">2003–2009: The Housing &amp; Credit Bubble</h2>
+  <div class="howto"><b>HOW TO READ THIS:</b> This episode has a distinguishing feature versus 1929 and 2000: an 18–24 month "distress" phase (Aug 2006 – Aug 2008) preceded the acute panic. Watch the credit-spread chart, not the equity chart, for the earliest warnings.</div>
+
+  <h3>Timeline</h3>
+  <table>
+    <tr><th>Date</th><th>Event</th></tr>
+    <tr class="clickable" onclick="openModal('m2008fed1')"><td>Jun 25, 2003</td><td>FOMC cuts fed funds target to 1.00% — trough of the post-dot-com easing cycle</td></tr>
+    <tr class="clickable" onclick="openModal('m2008peak')"><td>Jul 2006</td><td>S&amp;P/Case-Shiller 20-city index peaks at 206.52 — the housing-price top</td></tr>
+    <tr class="clickable" onclick="openModal('m2008fed2')"><td>Jun 29, 2006</td><td>FOMC completes hiking cycle at 5.25% (10–0 vote)</td></tr>
+    <tr class="clickable" onclick="openModal('m2008newcentury')"><td>Apr 2, 2007</td><td>New Century Financial (largest subprime lender) files Chapter 11</td></tr>
+    <tr class="clickable" onclick="openModal('m2008bear1')"><td>Jun–Jul 2007</td><td>Two Bear Stearns hedge funds collapse on subprime CDO losses</td></tr>
+    <tr class="clickable" onclick="openModal('m2008bnp')"><td>Aug 9, 2007</td><td>BNP Paribas freezes three funds, citing inability to value subprime assets — often cited as the true start of the crisis</td></tr>
+    <tr class="clickable" onclick="openModal('m2008bear2')"><td>Mar 14–16, 2008</td><td>Bear Stearns rescued; sold to JPMorgan at $2/share, later revised to $10</td></tr>
+    <tr class="clickable" onclick="openModal('m2008fannie')"><td>Sep 7, 2008</td><td>Fannie Mae and Freddie Mac placed into federal conservatorship</td></tr>
+    <tr class="clickable" onclick="openModal('m2008lehman')"><td>Sep 15, 2008</td><td>Lehman Brothers files Chapter 11 — largest bankruptcy in US history</td></tr>
+    <tr class="clickable" onclick="openModal('m2008ted')"><td>Oct 10, 2008</td><td>TED spread hits an all-time high of 457bp (long-run average ~30bp)</td></tr>
+    <tr class="clickable" onclick="openModal('m2008tarp')"><td>Oct 3, 2008</td><td>TARP signed — $700bn authorization</td></tr>
+    <tr class="clickable" onclick="openModal('m2008zirp')"><td>Dec 16, 2008</td><td>FOMC cuts to 0–0.25% — the zero lower bound, for the first time in Fed history</td></tr>
+    <tr class="clickable" onclick="openModal('m2008trough')"><td>Mar 9, 2009</td><td>S&amp;P 500 closes at its trough: <b>676.53</b> (−56.8% from the Oct 2007 peak of 1,565.15)</td></tr>
+  </table>
+
+  <h3>Stages</h3>
+  <div class="stagegrid">
+    <div class="stagecard"><span class="badge disp">Displacement</span><div class="window">2001–2003</div><p>Post-dot-com/9-11 Fed cuts rates 13 times to 1%; a "global pool of money" seeks yield above Treasuries.</p></div>
+    <div class="stagecard"><span class="badge boom">Boom</span><div class="window">2003–2005</div><p>Home prices accelerate; securitization (MBS, then CDOs) scales rapidly; lending standards loosen toward "no-doc"/NINJA loans.</p></div>
+    <div class="stagecard"><span class="badge euph">Euphoria</span><div class="window">2005–mid 2006</div><p>Price-to-income ratios hit 4.6x; homeownership peaks at 69.2%; ~40% of 2006 purchases are investment/vacation properties.</p></div>
+    <div class="stagecard"><span class="badge dist">Distress</span><div class="window">Aug 2006–Aug 2008</div><p>The distinguishing feature of this episode: an 18–24 month distress phase, far longer than 1929 or 2000, including a "false calm" after the Bear rescue.</p></div>
+    <div class="stagecard"><span class="badge panic">Panic</span><div class="window">Sept–Oct 2008</div><p>Compressed into six weeks: Fannie/Freddie → Lehman → AIG → money-market freeze → TARP → TED spread peak.</p></div>
+  </div>
+
+  <h3>Cross-asset behaviour</h3>
+  <div class="caveat"><b style="color:#e8c99a;">Gold figures approximate.</b> Widely reported annual averages (~$360/oz in 2003 rising to ~$836/oz in 2007, spiking above $1,000 in Mar 2008, dipping in the Oct–Nov 2008 deleveraging, closing 2008 near $869) are shown here but were not independently re-verified against LBMA primary data this session — treat as directionally correct, not exact.</div>
+  <div class="chart-box"><canvas id="chart2008"></canvas></div>
+  <div class="howto"><b>HOW TO READ THIS CHART:</b> The TED spread (credit-market stress) is the real early-warning signal here — it started rising in 2007, more than a year before equities cracked. Gold rose through most of the cycle as a hedge, then sold off sharply alongside equities in Oct–Nov 2008 as leveraged funds liquidated everything to raise cash — a liquidity effect, not proof the hedge stopped working. The bolded peak/trough S&amp;P 500 levels and the labeled Fed funds/TED-spread dates are sourced exactly (FRED, Fed press releases, Wikipedia/TED spread); intervening monthly points and all gold figures on this chart are approximate and were <b>not independently verified</b> this session (see the caveat above and the verification-addendum.md file) — read the shape, not the precise values.</div>
+
+  <h3>Warning signs present at the time</h3>
+  <ul class="warnlist">
+    <li onclick="openModal('w2008leverage')"><b>Investment-bank leverage.</b> FCIC: the five major investment banks ran leverage as high as 40:1 by 2007. Lehman: 24:1 (2003) → 31:1 (2007). Bear Stearns: 35.6:1 at end of FY2007.</li>
+    <li onclick="openModal('w2008subprime')"><b>Subprime lending growth &amp; collapsing standards.</b> Subprime share of originations: 5% ($35bn, 1994) → 20% ($600bn, 2006). Progression from "stated income" to "no income, no assets" (NINJA) loans.</li>
+    <li onclick="openModal('w2008rating')"><b>Rating-agency AAA ratings on subprime tranches.</b> FCIC named flawed models, issuer-paid ratings, and a "relentless drive for market share" as core causes.</li>
+    <li onclick="openModal('w2008cds')"><b>CDS notional growth.</b> Credit default swaps let investors make "multiple bets on the same securities"; AIG sold protection without adequate reserves and required &gt;$180bn in government support.</li>
+    <li onclick="openModal('w2008priceincome')"><b>Housing price-to-income ratio.</b> 2.9–3.1x (1980–2001 average) → 4.6x (2006).</li>
+  </ul>
+
+</section>
+
+<!-- ================= 2026 ================= -->
+<section id="tab-e2026" class="tab-content">
+
+  <h2 class="section-head" style="border-top:none;margin-top:0;">2026: Where Current Conditions Stand</h2>
+  <div class="howto"><b>HOW TO READ THIS:</b> Every number below is dated and sourced — this is a snapshot from late July 2026, not a live feed. Gaps are marked "not found via search," not filled with a guess. This section feeds the scorecard and bull/bear cases on the Compare tab.</div>
+
+  <h3>Valuation</h3>
+  <div class="grid4">
+    <div class="card"><h4>Shiller CAPE</h4><div class="stat">40.6</div><p>Jul 30, 2026 (multpl.com). Above the 1929 peak (32.6) and 2008 peak (~27.6); still below the Dec 1999 all-time high (44.2).</p></div>
+    <div class="card"><h4>Buffett Indicator</h4><div class="stat">237.4%</div><p>All-time high, May 2026 (GuruFocus); 234.3% as of Jul 28.</p></div>
+    <div class="card"><h4>S&amp;P 500 Price/Sales</h4><div class="stat">3.66</div><p>Jul 27, 2026 — exceeds multpl.com's own recorded historical maximum (3.35, Dec 2025).</p></div>
+    <div class="card"><h4>S&amp;P 500 trailing P/E</h4><div class="stat" style="color:var(--accent2);">28.6</div><p>Jul 30, 2026 (multpl.com). Forward P/E: <span class="gap-tag">not found via search</span>.</p></div>
+  </div>
+
+  <h3>IPOs &amp; equity issuance</h3>
+  <table>
+    <tr><th>Metric</th><th>Reading</th><th>Source / date</th></tr>
+    <tr><td>2026 YTD IPO proceeds</td><td>$143.8bn (+630% YoY)</td><td>Renaissance Capital, Jul 1, 2026</td></tr>
+    <tr><td>2026 YTD IPO count</td><td>92 (−25.2% YoY)</td><td>Renaissance Capital, Jul 1, 2026 — dollar surge is concentrated, not broad</td></tr>
+    <tr><td>SpaceX IPO</td><td>$85.7bn raised, $1.7–1.77tn valuation</td><td>Motley Fool / CNBC, Jun 2026 — "more than all US IPOs from the prior two years combined" (Renaissance)</td></tr>
+    <tr><td>Cerebras Systems IPO</td><td>Raised price range twice, then +108% on debut</td><td>TechCrunch, ~May 14, 2026</td></tr>
+    <tr><td>Quantinuum IPO</td><td>$14.2bn valuation on $17m trailing revenue (~832x sales)</td><td>Renaissance Capital, Jun 2026</td></tr>
+    <tr><td>SPAC IPOs YTD</td><td>133 deals — most active "sector" by count</td><td>Renaissance Capital IPO Stats</td></tr>
+    <tr><td>Anthropic / OpenAI IPO pipeline</td><td>Anthropic filed confidentially Jun 1 near $1tn valuation, targeting a listing "as soon as October 2026"; OpenAI filed Jun 8–9, may wait to 2027</td><td>CNBC Jul 15, 2026; Mercury News Jun 26, 2026</td></tr>
+    <tr><td>Insider selling, H1 2026</td><td>$77.6bn sold (+20% YoY), 11:1 sell/buy ratio — 2nd-largest 6-month total in 20+ years</td><td>Kobeissi Letter via Daily Hodl, Jul 19, 2026</td></tr>
+  </table>
+
+  <h3>Concentration</h3>
+  <div class="grid4">
+    <div class="card"><h4>TMT share of S&amp;P 500</h4><div class="stat">49%</div><p>~9pp above the 2000 dot-com peak, vs only ~19% in the 2008 crisis (Kobeissi Letter).</p></div>
+    <div class="card"><h4>"Magnificent 7" share</h4><div class="stat">~32.8%</div><p>Of S&amp;P 500 market cap, Jul 30, 2026 (Slickcharts). No clean modern precedent.</p></div>
+    <div class="card"><h4>Nasdaq-100 top-10</h4><div class="stat">45.7%</div><p>Of QQQ assets, Jul 31, 2026 (stockanalysis.com).</p></div>
+    <div class="card"><h4>Breadth: equal- vs cap-weight</h4><div class="stat green">+11.1% vs +9.6%</div><p>H1 2026: equal-weight S&amp;P 500 <i>outperformed</i> cap-weight — breadth improving, not narrowing (Advisor Perspectives).</p></div>
+  </div>
+
+  <h3>Credit &amp; macro backdrop</h3>
+  <table>
+    <tr><th>Metric</th><th>Reading</th><th>Source / date</th></tr>
+    <tr><td>Fed funds rate</td><td>3.50%–3.75%, held Jul 29, 2026 (9–3 vote, 3 dissents favouring a hike)</td><td>federalreserve.gov press release</td></tr>
+    <tr><td>Fed Chair</td><td>Kevin Warsh</td><td>federalreserve.gov Board Members page — confirmed</td></tr>
+    <tr><td>10-year Treasury yield</td><td>4.71% (Jul 23, 2026)</td><td>FRED DGS10</td></tr>
+    <tr><td>Yield curve (10y–2y)</td><td>+0.36 — normal, not inverted</td><td>FRED, Jul 24, 2026</td></tr>
+    <tr><td>High-yield credit spread (OAS)</td><td>2.81% — near cycle lows</td><td>FRED BAMLH0A0HYM2, Jul 27, 2026</td></tr>
+    <tr><td>Gold spot</td><td>$4,097.60/oz</td><td>Kitco, Jul 30, 2026</td></tr>
+    <tr><td>FINRA margin debt</td><td>$1.53tn — record, +51.5% YoY</td><td>Advisor Perspectives/FINRA, Jul 20, 2026 — historically precedes tops by 2–4 months</td></tr>
+  </table>
+
+  <h3>AI capex &amp; a live natural experiment</h3>
+  <p style="font-size:0.9rem;">The week of Jul 29–30, 2026 earnings split sharply: Microsoft +15.5% in one day (~$450bn market-cap gain, the largest one-day gain for any US company on record) on strong Azure/AI numbers, while Meta fell 7.95% (an 11-day losing streak, its first earnings miss in 3 years) as AI data-center lease obligations swelled to $279bn. Oracle's market cap has fallen ~50–58% from its Sept 2025 peak on fears it will need up to $500bn in fresh capital for its AI buildout. Private valuations are moving even faster and with no liquidity event to test them: Anthropic went from $380bn (Feb 2026) to $965bn (May 2026) — nearly tripling in three months.</p>
+  <div class="caveat"><b style="color:#e8c99a;">A realized blow-up, not just a ratio:</b> the "Situational Awareness" AI-focused hedge fund collapsed from $45bn to ~$10bn AUM in one month (late Jul 2026) on concentrated leveraged AI bets, forcing a Citadel-brokered rescue with Goldman/BofA/JPMorgan as prime brokers — financial press dubbed it "Archegos 2.0." (FT, Bloomberg, CNBC, ZeroHedge.)</div>
+
+  <h3>Retail sentiment</h3>
+  <div class="grid4">
+    <div class="card"><h4>AAII bullish sentiment</h4><div class="stat green">29.6%</div><p>Week of Jul 23, 2026 — below the long-term average of 37.6%. Not euphoric.</p></div>
+    <div class="card"><h4>CNN Fear &amp; Greed</h4><div class="stat green">38.9 — "Fear"</div><p>Jul 30, 2026, down from "Greed" (68) a year earlier.</p></div>
+  </div>
+
+  <h3>Forecaster views (dated, Jul 2026)</h3>
+  <table>
+    <tr><th>Voice</th><th>Camp</th><th>Argument</th></tr>
+    <tr><td>Yardeni Research</td><td>Bull</td><td>Frames chip-sector weakness as a buying opportunity — the melt-up is "well supported by earnings"</td></tr>
+    <tr><td>UBS strategists</td><td>Cautious</td><td>Investors shifting focus to whether AI spend is sustainable beyond 2027; recommend diversifying into "picks and shovels"</td></tr>
+    <tr><td>Eugenio Alemán, Raymond James</td><td>Bull-leaning</td><td>"Nobody knows" if it's a bubble; argues bubbles and transformative tech have historically coexisted without one negating the other</td></tr>
+    <tr><td>Joe Halpern, Obsidian</td><td>Cautious</td><td>Direct dot-com parallel: Cisco was world-changing, yet investors who bought at the peak waited two decades to recover</td></tr>
+  </table>
+  <p class="meta" style="font-size:0.82rem;">Not found via search this session: dated 2025–26 commentary from Goldman Sachs, Morgan Stanley, JPMorgan, BofA, Deutsche Bank, Jeremy Grantham, or Robert Shiller. Absence of a citation here is a research gap, not an absence of a view.</p>
+
+</section>
+
+<!-- ================= COMPARE ================= -->
+<section id="tab-compare" class="tab-content">
+
+  <h2 class="section-head" style="border-top:none;margin-top:0;">Stage comparison across episodes</h2>
+  <table>
+    <tr><th>Stage</th><th>1929</th><th>2000</th><th>2008</th><th>2026 (so far)</th></tr>
+    <tr><td><span class="badge disp">Displacement</span></td><td>1922–27: open-market ops, 1927 rate cut</td><td>1993–95: web browser, Telecom Act</td><td>2001–03: post-dot-com/9-11 easing to 1%</td><td class="gap-tag">2022–23: post-ZIRP AI capex cycle begins (GPT-era) — editorial inference, not directly dated in the 2026 research file</td></tr>
+    <tr><td><span class="badge boom">Boom</span></td><td>1927–mid'29: real fundamentals strong, trusts expand</td><td>1995–98: Nasdaq &gt;1,000, VC floods in</td><td>2003–05: home prices accelerate, securitization scales</td><td class="gap-tag">2023–25: AI capex accelerates, mega-cap earnings strong — editorial inference, not directly dated in the 2026 research file</td></tr>
+    <tr><td><span class="badge euph">Euphoria</span></td><td>Mid'29–Sep 3: trust IPO peak, utility pyramiding</td><td>1999–Mar'00: 71% avg IPO pop, AOL-TW merger</td><td>2005–mid'06: price/income 4.6x, 69% homeownership</td><td>2026: CAPE above 1929 &amp; 2008 peaks, SpaceX/Cerebras IPOs, record margin debt</td></tr>
+    <tr><td><span class="badge dist">Distress</span></td><td>Sep 5–Oct 23: Babson Break, utility rulings</td><td>Mar–Dec'00: Barron's warning, Fed hikes to 6.5%</td><td>Aug'06–Aug'08: 18–24mo credit stress before panic</td><td class="gap-tag">Not yet observed — no sustained distress phase confirmed as of Jul 2026</td></tr>
+    <tr><td><span class="badge panic">Panic</span></td><td>Oct 24–29, 1929: Black Thu/Mon/Tue</td><td>2001–Oct'02: cascading failures, scandals</td><td>Sep–Oct'08: Lehman, AIG, TARP in six weeks</td><td class="gap-tag">Not observed. One realized fund blow-up (Jul 2026) but no market-wide panic</td></tr>
+  </table>
+  <p class="meta" style="font-size:0.82rem;">Reading this table as a forecast would be a mistake: 2026 has produced euphoria-consistent signals but has not (yet) produced a distress or panic phase. Absence of the later stages is not evidence they won't occur, nor evidence they will.</p>
+
+  <h2 class="section-head">Signal scorecard — descriptive only, no aggregate score</h2>
+  <p class="meta" style="font-size:0.85rem;">Deliberately no roll-up number here: tallying red/yellow/green into a single "bubble score" would imply a precision the three-episode sample can't support. Read each row on its own.</p>
+
+  <div class="scorecard-row headrow"><div>Signal</div><div>1929</div><div>2000</div><div>2008</div><div>2026 reading</div></div>
+
+  <div class="scorecard-row"><div><b>Valuation (CAPE)</b></div><div>32.6 (peak)</div><div>44.2 (peak, all-time high)</div><div>~27.6 (peak, 2007)</div><div class="verdict rhyme">40.6 — above both the 1929 and 2007 peaks, closing in on the Dec-1999 all-time high (44.2)</div></div>
+  <div class="scorecard-row"><div><b>IPO / issuance mania</b></div><div>Investment-trust boom, $1bn+ in 2 months</div><div>476 IPOs, 71% avg first-day pop</div><div>MBS/CDO issuance surge</div><div class="verdict mixed">Concentrated in mega-deals (SpaceX); IPO count down 25% YoY — narrow, not broad</div></div>
+  <div class="scorecard-row"><div><b>Sector concentration</b></div><div>Utilities ~18% of NYSE value</div><div>Tech-heavy Nasdaq narrows sharply</div><div>Financials-driven, less concentrated</div><div class="verdict rhyme">TMT 49% of S&amp;P 500 — above the 2000 peak</div></div>
+  <div class="scorecard-row"><div><b>Leverage / margin debt</b></div><div>Margin debt $8.5bn, 26–78x utility pyramiding</div><div>N/A — margin debt data not central to this episode's brief</div><div>Investment banks levered 30–40x</div><div class="verdict rhyme">FINRA margin debt record $1.53tn, +51.5% YoY</div></div>
+  <div class="scorecard-row"><div><b>Credit spreads</b></div><div>Call money spiked to 20% (Mar 1929, ~7 months pre-crash)</div><div>Spreads compressed into the peak</div><div>TED spread 457bp at panic peak</div><div class="verdict diverge">HY OAS 2.81% — near cycle lows, complacent (though hyperscaler CDS rising)</div></div>
+  <div class="scorecard-row"><div><b>Yield curve</b></div><div>N/A — gold-standard era, different mechanics</div><div>Inverted by Mar 2000</div><div>Inverted Jul 2006–Jun 2007, ~15–26mo before the Sep–Oct 2008 panic</div><div class="verdict diverge">Normal (+0.36 10y–2y) — not inverted</div></div>
+  <div class="scorecard-row"><div><b>Retail sentiment</b></div><div>~16% of households invested (weakly sourced)</div><div>Day-trading surge, euphoric media coverage</div><div>Homeownership euphoria (69.2% peak)</div><div class="verdict diverge">AAII bullish 29.6% (below average); Fear &amp; Greed in "Fear"</div></div>
+  <div class="scorecard-row"><div><b>Realized stress event</b></div><div>Babson Break, Hatry fraud (pre-crash)</div><div>MicroStrategy restatement (Mar 2000)</div><div>Bear Stearns funds, New Century (2007, ~14mo pre-panic)</div><div class="verdict rhyme">Situational Awareness hedge fund collapse, $45bn→$10bn (Jul 2026)</div></div>
+
+  <h2 class="section-head">The 2026 bull case and bear case</h2>
+  <div class="twocol">
+    <div class="case-box">
+      <h3 style="color:var(--red);">Bear case: this rhymes</h3>
+      <ul>
+        <li><b>Valuation is at a historical extreme.</b> CAPE (40.6) exceeds both the 1929 and 2008 peaks and is closing in on the all-time 1999 high; the Buffett Indicator hit an all-time high in May 2026; S&amp;P 500 Price/Sales exceeds its own recorded historical maximum.</li>
+        <li><b>Concentration is worse than 2000.</b> TMT is 49% of the S&amp;P 500 — nine points above the dot-com peak. Passive flows mechanically concentrate capital into a handful of names.</li>
+        <li><b>Leverage is building fast, off-index.</b> FINRA margin debt hit a third consecutive monthly record in June 2026 (+51.5% YoY) — a metric that has historically preceded market tops by 2–4 months in the 2000, 2007, and 2021 cycles.</li>
+        <li><b>Private markups with no liquidity event.</b> Anthropic's valuation nearly tripled in three months with no public listing to test it — a recognized late-cycle pattern.</li>
+        <li><b>A real blow-up has already happened.</b> The Situational Awareness hedge fund's collapse is the first concrete, leverage-driven, AI-concentrated unwind of this cycle, with major-bank prime-broker exposure echoing Archegos (2021).</li>
+        <li><b>Circular financing is proliferating.</b> Nvidia backstopping its own customers' data-center debt, Google guaranteeing a competitor-adjacent project — arrangements that inflate reported demand without new end-customer revenue.</li>
+      </ul>
+    </div>
+    <div class="case-box bear">
+      <h3 style="color:var(--green);">Bull case: this diverges</h3>
+      <ul>
+        <li><b>No euphoria at the retail level.</b> AAII bullish sentiment sits below its long-term average and CNN's Fear &amp; Greed Index reads "Fear," down sharply from "Greed" a year ago — the opposite of the blow-off-top psychology seen in 1929 and 2000.</li>
+        <li><b>Breadth is improving, not narrowing.</b> The equal-weight S&amp;P 500 outperformed the cap-weighted index through H1 2026 — a genuine broadening, unlike the narrowing that historically preceded the 2000 top.</li>
+        <li><b>The yield curve is normal.</b> None of the three historical bubbles popped with a normal curve; all three saw inversion well before their crashes.</li>
+        <li><b>The market is discriminating, not indiscriminate.</b> Microsoft and Alphabet are rewarded for monetizing AI capex; Meta and Oracle are punished for capex that isn't yet paying off — a selectivity absent from a classic undiscriminating blow-off top.</li>
+        <li><b>Today's rates are higher, not lower.</b> The 10-year sits near 4.7%, well above the ~1% environment that historically justifies stretched multiples — today's valuations are stretched despite higher discount rates, a different mechanism from 2000's low-rate-driven multiple expansion.</li>
+        <li><b>Credible bull and neutral voices argue this capex is real.</b> Unlike 1999–2000's largely pre-revenue speculation, several analysts (Yardeni, UBS, T. Rowe Price, Raymond James) tie current AI spend to identifiable, monetizing business use.</li>
+      </ul>
+    </div>
+  </div>
+  <p class="meta" style="font-size:0.85rem;margin-top:6px;">Both cases draw on the same dataset in the 2026 tab above. Neither is a prediction — read them as the strongest good-faith version of each argument, then weigh the evidence yourself.</p>
+
+  <footer>
+    Sources: Federal Reserve History · Federal Reserve press releases (federalreserve.gov) · FRED / NBER Macrohistory Database · NBER Business Cycle Dating Committee · Harold Bierman Jr. (EH.Net) · FCIC Report (2011) · S&amp;P/Case-Shiller · Yardeni Research · Jay R. Ritter IPO Data (Univ. of Florida) · USGS Mineral Commodity Summaries · Renaissance Capital IPO Stats · Advisor Perspectives · GuruFocus · multpl.com · Kitco · Kobeissi Letter · Slickcharts · stockanalysis.com · contemporary press (Reuters, Bloomberg, CNBC, FT, NYT, WSJ). Full citations in the workstation's Resources folder (1929-research.md, 2000-research.md, 2008-research.md, 2026-conditions.md, verification-addendum.md). Compiled 31 Jul 2026 — not a live feed; figures are dated snapshots.
+  </footer>
+
+</section>
+
+</div>
+
+<!-- ===== MODAL ===== -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <button class="close" onclick="closeModal()">&times;</button>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+// ---------- Tab switching ----------
+function showTab(name){
+  document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el=>el.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  document.querySelector('.tab-btn[data-tab="'+name+'"]').classList.add('active');
+  window.scrollTo({top:0,behavior:'instant'});
+}
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>showTab(btn.dataset.tab));
+});
+
+// ---------- Modal content ----------
+const MODALS = {
+  m1927:{t:"NY Fed cuts discount rate, Aug 1927",b:"The New York Fed cut its discount rate from 4.00% to 3.50% in August 1927 — partly to ease pressure on Britain's return to the gold standard. This is the conventional 'start' of the terminal blow-off phase, though Bierman's EH.Net analysis argues Fed policy 'cannot be directly identified with the October crash in an important way' — the causal chain is contested among economic historians, not consensus.",s:"Source: FRED/NBER Macrohistory series M13009USM156NNBR; Federal Reserve History."},
+  m1929itrust:{t:"Investment-trust IPO boom peaks",b:"Investment trusts (closed-end funds) raised over $1 billion in Aug–Sept 1929 alone, versus ~$400 million for all of 1928. Many sold at ~50% premiums to net asset value. The Goldman Sachs Trading Corporation is the canonical example of extreme leverage-on-leverage — its common stock fell from $104/share to under $3 by 1933.",s:"Source: Harold Bierman Jr., EH.Net Encyclopedia; DeLong & Schleifer (1991)."},
+  m1929peak:{t:"DJIA closes at 381.17 — Sept 3, 1929",b:"The Dow Jones Industrial Average closed at its cycle peak of 381.17, having risen sixfold from 63 in August 1921. The index would not close above this level again until November 23, 1954 — 25 years later.",s:"Source: Federal Reserve History, 'Stock Market Crash of 1929.'"},
+  m1929babson:{t:"The Babson Break",b:"Economist Roger Babson predicted 'sooner or later a crash is coming, and it may be terrific,' triggering a roughly 10% pullback by month-end — one of the first widely-noted cracks in market confidence, though sentiment stayed broadly euphoric for weeks afterward.",s:"Source: Wikipedia, 'Wall Street Crash of 1929,' citing Galbraith, The Great Crash 1929."},
+  m1929util:{t:"Utility-regulation shock",b:"Massachusetts and New York regulators moved against utility holding-company stock splits and dividend policies in mid-October 1929. Given utilities' roughly 18% weight in NYSE value and extreme pyramided leverage, economic historian Harold Bierman identifies this — not 'speculation' broadly — as the specific proximate trigger for the sell-off, a genuine alternative to the popular narrative.",s:"Source: Bierman, EH.Net Encyclopedia."},
+  m1929thu:{t:"Black Thursday — Oct 24, 1929",b:"A record 12,894,650 shares traded. The Dow opened down roughly 11% intraday but recovered most of the loss after a bankers' pool (Lamont, Wiggin, Mitchell, executed via Richard Whitney) bought blue-chip stocks above the prevailing market price — a private lender-of-last-resort action. The index closed down just 2.09%.",s:"Source: Federal Reserve History; Bierman, EH.Net."},
+  m1929mon:{t:"Black Monday — Oct 28, 1929",b:"The Dow fell 38.33 points (−12.82%) to close at 260.64. The bankers' pool that had stabilized Thursday's session did not reconvene.",s:"Source: Wikipedia, 'Wall Street Crash of 1929,' citing Financial Post."},
+  m1929tue:{t:"Black Tuesday — Oct 29, 1929",b:"A record 16,410,030 shares traded. The Dow fell 30.57 points (−11.73%) to close at 230.07. The two-day loss (Oct 28–29) of −23.05% remains among the worst two-day percentage declines in Dow history.",s:"Source: Wikipedia; The Balance; contemporary NYT reporting (Oct 30, 1929)."},
+  m1930:{t:"The false recovery — Apr 17, 1930",b:"The Dow closed at 294.07 in a secondary bear-market rally, misleading many contemporaries into believing the worst was over, before resuming its decline toward the 1932 trough.",s:"Source: Wikipedia, 'Wall Street Crash of 1929.'"},
+  m1931:{t:"Banking panics convert recession into Depression",b:"Two waves of US regional bank panics (Nov 1930, centered on Caldwell & Co. and the Bank of United States failure; June 1931, centered on Chicago real-estate exposure) are identified by Federal Reserve historians — drawing on Friedman & Schwartz — as the mechanism that converted what would otherwise have been a 'typical' recession into the Great Depression, via a roughly 30% contraction in the money supply.",s:"Source: Federal Reserve History, 'Banking Panics of 1930–31' (Gary Richardson)."},
+  m1932:{t:"The bottom — Jul 8, 1932",b:"The DJIA closed at 41.22 — the 20th-century low, a decline of 89.2% from the September 1929 peak. The NBER dates the trough of the underlying contraction to March 1933.",s:"Source: Federal Reserve History; NBER Business Cycle Dating Committee."},
+  m1934:{t:"Gold Reserve Act — Jan 30, 1934",b:"Ownership of all US monetary gold was transferred to the Treasury, and gold was revalued by statute from $20.67/oz to $35.00/oz — cutting the dollar's gold value to 59% of its prior level. This followed Executive Order 6102 (Apr 1933), which restricted private gold ownership. Neither event was a market-priced move — both were administrative/legal actions.",s:"Source: Federal Reserve History, 'Gold Reserve Act of 1934.'"},
+  m2000netscape:{t:"Netscape IPO — Aug 9, 1995",b:"Priced at $28 (raised last-minute from $14), Netscape's stock hit an intraday high of $75 and closed at $58.25 — a 108% first-day gain that valued the 16-month-old, pre-profit company at $2.9 billion. Widely cited as the moment that legitimized pre-revenue internet listings.",s:"Source: Wikipedia, 'Netscape.'"},
+  m2000greenspan:{t:"'Irrational exuberance' — Dec 5, 1996",b:"Fed Chair Alan Greenspan questioned in a speech whether 'irrational exuberance' had unduly escalated asset values. Tokyo's market fell 3% the same day on the remark, but the Fed took no policy action, and the US bull market continued for over three more years.",s:"Source: Federal Reserve speech archive (federalreserve.gov)."},
+  m2000webvan:{t:"Webvan IPO — Nov 5, 1999",b:"The online grocery delivery company raised $375 million and closed 65% above its offer price, valuing it at over $4.8 billion against cumulative revenue of just $395,000. It would file for bankruptcy under 20 months later.",s:"Source: Wikipedia, 'Webvan,' citing contemporary press."},
+  m2000aol:{t:"AOL–Time Warner merger — Jan 10, 2000",b:"Announced at roughly $165 billion (rising toward $350bn including assumed debt by some measures), the largest merger to date at the time. Widely read in retrospect as the emblematic marker of the euphoria peak — an 'old media' giant effectively acquired by a dial-up internet company.",s:"Source: Wikipedia, 'Dot-com bubble.'"},
+  m2000peak:{t:"Nasdaq Composite peaks — Mar 10, 2000",b:"Closing high of 5,048.62 (intraday high 5,132.52 the same session). The index would not reclose above 5,000 again until 2015.",s:"Source: Wikipedia, 'Nasdaq Composite,' citing Nasdaq Inc./WSJ Market Data."},
+  m2000sp500peak:{t:"S&P 500 bear-market peak — Mar 24, 2000",b:"The S&P 500 closed at 1,527.46, the level from which S&P Dow Jones Indices dates the start of the subsequent bear market, which ran to 776.76 on October 9, 2002 — a 49.1% decline over 929 days.",s:"Source: Yardeni Research, 'Stock Market Historical Tables,' citing Standard & Poor's Corporation."},
+  m2000crash1:{t:"April 2000 crashes",b:"On April 3, Judge Jackson's conclusions of law in US v. Microsoft (finding monopolization) sent the Nasdaq down 8% (−350 points) in a day. On April 14, tax-related selling ahead of the April 15 deadline drove a 9% single-day drop and a 25% weekly decline.",s:"Source: Wikipedia, 'Dot-com bubble.'"},
+  m2000pets:{t:"Pets.com collapses — Nov 9, 2000",b:"The company ceased operations just 9 months after its February 2000 IPO. By this point most internet stocks were down roughly 75% from their highs, an estimated $1.755 trillion of market value erased.",s:"Source: Wikipedia, 'Dot-com bubble.'"},
+  m2000webvanfail:{t:"Webvan shuts down — Jun/Jul 2001",b:"Filed for Chapter 11 (reported July 9, 2001), laying off roughly 2,000 employees, having lost over $800 million against $396 million of VC funding plus its $375 million IPO.",s:"Source: Wikipedia, 'Webvan,' citing contemporaneous CNN/SF Chronicle/NYT reporting."},
+  m2000scandals:{t:"Accounting scandals",b:"Enron's bankruptcy (filed Dec 2, 2001), WorldCom's accounting fraud (revealed Jun 2002, bankruptcy Jul 2002), and the Adelphia Communications scandal (Jul 2002) collectively destroyed remaining institutional trust in corporate reporting during the bust's final leg.",s:"Source: Wikipedia, 'Dot-com bubble.'"},
+  m2000trough:{t:"The bottom — Oct 9–10, 2002",b:"Nasdaq Composite closed at 1,114.11 on Oct 9 (intraday low 1,108.49 on Oct 10) — down roughly 78% from its March 2000 peak. The S&P 500 bottomed the same week at 776.76, down 49.1% from its Mar 24, 2000 peak.",s:"Source: Wikipedia, 'Nasdaq Composite'; Yardeni Research."},
+  m2008fed1:{t:"Fed cuts to 1.00% — Jun 25, 2003",b:"The FOMC's 13th and final cut of the post-dot-com easing cycle, taking the fed funds target to 1.00% (vote 11–1, Parry dissenting in favor of a 50bp cut). Cheap credit combined with an estimated $70 trillion global pool of fixed-income savings seeking yield above Treasuries to fuel the credit-driven housing boom.",s:"Source: FRED FEDFUNDS; Wikipedia, 'History of Federal Open Market Committee actions.'"},
+  m2008peak:{t:"Case-Shiller 20-city index peaks — Jul 2006",b:"The S&P/Case-Shiller 20-city composite (Jan 2000=100) reached its all-time high of 206.52. By Q1 2006, the broader national index (1890=100) had already peaked at 198.01.",s:"Source: Wikipedia, 'Case–Shiller index,' citing Shiller's own dataset."},
+  m2008fed2:{t:"Fed completes hiking cycle — Jun 29, 2006",b:"After 17 consecutive 25bp hikes since June 2004, the FOMC raised the target to 5.25% (vote 10–0), holding at that level through mid-2007 as the credit crisis began to build beneath the surface.",s:"Source: FRED FEDFUNDS."},
+  m2008newcentury:{t:"New Century Financial files Chapter 11 — Apr 2, 2007",b:"The largest subprime mortgage lender filed for bankruptcy after its stock fell 84% amid a DOJ investigation, with liabilities exceeding $100 million — one of the earliest visible cracks in the subprime market.",s:"Source: Wikipedia, '2000s United States housing bubble.'"},
+  m2008bear1:{t:"Bear Stearns hedge funds collapse — Jun–Jul 2007",b:"Two Bear Stearns hedge funds (High-Grade Structured Credit Fund and its Enhanced Leveraged sibling) collapsed on subprime CDO losses. Bear pledged up to $3.2bn (Jun 22) to bail out one fund; both were disclosed as near-worthless the week of Jul 16, 2007.",s:"Source: Wikipedia, 'Bear Stearns,' citing contemporary NYT/Bloomberg/Reuters reporting."},
+  m2008bnp:{t:"BNP Paribas freezes funds — Aug 9, 2007",b:"BNP Paribas froze three funds, citing an inability to value subprime-exposed assets. The ECB injected €96.8bn in response. This date is often cited as the true start of the acute credit crisis, well over a year before the September 2008 panic.",s:"Source: Wikipedia, '2000s United States housing bubble.'"},
+  m2008bear2:{t:"Bear Stearns rescued — Mar 14–16, 2008",b:"The NY Fed agreed emergency financing on Mar 14; the deal was restructured into the Fed-backed Maiden Lane LLC ($29bn Fed loan + $1bn JPMorgan subordinated loan) buying $30bn of Bear's assets. Bear was sold to JPMorgan Chase, initially at $2/share (Mar 17), later revised to $10/share (Mar 24, shareholder-approved May 29).",s:"Source: Wikipedia, 'Bear Stearns.'"},
+  m2008fannie:{t:"Fannie Mae and Freddie Mac conservatorship — Sep 7, 2008",b:"The two government-sponsored mortgage enterprises were placed into federal conservatorship as their capital positions deteriorated under mounting mortgage losses.",s:"Source: FCIC Report (2011); Wikipedia."},
+  m2008lehman:{t:"Lehman Brothers bankruptcy — Sep 15, 2008",b:"The largest bankruptcy in US history (over $600bn in assets). The Dow fell 4.4% the same day — then the largest single-day point drop since 9/11.",s:"Source: Wikipedia, 'Bankruptcy of Lehman Brothers.'"},
+  m2008ted:{t:"TED spread hits an all-time high — Oct 10, 2008",b:"The TED spread (3-month LIBOR minus 3-month T-bill), whose long-run average is roughly 30bp, peaked at 457bp — a direct measure of interbank lending fear that broke the prior record set in the 1987 crash.",s:"Source: Wikipedia, 'TED spread,' citing Financial Times/Bloomberg."},
+  m2008tarp:{t:"TARP signed — Oct 3, 2008",b:"The Emergency Economic Stabilization Act created the Troubled Asset Relief Program with a $700bn authorization to purchase distressed assets and inject capital into banks.",s:"Source: Wikipedia, 'Troubled Asset Relief Program.'"},
+  m2008zirp:{t:"Fed hits the zero lower bound — Dec 16, 2008",b:"The FOMC cut the target range to 0–0.25% — the first time in Federal Reserve history rates hit effectively zero, closing out a round trip from 1% (2003) to 5.25% (2006) back to zero within five and a half years.",s:"Source: Federal Reserve press release, federalreserve.gov (fetched directly)."},
+  m2008trough:{t:"S&P 500 bottoms — Mar 9, 2009",b:"The index closed at 676.53, down 56.8% from its October 9, 2007 peak of 1,565.15, over a 517-day bear market. (This corrects a commonly repeated but imprecise figure of 666.79 sometimes cited for this date.)",s:"Source: Yardeni Research, 'Stock Market Historical Tables,' citing Standard & Poor's Corporation."},
+  w1929trust:{t:"Investment-trust mania",b:"Investment trusts (closed-end funds) sold over $1 billion of new shares in Aug–Sept 1929 alone, versus $400 million for all of 1928 — often at roughly 50% premiums to net asset value, per DeLong & Schleifer (1991), who conclude the broader market was priced at least 30% above fundamentals by late summer 1929 on this evidence (though their sample was small and non-random).",s:"Source: Bierman, EH.Net; DeLong & Schleifer (1991)."},
+  w1929pyramid:{t:"Utility holding-company pyramiding",b:"A worked example from Bierman's research: a $1,000,000 utility asset financed through four layered entities (operating utility → holding co → second holding co → investment trust → margin investor), each capitalized at ~40% equity, could leave as little as $12,800–$38,400 of investor equity supporting the full $1,000,000 asset — effective leverage of roughly 26–78x.",s:"Source: Harold Bierman Jr., EH.Net Encyclopedia."},
+  w1929margin:{t:"Margin lending growth",b:"Brokers' loans (margin debt) exceeded $8.5 billion by August 1929 — more than the total currency circulating in the US at the time. Standard margin requirements were 50% of stock price (up to 75% on selected stocks), cut to 25% after the crash.",s:"Source: Wikipedia, citing Financial Times (Jul 19, 2008); Bierman, EH.Net."},
+  w1929valuation:{t:"Two valuation measures, not one",b:"Bierman's current-earnings P/E for 45 industrial stocks ran roughly 10–15x through the cycle — not historically extreme by his read. Shiller's CAPE-style (cyclically-adjusted) measure hit 32.6x in September 1929 — a different methodology (smoothed long-run earnings vs. current earnings, broad composite vs. 45 industrials) and should never be blended with Bierman's figure as if they measure the same thing.",s:"Source: Bierman, EH.Net; Shiller, Irrational Exuberance, 2nd ed."},
+  w2000ipo:{t:"IPO first-day pops",b:"In 1999, 476 US IPOs priced with a mean first-day return of 71.2% (86.7% for the 370 tech IPOs specifically) — versus a 1990–98 average of 14.8%. 114 of 1999's tech IPOs doubled on their first day of trading alone.",s:"Source: Jay R. Ritter, University of Florida, IPO Data (Tables 1, 4h, 5)."},
+  w2000profitless:{t:"Profitless companies going public",b:"76% of 1999 IPOs and 81% of 2000 IPOs had negative trailing earnings at the time of listing, versus roughly 30% in 1990–98 and 19% in the 1980s.",s:"Source: Jay R. Ritter, University of Florida, IPO Data (Table 9)."},
+  w2000pricetosales:{t:"Price-to-sales multiples",b:"Median tech-IPO price-to-sales ratio (offer-price basis) rose to 26.5x in 1999 and 31.7x in 2000 — roughly 5–8x the 1995–98 average of ~3–8x. On a first-close basis the multiples were even higher: 43.0x and 49.5x respectively.",s:"Source: Jay R. Ritter, University of Florida, IPO Data (Table 4a)."},
+  w2000dotcom:{t:"Cosmetic renaming and stock splits",b:"An event-study by Cooper, Dimitrov & Rau ('A Rose.com by Any Other Name,' Journal of Finance, 2001) found a statistically significant average abnormal stock-price return around announcements that a company was adding '.com' to its name — with no underlying change to the business. Frequent stock splits (e.g., Qualcomm's 4-for-1 in Dec 1999) were used similarly as a promotional signal.",s:"Source: Cooper, Dimitrov & Rau, Journal of Finance, 2001."},
+  w2000insider:{t:"Insider selling ahead of the crash",b:"Widely reported (though not independently re-verified against SEC Form 4 filings): Philip Anschutz (Qwest) realized roughly $1.9bn, Gary Winnick (Global Crossing) sold roughly $748m, and Joseph Nacchio (Qwest CEO) realized roughly $248m in stock sales before their companies' subsequent collapses.",s:"Source: Wikipedia, 'Dot-com bubble,' citing contemporary WSJ/Forbes reporting — flagged as not independently re-verified."},
+  w2000overbuild:{t:"Telecom/fiber overbuild",b:"In the five years following the 1996 Telecommunications Act, telecom companies invested more than $500 billion, mostly debt-financed, into fiber, switches, and wireless capacity that vastly outstripped actual demand growth — setting up a wave of telecom bankruptcies (WorldCom, Global Crossing, NorthPoint) once financing dried up in 2001–02. Bondholders recovered just over 20% on average.",s:"Source: Wikipedia, 'Dot-com bubble.'"},
+  w2008leverage:{t:"Investment-bank leverage",b:"The FCIC found that as of 2007, leverage ratios at the five major investment banks reached as high as 40:1. Lehman Brothers' leverage rose from roughly 24:1 (2003) to 31:1 (2007), holding $680bn in assets on just $22.5bn of firm capital by 2008. Bear Stearns carried a 35.6:1 ratio at the end of fiscal 2007 ($11.1bn equity supporting $395bn in assets).",s:"Source: Financial Crisis Inquiry Commission Report (2011)."},
+  w2008subprime:{t:"Subprime lending growth and collapsing standards",b:"Subprime mortgages grew from roughly 5% of originations (~$35bn) in 1994 to roughly 20% of originations (~$600bn) in 2006. Lending standards progressed from 'stated income' to 'no income, verified assets' to 'no income, no assets' (NINJA) loans; 40% of 2007 subprime loans used automated underwriting with no human review.",s:"Source: FCIC Report (2011), via Wikipedia, 'Subprime mortgage crisis.'"},
+  w2008rating:{t:"Rating-agency failure",b:"The FCIC's own conclusions named 'the flawed computer models, the pressure from financial firms that paid for the ratings, the relentless drive for market share' as core causes of the credit rating agencies' failure to accurately rate subprime mortgage tranches, most of which received AAA ratings before collapsing in value.",s:"Source: Financial Crisis Inquiry Commission Report (2011), Conclusion #9."},
+  w2008cds:{t:"Credit default swap growth",b:"The FCIC found CDS were 'essential to the creation of synthetic CDOs' and amplified losses by letting investors place 'multiple bets on the same securities.' AIG sold CDS protection without the capital reserves that would normally back an insurance product, and required over $180bn in government support as a result.",s:"Source: Financial Crisis Inquiry Commission Report (2011), Conclusion #8."},
+  w2008priceincome:{t:"Housing price-to-income ratio",b:"The ratio of median home price to median household income rose from a 1980–2001 average of 2.9–3.1x to 4.0x by 2004 and 4.6x by 2006 — a rapid affordability deterioration that coincided with looser lending standards making the higher prices financeable.",s:"Source: Wikipedia, 'Subprime mortgage crisis,' citing BusinessWeek analysis of Census/NAR data."}
+};
+function openModal(key){
+  const m = MODALS[key];
+  if(!m) return;
+  document.getElementById('modalBody').innerHTML =
+    '<h3>'+m.t+'</h3><p>'+m.b+'</p><p class="src">'+m.s+'</p>';
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal(){
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
+
+// ---------- Charts ----------
+Chart.defaults.color = '#94a3b8';
+Chart.defaults.borderColor = '#243044';
+Chart.defaults.font.family = "-apple-system,Segoe UI,Roboto,sans-serif";
+
+const commonOpts = {
+  responsive:true,
+  interaction:{mode:'index',intersect:false},
+  plugins:{
+    legend:{labels:{color:'#e2e8f0',usePointStyle:true,boxWidth:8,font:{size:11}}},
+    tooltip:{backgroundColor:'#0f1830',borderColor:'#334155',borderWidth:1,titleColor:'#e2e8f0',bodyColor:'#cbd5e1'}
+  },
+  scales:{}
+};
+
+// ---- 1929 chart: DJIA (log) vs discount rate vs gold(flat) vs bond yield ----
+new Chart(document.getElementById('chart1929'), {
+  type:'line',
+  data:{
+    labels:['1921','1927 (pre-cut)','1927 (post-cut)','1928','1929 Sep (peak)','1929 Oct 28','1929 Oct 29','1929 Nov 13','1930 Apr (false rcvy)','1932 Jul (trough)'],
+    datasets:[
+      {label:'DJIA',data:[63,177.6,177.6,245.6,381.17,260.64,230.07,198.60,294.07,41.22],borderColor:'#ef4444',backgroundColor:'transparent',yAxisID:'y',tension:0.15,pointRadius:3},
+      {label:'NY Fed discount rate (%)',data:[null,4.00,3.50,3.50,6.00,null,null,null,null,null],borderColor:'#f59e0b',backgroundColor:'transparent',yAxisID:'y1',tension:0.15,pointRadius:3,borderDash:[4,3]},
+      {label:'Long-term govt bond yield (%)',data:[null,3.34,3.34,null,3.60,null,null,null,3.29,3.76],borderColor:'#7eb8d4',backgroundColor:'transparent',yAxisID:'y1',tension:0.15,pointRadius:3},
+      {label:'Gold ($/oz — fixed by law, not a market price)',data:[20.67,20.67,20.67,20.67,20.67,20.67,20.67,20.67,20.67,20.67],borderColor:'#64748b',backgroundColor:'transparent',yAxisID:'y2',tension:0,pointRadius:0,borderDash:[2,2]}
+    ]
+  },
+  options:{...commonOpts,
+    scales:{
+      y:{type:'logarithmic',position:'left',title:{display:true,text:'DJIA (log scale)',color:'#94a3b8'},grid:{color:'#243044'}},
+      y1:{position:'right',title:{display:true,text:'Rate (%)',color:'#94a3b8'},grid:{drawOnChartArea:false},min:0,max:8},
+      y2:{display:false,min:0,max:40}
+    }
+  }
+});
+
+// ---- 2000 chart: Nasdaq vs Fed funds vs 10Y vs gold ----
+new Chart(document.getElementById('chart2000'), {
+  type:'line',
+  data:{
+    labels:['1998 Dec','1999 Apr','1999 Dec','2000 Jan','2000 Mar 10 (peak)','2000 Dec','2001 Dec','2002 Sep','2002 Oct (trough)'],
+    datasets:[
+      {label:'Nasdaq Composite',data:[2192,2543,4069,3940,5048.62,2470,1950,1172,1114.11],borderColor:'#ef4444',backgroundColor:'transparent',yAxisID:'y',tension:0.15,pointRadius:3},
+      {label:'Fed funds rate (%)',data:[4.68,4.74,5.30,5.45,5.85,6.40,1.82,1.75,1.25],borderColor:'#f59e0b',backgroundColor:'transparent',yAxisID:'y1',tension:0.15,pointRadius:3,borderDash:[4,3]},
+      {label:'10-year Treasury yield (%)',data:[4.65,5.18,6.28,6.66,6.20,5.24,5.09,3.87,3.94],borderColor:'#7eb8d4',backgroundColor:'transparent',yAxisID:'y1',tension:0.15,pointRadius:3},
+      {label:'Gold ($/oz, annual avg)',data:[295,280,280,280,280,280,272,305,305],borderColor:'#8db4ce',backgroundColor:'transparent',yAxisID:'y2',tension:0.15,pointRadius:2,borderDash:[2,2]}
+    ]
+  },
+  options:{...commonOpts,
+    scales:{
+      y:{type:'logarithmic',position:'left',title:{display:true,text:'Nasdaq Composite (log scale)',color:'#94a3b8'},grid:{color:'#243044'}},
+      y1:{position:'right',title:{display:true,text:'Rate (%)',color:'#94a3b8'},grid:{drawOnChartArea:false},min:0,max:8},
+      y2:{display:false,min:200,max:400}
+    }
+  }
+});
+
+// ---- 2008 chart: S&P500 vs Fed funds vs TED spread vs gold(approx) ----
+new Chart(document.getElementById('chart2008'), {
+  type:'line',
+  data:{
+    labels:['2003 Jun','2005','2006 Jun (peak rate)','2007 Aug (BNP)','2007 Oct 9 (S&P peak)','2008 Mar (Bear)','2008 Sep 15–17 (Lehman → TED >300bp)','2008 Oct 10 (TED peak)','2008 Dec (ZIRP)','2009 Mar (trough)'],
+    datasets:[
+      {label:'S&P 500',data:[985,1207,1270,1454,1565.15,1288,1192,910,890,676.53],borderColor:'#ef4444',backgroundColor:'transparent',yAxisID:'y',tension:0.15,pointRadius:3},
+      {label:'Fed funds rate (%)',data:[1.00,3.00,5.25,5.25,4.25,2.25,2.00,1.00,0.25,0.25],borderColor:'#f59e0b',backgroundColor:'transparent',yAxisID:'y1',tension:0.15,pointRadius:3,borderDash:[4,3]},
+      {label:'TED spread (bp)',data:[35,40,35,240,180,210,300,457,140,100],borderColor:'#a78bfa',backgroundColor:'transparent',yAxisID:'y2',tension:0.15,pointRadius:3},
+      {label:'Gold ($/oz, approx. — not independently verified)',data:[360,450,600,700,836,1000,830,750,869,900],borderColor:'#8db4ce',backgroundColor:'transparent',yAxisID:'y3',tension:0.15,pointRadius:2,borderDash:[2,2]}
+    ]
+  },
+  options:{...commonOpts,
+    scales:{
+      y:{type:'linear',position:'left',title:{display:true,text:'S&P 500',color:'#94a3b8'},grid:{color:'#243044'}},
+      y1:{position:'right',title:{display:true,text:'Fed funds (%)',color:'#94a3b8'},grid:{drawOnChartArea:false},min:0,max:6},
+      y2:{display:false,min:0,max:500},
+      y3:{display:false,min:0,max:1200}
+    }
+  }
+});
+</script>
+</body>
+</html>
