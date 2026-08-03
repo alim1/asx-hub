@@ -110,6 +110,13 @@ select.pwsel:focus{outline:none;border-color:var(--accent)}
   transition:border-color .12s,background .12s}
 .pw-node:hover{border-color:var(--accent)}
 .pw-node.root{border-color:var(--accent);background:var(--panel2);font-weight:600}
+.pw-node.lit{border-color:var(--accent);background:var(--panel2)}
+.pw-node.dimmed{opacity:.28}
+.pw-areahead{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--meta);
+  font-weight:700;margin:14px 0 6px;padding-bottom:3px;border-bottom:1px solid var(--line)}
+.pw-col > .pw-areahead:first-of-type{margin-top:0}
+.pw-allnote{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);
+  border-radius:8px;padding:12px 15px;margin:0 0 16px;font-size:13.5px;color:var(--text)}
 .pw-node.first{border-color:#60a5fa}
 .pw-node.first .pwt{color:#60a5fa}
 .pw-node .pwt{display:block;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;
@@ -178,7 +185,7 @@ select.pwsel:focus{outline:none;border-color:var(--accent)}
       <p style="color:var(--meta)">The three guides are different editions. Year 9 and Year 10 are 2027 guides, the senior guide is 2026-27. A Year 9 student in 2027 reaches Year 11 in 2029, so the senior offering may change before they get there. Treat the far right column as indicative.</p>
     </div>
     <div class="pwbar">
-      <label for="pwMode">Direction</label>
+      <label for="pwMode" id="pwModeLabel">Direction</label>
       <div class="seg" id="pwModeSeg"></div>
     </div>
     <div class="pwbar" style="margin-top:10px">
@@ -2144,6 +2151,7 @@ document.getElementById('tabPath').onclick = function(){ showTab('path'); };
 var PW_MODES = ['fwd','rev'];
 var PW_MODE_LABEL = {fwd:'Forward from Year 9', rev:'Backwards from Year 11-12'};
 var pwMode = 'fwd', pwSel = null;
+var ALL_KEY = '__all__';
 
 function pwOptions(){
   return pwMode === 'fwd' ? ALL.filter(function(s){return s.year==='Y9';})
@@ -2153,10 +2161,11 @@ function pwOptions(){
 function buildPicker(){
   var sel = document.getElementById('pwPick');
   var opts = pwOptions();
-  if(!pwSel || opts.indexOf(BY_ID[pwSel]) < 0) pwSel = opts[0].id;
+  if(pwSel !== ALL_KEY && (!pwSel || opts.indexOf(BY_ID[pwSel]) < 0)) pwSel = opts[0].id;
   var areas = [];
   opts.forEach(function(s){ if(areas.indexOf(s.area)<0) areas.push(s.area); });
-  var h = '';
+  var h = '<option value="' + ALL_KEY + '"' + (pwSel===ALL_KEY?' selected':'') +
+          '>All subjects &mdash; whole map</option>';
   areas.forEach(function(a){
     h += '<optgroup label="' + esc(a) + '">';
     opts.filter(function(s){return s.area===a;}).forEach(function(s){
@@ -2183,6 +2192,58 @@ function nodeHTML(s, cls, gapName, first){
          '<span class="pwt">' + pre + esc(t) + extra + '</span></div>';
 }
 
+function groupedCol(year){
+  var subs = ALL.filter(function(x){return x.year===year;});
+  var areas = [];
+  AREAS.forEach(function(a){ if(a!=='All' && subs.some(function(x){return x.area===a;})) areas.push(a); });
+  return areas.map(function(a){
+    return '<div class="pw-areahead">' + esc(a) + '</div>' +
+      subs.filter(function(x){return x.area===a;})
+          .map(function(x){return nodeHTML(x);}).join('');
+  }).join('');
+}
+
+// full connected chain through a node, both directions
+function chainOf(id){
+  var set = {}; set[id] = 1;
+  (function down(i){ fwd(i).forEach(function(j){ if(!set[j]){ set[j]=1; down(j); } }); })(id);
+  (function up(i){ back(i).forEach(function(j){ if(!set[j]){ set[j]=1; up(j); } }); })(id);
+  return set;
+}
+
+function wireNodes(colsEl, hoverMode){
+  var nodes = colsEl.querySelectorAll('.pw-node');
+  for(var i=0;i<nodes.length;i++){
+    (function(n){
+      if(n.getAttribute('data-gap')) return;
+      n.onclick = function(){ var s = BY_ID[n.getAttribute('data-id')]; if(s) open_(s); };
+      if(!hoverMode) return;
+      n.onmouseenter = function(){ lightChain(colsEl, n.getAttribute('data-id')); };
+      n.onfocus = n.onmouseenter;
+    })(nodes[i]);
+  }
+  if(hoverMode){
+    colsEl.onmouseleave = function(){ clearChain(colsEl); };
+  }
+}
+
+function lightChain(colsEl, id){
+  var set = chainOf(id);
+  var nodes = colsEl.querySelectorAll('.pw-node');
+  for(var i=0;i<nodes.length;i++){
+    var nid = nodes[i].getAttribute('data-id');
+    var cn = nodes[i].className.replace(/ ?(lit|dimmed)/g,'');
+    nodes[i].className = cn + (set[nid] ? ' lit' : ' dimmed');
+  }
+  drawLines(set);
+}
+function clearChain(colsEl){
+  var nodes = colsEl.querySelectorAll('.pw-node');
+  for(var i=0;i<nodes.length;i++)
+    nodes[i].className = nodes[i].className.replace(/ ?(lit|dimmed)/g,'');
+  drawLines();
+}
+
 function col(title, count, inner){
   return '<div class="pw-col"><h5>' + title +
     (count !== null ? ' <span class="pwcount">' + count + '</span>' : '') + '</h5>' +
@@ -2193,11 +2254,27 @@ function renderPath(){
   buildSeg(document.getElementById('pwModeSeg'), PW_MODES, function(){return pwMode;},
     function(v){ pwMode = v; pwSel = null; }, function(v){ return PW_MODE_LABEL[v]; });
   buildPicker();
-  var root = BY_ID[pwSel];
   var colsEl = document.getElementById('pwCols');
   var hint = document.getElementById('pwHint');
   var c1, c2, c3;
 
+  // direction is meaningless when showing everything, so hide the control
+  document.getElementById('pwModeSeg').style.display = pwSel===ALL_KEY ? 'none' : '';
+  document.getElementById('pwModeLabel').style.display = pwSel===ALL_KEY ? 'none' : '';
+
+  if(pwSel === ALL_KEY){
+    c1 = col('Year 9', ALL.filter(function(x){return x.year==='Y9';}).length, groupedCol('Y9'));
+    c2 = col('Year 10', ALL.filter(function(x){return x.year==='Y10';}).length, groupedCol('Y10'));
+    c3 = col('Year 11-12', ALL.filter(function(x){return x.year==='Y11-12';}).length, groupedCol('Y11-12'));
+    hint.innerHTML = 'Every subject and every stated pathway. Lines are hidden until you point at something: <b>hover or tap any subject</b> to light up its full chain in both directions. Click to open its detail.';
+    colsEl.innerHTML = c1 + c2 + c3;
+    wireNodes(colsEl, true);
+    document.getElementById('pwDirect').innerHTML = '';
+    drawLines();
+    return;
+  }
+
+  var root = BY_ID[pwSel];
   if(pwMode === 'fwd'){
     var y10 = fwd(root.id).map(function(i){return BY_ID[i];}).filter(Boolean);
     var senSet = [], gapNames = [];
@@ -2252,13 +2329,8 @@ function renderPath(){
     }
   }
   colsEl.innerHTML = c1 + c2 + c3;
-  var nodes = colsEl.querySelectorAll('.pw-node');
-  for(var i=0;i<nodes.length;i++){
-    (function(n){
-      if(n.getAttribute('data-gap')) return;
-      n.onclick = function(){ var s = BY_ID[n.getAttribute('data-id')]; if(s) open_(s); };
-    })(nodes[i]);
-  }
+  colsEl.onmouseleave = null;
+  wireNodes(colsEl, false);
   renderDirect();
   drawLines();
 }
@@ -2278,7 +2350,10 @@ function renderDirect(){
 }
 
 /* connector lines, drawn after layout from real element positions */
-function drawLines(){
+// Draws only pathways that actually exist. An earlier version joined every node in one
+// column to every node in the next, which implied connections the guides never state.
+// Pass a set of ids to restrict drawing to one highlighted chain.
+function drawLines(onlySet){
   var svg = document.getElementById('pwlines');
   var stage = svg.parentNode;
   var cols = stage.querySelectorAll('.pw-col');
@@ -2286,24 +2361,36 @@ function drawLines(){
   var sb = stage.getBoundingClientRect();
   if(sb.width < 600){ svg.innerHTML=''; return; }
   svg.setAttribute('viewBox','0 0 '+sb.width+' '+sb.height);
-  function pts(colEl){
-    var out=[], ns=colEl.querySelectorAll('.pw-node');
+
+  // in the whole-map view, lines only appear for the hovered chain
+  if(pwSel === ALL_KEY && !onlySet){ svg.innerHTML=''; return; }
+
+  var pos = {};
+  for(var ci=0; ci<cols.length; ci++){
+    var ns = cols[ci].querySelectorAll('.pw-node');
     for(var i=0;i<ns.length;i++){
-      var r=ns[i].getBoundingClientRect();
-      out.push({l:r.left-sb.left, r:r.right-sb.left, y:r.top-sb.top+r.height/2});
+      var id = ns[i].getAttribute('data-id');
+      if(!id) continue;
+      var r = ns[i].getBoundingClientRect();
+      pos[id] = {col:ci, l:r.left-sb.left, r:r.right-sb.left, y:r.top-sb.top+r.height/2};
     }
-    return out;
   }
-  var a=pts(cols[0]), b=pts(cols[1]), c=pts(cols[2]);
-  var d='';
-  function join(from,to){
-    from.forEach(function(p){ to.forEach(function(q){
-      var x1=p.r+2, x2=q.l-2, mx=(x1+x2)/2;
+  var d = '', drawn = 0;
+  Object.keys(pos).forEach(function(from){
+    if(onlySet && !onlySet[from]) return;
+    fwd(from).forEach(function(to){
+      if(!pos[to]) return;
+      if(onlySet && !onlySet[to]) return;
+      if(pos[to].col <= pos[from].col) return;   // only left-to-right
+      var p = pos[from], q = pos[to];
+      var x1 = p.r+2, x2 = q.l-2, mx = (x1+x2)/2;
       d += 'M'+x1+' '+p.y+' C'+mx+' '+p.y+' '+mx+' '+q.y+' '+x2+' '+q.y+' ';
-    });});
-  }
-  join(a,b); join(b,c);
-  svg.innerHTML = '<path d="'+d+'" fill="none" stroke="#37425c" stroke-width="1.2" opacity="0.85"/>';
+      drawn++;
+    });
+  });
+  svg.setAttribute('data-edges', drawn);
+  svg.innerHTML = d ? '<path d="'+d+'" fill="none" stroke="'+(onlySet?'#7eb8d4':'#37425c')+
+    '" stroke-width="'+(onlySet?1.6:1.2)+'" opacity="0.9"/>' : '';
 }
 var pwT=null;
 if(typeof window !== 'undefined'){
