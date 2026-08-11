@@ -134,6 +134,48 @@ select.pwsel:focus{outline:none;border-color:var(--accent)}
 .pw-direct .chips button:hover{border-color:var(--accent)}
 @media(max-width:820px){.pw-cols{grid-template-columns:1fr;gap:18px}#pwlines{display:none}}
 
+/* snapshot: one swim lane per Year 9 subject, arrows stay inside the lane */
+.snapnote{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);
+  border-radius:8px;padding:13px 16px;margin:0 0 18px;font-size:13.5px;color:var(--text)}
+.snapnote b{color:var(--text)}
+.snaphead{display:grid;grid-template-columns:190px 1fr 1fr;gap:64px;
+  position:sticky;top:0;background:var(--bg);z-index:3;padding:8px 0 7px;margin:0 0 4px;
+  border-bottom:1px solid var(--line)}
+.snaphead div{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--head);font-weight:700}
+.lane{position:relative;display:grid;grid-template-columns:190px 1fr 1fr;gap:64px;
+  padding:18px 0;border-bottom:1px solid var(--line)}
+.lane:last-child{border-bottom:none}
+.lane > svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
+.lane-col{position:relative;z-index:1;display:flex;flex-direction:column;gap:11px;justify-content:center}
+.lane-root{align-self:center;background:var(--panel2);border:1px solid var(--accent);border-radius:7px;
+  padding:9px 11px;font-size:13.5px;font-weight:600;cursor:pointer;line-height:1.3}
+.lane-root:hover{background:#28344f}
+.lane-root .lr{display:block;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--meta);font-weight:600;margin-top:3px}
+.snode{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:7px 10px;
+  font-size:13px;cursor:pointer;line-height:1.3}
+.snode:hover{border-color:var(--accent)}
+.snode .sn2{display:block;font-size:10px;letter-spacing:.04em;text-transform:uppercase;
+  color:var(--meta);margin-top:2px;font-weight:600}
+.snode.gen{border-left:3px solid var(--gen)}
+.snode.app{border-left:3px solid var(--app)}
+.snode.vet{border-left:3px solid var(--vet)}
+.snode.dup{border-style:dashed}
+/* hover highlighting: one SVG path per edge so arrows can be lit individually */
+.lane path.edge{transition:stroke .12s,stroke-width .12s,opacity .12s}
+.lane path.edge.lit{stroke:#8fd4ff;stroke-width:2.6;opacity:1}
+.lane path.edge.dim{opacity:.14}
+.snode.hl,.lane-root.hl{border-color:#8fd4ff;background:#26374f}
+.snode.fade,.lane-root.fade{opacity:.3}
+.lane-root{transition:opacity .12s,border-color .12s,background .12s}
+.snode{transition:opacity .12s,border-color .12s,background .12s}
+@media(max-width:900px){
+  .snaphead{display:none}
+  .lane{grid-template-columns:1fr;gap:8px}
+  .lane > svg{display:none}
+  .lane-col{gap:6px}
+}
+
 .foot{margin:34px 0 0;padding:15px 0 0;border-top:1px solid var(--line);
   color:var(--meta);font-size:12.5px}
 </style>
@@ -146,6 +188,7 @@ select.pwsel:focus{outline:none;border-color:var(--accent)}
   <div class="tabs">
     <button id="tabBrowse" class="on">Browse subjects</button>
     <button id="tabPath">Pathways</button>
+    <button id="tabSnap">Snapshot</button>
   </div>
 
   <div class="panel on" id="panelBrowse">
@@ -199,6 +242,15 @@ select.pwsel:focus{outline:none;border-color:var(--accent)}
     </div>
     <div id="pwDirect"></div>
   </div><!-- /panelPath -->
+
+  <div class="panel" id="panelSnap">
+    <div class="snapnote">
+      <p style="margin:0 0 8px">Every Year 9 subject on its own row, flowing left to right into Year 10 then Year 11-12. Nothing to click first &mdash; the whole picture is here. <b>Hover any subject to light up its pathway</b>, or click it for full detail.</p>
+      <p style="margin:0;color:var(--meta)">A senior subject can be fed by more than one Year 9 subject, so some names appear on several rows. Rows show the pathways the guides state; subjects with no stated prerequisite can be picked in Year 11 regardless and are listed on the Pathways tab.</p>
+    </div>
+    <div class="snaphead"><div>Year 9</div><div>Year 10</div><div>Year 11 &amp; 12</div></div>
+    <div id="snapLanes"></div>
+  </div><!-- /panelSnap -->
 
   <div class="foot">
     Source: MSHS Year 9 Curriculum Guide 2027, Year 10 Curriculum Guide 2027, Year 11-12 Curriculum Guide 2026-2027.
@@ -2137,15 +2189,18 @@ document.getElementById('q').oninput=e=>{fQ=e.target.value.trim().toLowerCase();
 
 /* ---------------- tabs ---------------- */
 function showTab(which){
-  var b = which === 'browse';
-  document.getElementById('tabBrowse').className = b ? 'on' : '';
-  document.getElementById('tabPath').className = b ? '' : 'on';
-  document.getElementById('panelBrowse').className = 'panel' + (b ? ' on' : '');
-  document.getElementById('panelPath').className = 'panel' + (b ? '' : ' on');
-  if(!b){ renderPath(); }
+  ['browse','path','snap'].forEach(function(k){
+    var on = k === which;
+    var cap = k === 'browse' ? 'Browse' : (k === 'path' ? 'Path' : 'Snap');
+    document.getElementById('tab'+cap).className = on ? 'on' : '';
+    document.getElementById('panel'+cap).className = 'panel' + (on ? ' on' : '');
+  });
+  if(which === 'path') renderPath();
+  if(which === 'snap') renderSnapshot();
 }
 document.getElementById('tabBrowse').onclick = function(){ showTab('browse'); };
 document.getElementById('tabPath').onclick = function(){ showTab('path'); };
+document.getElementById('tabSnap').onclick = function(){ showTab('snap'); };
 
 /* ---------------- pathway map ---------------- */
 var PW_MODES = ['fwd','rev'];
@@ -2349,6 +2404,166 @@ function renderDirect(){
   }
 }
 
+/* ---------------- snapshot: swim lanes ---------------- */
+function laneData(){
+  return ALL.filter(function(s){return s.year==='Y9';}).map(function(root){
+    var y10 = fwd(root.id).map(function(i){return BY_ID[i];}).filter(Boolean);
+    var senIds = [], feeders = {};
+    y10.forEach(function(j, idx){
+      fwd(j.id).forEach(function(i){
+        if(senIds.indexOf(i)<0) senIds.push(i);
+        (feeders[i] = feeders[i] || []).push(idx);
+      });
+    });
+    // Barycentre ordering: place each senior subject near the average row of the Year 10
+    // subjects that feed it, and sink many-feeder convergence points below single-feeder
+    // ones. This is a standard crossing-reduction heuristic and it measurably untangles
+    // lanes like Science, where three Prep sciences all converge on Earth & Environmental.
+    senIds.sort(function(a,b){
+      var fa = feeders[a] || [], fb = feeders[b] || [];
+      var ba = fa.length ? fa.reduce(function(x,y){return x+y;},0)/fa.length : 0;
+      var bb = fb.length ? fb.reduce(function(x,y){return x+y;},0)/fb.length : 0;
+      if(ba !== bb) return ba - bb;
+      return fa.length - fb.length;
+    });
+    var gaps = [];
+    y10.concat([root]).forEach(function(n){
+      (PW_GAPS[n.id]||[]).forEach(function(g){ if(gaps.indexOf(g)<0) gaps.push(g); });
+    });
+    return {root:root, y10:y10, sen:senIds.map(function(i){return BY_ID[i];}).filter(Boolean), gaps:gaps};
+  });
+}
+
+function snodeHTML(s, dupCount){
+  var k = s.type==='GEN' ? 'gen' : (s.type==='APP' ? 'app' : (s.type==='VET' ? 'vet' : ''));
+  var meta = TYPE_LABEL[s.type] || '';
+  if(s.scaling && s.scaling !== 'capped') meta += ' &middot; ' + SCALE_LABEL[s.scaling] + ' (est)';
+  return '<div class="snode ' + k + (dupCount>1?' dup':'') + '" data-id="' + esc(s.id) + '">' +
+    esc(s.name) + '<span class="sn2">' + meta + '</span></div>';
+}
+
+function renderSnapshot(){
+  var lanes = laneData();
+  // how many lanes each senior subject appears in, so repeats can be marked
+  var seen = {};
+  lanes.forEach(function(L){ L.sen.forEach(function(x){ seen[x.id] = (seen[x.id]||0)+1; }); });
+
+  document.getElementById('snapLanes').innerHTML = lanes.map(function(L){
+    var c1 = '<div class="lane-col"><div class="lane-root" data-id="' + esc(L.root.id) + '">' +
+      esc(L.root.name) + '<span class="lr">' + esc(TYPE_LABEL[L.root.type]||'') + '</span></div></div>';
+    var c2 = '<div class="lane-col">' + L.y10.map(function(x){return snodeHTML(x,1);}).join('') + '</div>';
+    var c3 = '<div class="lane-col">' + L.sen.map(function(x){return snodeHTML(x, seen[x.id]);}).join('') +
+      L.gaps.map(function(g){
+        return '<div class="snode dup" style="border-left:3px solid #7c5314">' + esc(g) +
+               '<span class="sn2" style="color:#fbbf6e">Not in the senior offering</span></div>';
+      }).join('') + '</div>';
+    return '<div class="lane" data-root="' + esc(L.root.id) + '"><svg aria-hidden="true"></svg>' +
+      c1 + c2 + c3 + '</div>';
+  }).join('');
+
+  var laneEls = document.getElementById('snapLanes').querySelectorAll('.lane');
+  for(var li=0; li<laneEls.length; li++){
+    (function(lane){
+      var els = lane.querySelectorAll('[data-id]');
+      for(var i=0;i<els.length;i++){
+        (function(n){
+          n.onclick = function(){ var s = BY_ID[n.getAttribute('data-id')]; if(s) open_(s); };
+          n.onmouseenter = function(){ litLane(lane, n.getAttribute('data-id')); };
+          n.onfocus = n.onmouseenter;
+        })(els[i]);
+      }
+      lane.onmouseleave = function(){ clearLane(lane); };
+    })(laneEls[li]);
+  }
+  drawLaneLines();
+}
+
+// The chain running through one node, confined to that lane. Walking the whole graph
+// would light subjects that are not shown on this row, which would be misleading.
+function laneChain(lane, id){
+  var ids = {};
+  var all = lane.querySelectorAll('[data-id]');
+  for(var i=0;i<all.length;i++) ids[all[i].getAttribute('data-id')] = 1;
+  var set = {}; set[id] = 1;
+  (function down(i){
+    fwd(i).forEach(function(j){ if(ids[j] && !set[j]){ set[j]=1; down(j); } });
+  })(id);
+  (function up(i){
+    Object.keys(ids).forEach(function(j){
+      if(!set[j] && fwd(j).indexOf(i) >= 0){ set[j]=1; up(j); }
+    });
+  })(id);
+  return set;
+}
+
+function litLane(lane, id){
+  var set = laneChain(lane, id);
+  var nodes = lane.querySelectorAll('[data-id]');
+  for(var i=0;i<nodes.length;i++){
+    var base = nodes[i].className.replace(/ ?(hl|fade)/g,'');
+    nodes[i].className = base + (set[nodes[i].getAttribute('data-id')] ? ' hl' : ' fade');
+  }
+  var paths = lane.querySelectorAll('path.edge');
+  for(var p=0;p<paths.length;p++){
+    var on = set[paths[p].getAttribute('data-from')] && set[paths[p].getAttribute('data-to')];
+    paths[p].setAttribute('class', 'edge ' + (on ? 'lit' : 'dim'));
+  }
+}
+
+function clearLane(lane){
+  var nodes = lane.querySelectorAll('[data-id]');
+  for(var i=0;i<nodes.length;i++)
+    nodes[i].className = nodes[i].className.replace(/ ?(hl|fade)/g,'');
+  var paths = lane.querySelectorAll('path.edge');
+  for(var p=0;p<paths.length;p++) paths[p].setAttribute('class','edge');
+}
+
+// Arrows are drawn per lane, so they never cross between rows. This is what makes the
+// whole map readable at once, which a single shared grid could not do.
+function drawLaneLines(){
+  var lanes = document.querySelectorAll('#snapLanes .lane');
+  for(var li=0; li<lanes.length; li++){
+    var lane = lanes[li], svg = lane.querySelector('svg');
+    if(!svg) continue;
+    var lb = lane.getBoundingClientRect();
+    if(!lb.width || lb.width < 700){ svg.innerHTML=''; continue; }
+    svg.setAttribute('viewBox','0 0 '+lb.width+' '+lb.height);
+    var pos = {};
+    var root = lane.querySelector('.lane-root');
+    if(root){
+      var rr = root.getBoundingClientRect();
+      pos[root.getAttribute('data-id')] = {l:rr.left-lb.left, r:rr.right-lb.left, y:rr.top-lb.top+rr.height/2, c:0};
+    }
+    var cols = lane.querySelectorAll('.lane-col');
+    for(var ci=1; ci<cols.length; ci++){
+      var ns = cols[ci].querySelectorAll('.snode');
+      for(var i=0;i<ns.length;i++){
+        var id = ns[i].getAttribute('data-id'); if(!id) continue;
+        var r = ns[i].getBoundingClientRect();
+        pos[id] = {l:r.left-lb.left, r:r.right-lb.left, y:r.top-lb.top+r.height/2, c:ci};
+      }
+    }
+    // One path per edge, tagged with its endpoints, so hovering can light just the
+    // arrows on a given pathway. A single merged path cannot be styled per-arrow.
+    var parts=[], n=0;
+    Object.keys(pos).forEach(function(from){
+      fwd(from).forEach(function(to){
+        if(!pos[to] || pos[to].c <= pos[from].c) return;
+        var p=pos[from], q=pos[to], x1=p.r+5, x2=q.l-9;
+        // ease out of the source and into the target so parallel curves stay distinct
+        var c1=x1+(x2-x1)*0.45, c2=x2-(x2-x1)*0.45;
+        var d = 'M'+x1+' '+p.y+' C'+c1+' '+p.y+' '+c2+' '+q.y+' '+x2+' '+q.y+
+                ' M'+(x2-6.5)+' '+(q.y-4.4)+' L'+x2+' '+q.y+' L'+(x2-6.5)+' '+(q.y+4.4);
+        parts.push('<path class="edge" data-from="'+esc(from)+'" data-to="'+esc(to)+'" d="'+d+
+          '" fill="none" stroke="#7fa8cc" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>');
+        n++;
+      });
+    });
+    svg.setAttribute('data-edges', n);
+    svg.innerHTML = parts.join('');
+  }
+}
+
 /* connector lines, drawn after layout from real element positions */
 // Draws only pathways that actually exist. An earlier version joined every node in one
 // column to every node in the next, which implied connections the guides never state.
@@ -2394,7 +2609,10 @@ function drawLines(onlySet){
 }
 var pwT=null;
 if(typeof window !== 'undefined'){
-  window.addEventListener('resize', function(){ clearTimeout(pwT); pwT=setTimeout(drawLines,120); });
+  window.addEventListener('resize', function(){
+    clearTimeout(pwT);
+    pwT = setTimeout(function(){ drawLines(); drawLaneLines(); }, 120);
+  });
 }
 
 // sanity tests
